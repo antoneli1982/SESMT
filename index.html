@@ -1,0 +1,3405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#073b87">
+  <title>Gestão de Estoque EPI | SESÉ</title>
+  <style>
+    @font-face {
+      font-family: "Poppins";
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url("fonts/poppins-latin-400-normal.woff2") format("woff2");
+    }
+
+    @font-face {
+      font-family: "Poppins";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("fonts/poppins-latin-500-normal.woff2") format("woff2");
+    }
+
+    @font-face {
+      font-family: "Poppins";
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url("fonts/poppins-latin-600-normal.woff2") format("woff2");
+    }
+
+    @font-face {
+      font-family: "Poppins";
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url("fonts/poppins-latin-700-normal.woff2") format("woff2");
+    }
+
+    @font-face {
+      font-family: "Poppins";
+      font-style: normal;
+      font-weight: 800;
+      font-display: swap;
+      src: url("fonts/poppins-latin-800-normal.woff2") format("woff2");
+    }
+
+    :root {
+      --blue: #0057c8;
+      --blue-strong: #003b91;
+      --blue-soft: #e3f0ff;
+      --cyan: #00c2e8;
+      --lime: #cfff00;
+      --ink: #0d213b;
+      --muted: #526984;
+      --line: #ccd9e8;
+      --surface: #ffffff;
+      --canvas: #edf4fb;
+      --danger: #ed2346;
+      --warning: #f39b00;
+      --success: #00a86b;
+      --shadow: 0 14px 40px rgba(0, 55, 135, .12);
+      --radius: 20px;
+    }
+
+    html.darkTheme {
+      color-scheme: dark;
+      --blue: #43b5ff;
+      --blue-strong: #0b87e8;
+      --blue-soft: #12395f;
+      --ink: #f4f9ff;
+      --muted: #b9c9dc;
+      --line: #345372;
+      --surface: #122942;
+      --canvas: #07182b;
+      --danger: #ff6479;
+      --warning: #ffc14a;
+      --success: #42e6a3;
+      --shadow: 0 15px 42px rgba(0, 0, 0, .3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .skipLink {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      z-index: 100;
+    }
+
+    .skipLink:focus {
+      transform: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 276px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 18px 18px;
+      overflow: hidden;
+      color: white;
+      background:
+        radial-gradient(circle at 15% 88%, rgba(0, 166, 214, .23), transparent 34%),
+        linear-gradient(160deg, #064893 0%, #002c6c 72%);
+      z-index: 20;
+    }
+
+    .sidebar::after {
+      content: "";
+      position: absolute;
+      right: -120px;
+      bottom: 48px;
+      width: 260px;
+      height: 260px;
+      border: 24px solid rgba(200, 255, 0, .11);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .brand {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 8px 30px;
+    }
+
+    .brandMark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 118px;
+      min-width: 118px;
+      padding: 8px 9px;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(0, 24, 69, .22);
+    }
+
+    .brandMark img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .brandText strong {
+      display: block;
+      font-size: 13px;
+      letter-spacing: .05em;
+    }
+
+    .brandText small {
+      display: block;
+      margin-top: 2px;
+      color: rgba(255, 255, 255, .64);
+      font-size: 10px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .navLabel {
+      margin: 0 12px 8px;
+      color: rgba(255, 255, 255, .52);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 5px;
+    }
+
+    .navButton {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 13px;
+      border: 0;
+      border-radius: 13px;
+      color: rgba(255, 255, 255, .75);
+      background: transparent;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 650;
+      transition: .2s ease;
+    }
+
+    .navButton:hover,
+    .navButton:focus-visible {
+      color: white;
+      background: rgba(255, 255, 255, .09);
+      outline: none;
+    }
+
+    .navButton.active {
+      color: var(--blue-strong);
+      background: var(--lime);
+      box-shadow: 0 9px 22px rgba(0, 24, 69, .22);
+    }
+
+    .navIcon {
+      display: grid;
+      place-items: center;
+      width: 27px;
+      height: 27px;
+      border: 1px solid currentColor;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .navButton[data-count]::after {
+      content: attr(data-count);
+      margin-left: auto;
+      min-width: 22px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .14);
+      color: inherit;
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .navButton.active[data-count]::after {
+      background: var(--blue-strong);
+      color: white;
+    }
+
+    .userCard {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-top: auto;
+      padding: 13px;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .07);
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--lime);
+      color: var(--blue-strong);
+      font-weight: 900;
+    }
+
+    .userCard strong,
+    .userCard small {
+      display: block;
+    }
+
+    .userCard strong {
+      font-size: 12px;
+    }
+
+    .userCard small {
+      margin-top: 3px;
+      color: rgba(255, 255, 255, .58);
+      font-size: 10px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 0 34px 50px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 82px;
+      background: rgba(242, 244, 245, .9);
+      backdrop-filter: blur(16px);
+    }
+
+    .topTitle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topTitle h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -.035em;
+    }
+
+    .topTitle p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .menuButton {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: white;
+      font-size: 20px;
+    }
+
+    .topActions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .iconButton {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--blue);
+      background: white;
+      font-weight: 850;
+    }
+
+    .themeButton {
+      width: auto;
+      min-width: 118px;
+      padding: 0 12px;
+      grid-template-columns: auto auto;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .iconButton .dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border: 2px solid white;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .primaryButton,
+    .secondaryButton,
+    .ghostButton,
+    .dangerButton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      transition: .2s ease;
+    }
+
+    .primaryButton {
+      border: 1px solid var(--blue);
+      color: white;
+      background: linear-gradient(135deg, var(--blue), #007edb);
+      box-shadow: 0 10px 24px rgba(0, 87, 200, .28);
+    }
+
+    .primaryButton:hover {
+      background: var(--blue-strong);
+      transform: translateY(-1px);
+    }
+
+    .secondaryButton {
+      border: 1px solid var(--lime);
+      color: var(--blue-strong);
+      background: linear-gradient(135deg, var(--lime), #aaf000);
+      box-shadow: 0 9px 22px rgba(158, 220, 0, .22);
+    }
+
+    .ghostButton {
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: white;
+    }
+
+    .dangerButton {
+      border: 1px solid #ffd7dc;
+      color: var(--danger);
+      background: #fff3f5;
+    }
+
+    .page {
+      display: none;
+      animation: enter .28s ease both;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(220px, .7fr);
+      gap: 30px;
+      min-height: 238px;
+      padding: 34px 36px;
+      overflow: hidden;
+      border-radius: 24px;
+      color: white;
+      background:
+        linear-gradient(108deg, rgba(0, 46, 112, .98) 0%, rgba(6, 60, 136, .96) 61%, rgba(0, 132, 184, .9) 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -93px;
+      right: 16%;
+      width: 280px;
+      height: 280px;
+      border: 38px solid rgba(255, 255, 255, .07);
+      border-radius: 50%;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      bottom: -94px;
+      width: 280px;
+      height: 280px;
+      border: 32px solid rgba(200, 255, 0, .2);
+      border-radius: 50%;
+    }
+
+    .heroContent,
+    .heroPanel {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 13px;
+      color: var(--lime);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 3px;
+      background: currentColor;
+    }
+
+    .hero h2 {
+      max-width: 650px;
+      margin: 0;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: .99;
+      letter-spacing: -.055em;
+    }
+
+    .heroContent > p:not(.eyebrow) {
+      max-width: 620px;
+      margin: 18px 0 25px;
+      color: rgba(255, 255, 255, .71);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .heroButtons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero .ghostButton {
+      border-color: rgba(255, 255, 255, .3);
+      color: white;
+      background: rgba(255, 255, 255, .07);
+    }
+
+    .heroPanel {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 18px;
+      background: rgba(0, 25, 76, .35);
+      backdrop-filter: blur(8px);
+    }
+
+    .heroPanel .score {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+    }
+
+    .heroPanel .score strong {
+      font-size: 44px;
+      letter-spacing: -.06em;
+    }
+
+    .heroPanel .score span {
+      color: var(--lime);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .heroPanel p {
+      margin: 5px 0 20px;
+      color: rgba(255, 255, 255, .64);
+      font-size: 11px;
+    }
+
+    .progress {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .13);
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--lime);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .statCard {
+      position: relative;
+      min-height: 128px;
+      padding: 20px;
+      overflow: hidden;
+      border: 1px solid #c8d9eb;
+      border-top: 4px solid var(--blue);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 5px 19px rgba(14, 42, 76, .04);
+    }
+
+    .statCard::after {
+      content: "";
+      position: absolute;
+      right: -24px;
+      bottom: -27px;
+      width: 75px;
+      height: 75px;
+      border: 13px solid var(--blue-soft);
+      border-radius: 50%;
+    }
+
+    .statTop {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .statBadge {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      border-radius: 9px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 13px;
+    }
+
+    .statCard strong {
+      position: relative;
+      z-index: 1;
+      display: block;
+      margin-top: 12px;
+      font-size: 30px;
+      letter-spacing: -.045em;
+    }
+
+    .statCard small {
+      position: relative;
+      z-index: 1;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .statCard.danger .statBadge {
+      color: var(--danger);
+      background: #fff0f2;
+    }
+
+    .statCard.danger {
+      border-top-color: var(--danger);
+    }
+
+    .statCard.warning .statBadge {
+      color: #9d6600;
+      background: #fff5da;
+    }
+
+    .statCard.warning {
+      border-top-color: var(--warning);
+    }
+
+    .contentGrid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(270px, .7fr);
+      gap: 18px;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid #cbdbea;
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 5px 19px rgba(14, 42, 76, .04);
+    }
+
+    .panelHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .panelHeader h3,
+    .pageHeader h2 {
+      margin: 0;
+      letter-spacing: -.035em;
+    }
+
+    .panelHeader h3 {
+      font-size: 16px;
+    }
+
+    .panelHeader p,
+    .pageHeader p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .textButton {
+      padding: 6px;
+      border: 0;
+      color: var(--blue);
+      background: none;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .barChart {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      height: 190px;
+      padding-top: 16px;
+      border-bottom: 1px solid var(--line);
+      background: repeating-linear-gradient(to bottom, transparent 0, transparent 44px, #edf0f3 45px);
+    }
+
+    .barItem {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      height: 100%;
+    }
+
+    .bar {
+      width: min(32px, 70%);
+      min-height: 8px;
+      border-radius: 8px 8px 2px 2px;
+      background: linear-gradient(180deg, var(--cyan), var(--blue));
+      transition: height .4s ease;
+    }
+
+    .barItem:nth-child(5) .bar {
+      background: linear-gradient(180deg, var(--lime), #87b500);
+    }
+
+    .barItem span {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .alertList,
+    .activityList {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alertItem,
+    .activityItem {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid #e5e9ed;
+      border-radius: 14px;
+      background: #fafbfc;
+    }
+
+    .alertIcon,
+    .activityIcon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .alertItem.danger .alertIcon {
+      color: var(--danger);
+      background: #fff0f2;
+    }
+
+    .alertItem.warning .alertIcon {
+      color: #9d6600;
+      background: #fff4d7;
+    }
+
+    .alertItem strong,
+    .activityItem strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 11px;
+    }
+
+    .alertItem p,
+    .activityItem p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .pageHeader {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 8px 0 20px;
+    }
+
+    .pageHeader h2 {
+      font-size: clamp(27px, 3vw, 40px);
+    }
+
+    .pageHeaderActions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) repeat(2, minmax(130px, .35fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .inputGroup {
+      position: relative;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: white;
+      outline: none;
+      transition: .18s ease;
+    }
+
+    .input,
+    .select {
+      height: 43px;
+      padding: 0 13px;
+      font-size: 11px;
+    }
+
+    .textarea {
+      min-height: 86px;
+      padding: 12px 13px;
+      resize: vertical;
+      font-size: 11px;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(6, 60, 136, .1);
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #4d5d72;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .field label .required {
+      color: var(--danger);
+    }
+
+    .tableWrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 11px;
+    }
+
+    th {
+      padding: 13px 14px;
+      color: var(--muted);
+      background: #f6f8fa;
+      text-align: left;
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px;
+      border-top: 1px solid #edf0f2;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #fbfcfd;
+    }
+
+    .materialCell {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 230px;
+    }
+
+    .materialIcon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .materialCell strong,
+    .materialCell small {
+      display: block;
+    }
+
+    .materialCell small {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: var(--success);
+      background: #e8f7f0;
+      font-size: 9px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .pill::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .pill.warning {
+      color: #956100;
+      background: #fff3d1;
+    }
+
+    .pill.danger {
+      color: var(--danger);
+      background: #fff0f2;
+    }
+
+    .actionsCell {
+      display: flex;
+      gap: 6px;
+    }
+
+    .miniButton {
+      display: grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--blue);
+      background: white;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .formGrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .formSection {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sectionTitle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 15px;
+      font-size: 13px;
+    }
+
+    .sectionTitle span {
+      display: grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 8px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 10px;
+    }
+
+    .selectedEpi {
+      display: grid;
+      grid-template-columns: 1.2fr .35fr .5fr auto;
+      gap: 10px;
+      align-items: end;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fafbfc;
+    }
+
+    .epiDatabaseInfo {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .epiDatabaseItem {
+      padding: 12px 13px;
+      border: 1px solid #91bff0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--blue-soft), #f1f9ff);
+      box-shadow: inset 4px 0 0 var(--cyan);
+    }
+
+    .epiDatabaseItem span,
+    .epiDatabaseItem strong {
+      display: block;
+    }
+
+    .epiDatabaseItem span {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .epiDatabaseItem strong {
+      color: var(--blue-strong);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .caValue {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border: 1px solid #83b9ee;
+      border-radius: 9px;
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .signatureBox {
+      position: relative;
+      overflow: hidden;
+      border: 1px dashed #aab5c2;
+      border-radius: 15px;
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        repeating-linear-gradient(45deg, #fafafa 0, #fafafa 8px, #f6f7f8 8px, #f6f7f8 16px);
+    }
+
+    .signatureBox canvas {
+      display: block;
+      width: 100%;
+      height: 190px;
+      touch-action: none;
+    }
+
+    .signatureHint {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #97a3b2;
+      font-size: 11px;
+      pointer-events: none;
+    }
+
+    .signatureBox.signed .signatureHint {
+      display: none;
+    }
+
+    .signatureTools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .checkRow {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 13px;
+      background: var(--blue-soft);
+      color: #314761;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .checkRow input {
+      margin-top: 2px;
+      accent-color: var(--blue);
+    }
+
+    .summaryCard {
+      position: sticky;
+      top: 98px;
+    }
+
+    .summaryTotal {
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 16px;
+      color: white;
+      background: linear-gradient(135deg, var(--blue-strong), var(--blue), var(--cyan));
+      box-shadow: 0 14px 30px rgba(0, 87, 200, .22);
+    }
+
+    .summaryTotal span,
+    .summaryTotal strong,
+    .summaryTotal small {
+      display: block;
+    }
+
+    .summaryTotal span {
+      color: rgba(255, 255, 255, .65);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .summaryTotal strong {
+      margin: 5px 0;
+      font-size: 31px;
+    }
+
+    .summaryTotal small {
+      color: var(--lime);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .summaryList {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summaryLine {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf0f2;
+      font-size: 10px;
+    }
+
+    .summaryLine span {
+      color: var(--muted);
+    }
+
+    .inventoryHero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .inventoryStart {
+      position: relative;
+      min-height: 220px;
+      padding: 28px;
+      overflow: hidden;
+      border-radius: 20px;
+      color: white;
+      background: var(--blue);
+    }
+
+    .inventoryStart::after {
+      content: "";
+      position: absolute;
+      right: -44px;
+      bottom: -50px;
+      width: 180px;
+      height: 180px;
+      border: 24px solid rgba(200, 255, 0, .2);
+      border-radius: 50%;
+    }
+
+    .inventoryStart h3 {
+      position: relative;
+      z-index: 1;
+      max-width: 430px;
+      margin: 10px 0;
+      font-size: 27px;
+      letter-spacing: -.04em;
+    }
+
+    .inventoryStart p {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      color: rgba(255, 255, 255, .68);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .inventoryStart .secondaryButton {
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
+    }
+
+    .miniStats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .miniStat {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+    }
+
+    .miniStat span {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .miniStat strong {
+      font-size: 27px;
+    }
+
+    .settingsGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .settingCard {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+    }
+
+    .settingCard h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .settingCard p {
+      min-height: 45px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .emptyState {
+      padding: 44px 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .emptyState strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .modalBackdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(2, 18, 49, .58);
+      backdrop-filter: blur(8px);
+    }
+
+    .modalBackdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 25px 80px rgba(0, 18, 58, .35);
+    }
+
+    .modalHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modalHeader h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .modalBody {
+      padding: 22px;
+    }
+
+    .modalFooter {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      padding: 16px 22px;
+      border-top: 1px solid var(--line);
+    }
+
+    .toastStack {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 80;
+      display: grid;
+      gap: 9px;
+      width: min(350px, calc(100% - 44px));
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 14px 16px;
+      border: 1px solid #bce8d4;
+      border-radius: 14px;
+      color: #075a39;
+      background: #effaf5;
+      box-shadow: var(--shadow);
+      font-size: 11px;
+      font-weight: 750;
+      animation: toastIn .25s ease both;
+    }
+
+    .toast.error {
+      border-color: #ffd0d7;
+      color: #a81930;
+      background: #fff3f5;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+    }
+
+    .mobileOverlay {
+      display: none;
+    }
+
+    html.darkTheme body {
+      background: var(--canvas);
+    }
+
+    html.darkTheme .topbar {
+      background: rgba(11, 21, 34, .92);
+    }
+
+    html.darkTheme .menuButton,
+    html.darkTheme .iconButton,
+    html.darkTheme .ghostButton,
+    html.darkTheme .statCard,
+    html.darkTheme .panel,
+    html.darkTheme .input,
+    html.darkTheme .select,
+    html.darkTheme .textarea,
+    html.darkTheme table,
+    html.darkTheme .miniButton,
+    html.darkTheme .miniStat,
+    html.darkTheme .settingCard,
+    html.darkTheme .modal {
+      color: var(--ink);
+      background: var(--surface);
+    }
+
+    html.darkTheme .statCard,
+    html.darkTheme .panel {
+      border-color: var(--line);
+    }
+
+    html.darkTheme .selectedEpi,
+    html.darkTheme .alertItem,
+    html.darkTheme .activityItem {
+      background: #101d2d;
+      border-color: var(--line);
+    }
+
+    html.darkTheme .epiDatabaseItem {
+      border-color: #2d6eaa;
+      background: linear-gradient(135deg, #12395f, #102c49);
+      box-shadow: inset 4px 0 0 var(--cyan);
+    }
+
+    html.darkTheme .epiDatabaseItem strong,
+    html.darkTheme .caValue {
+      color: #8fd5ff;
+    }
+
+    html.darkTheme .caValue {
+      border-color: #2d6eaa;
+      background: #12395f;
+    }
+
+    html.darkTheme th {
+      background: #101d2d;
+    }
+
+    html.darkTheme td,
+    html.darkTheme .summaryLine {
+      border-color: var(--line);
+    }
+
+    html.darkTheme tr:hover td {
+      background: #182a40;
+    }
+
+    html.darkTheme .field label,
+    html.darkTheme .checkRow {
+      color: #c0cde0;
+    }
+
+    html.darkTheme .checkRow {
+      background: #142f4d;
+    }
+
+    html.darkTheme .barChart {
+      background: repeating-linear-gradient(to bottom, transparent 0, transparent 44px, #21344b 45px);
+    }
+
+    html.darkTheme .statCard.danger .statBadge,
+    html.darkTheme .alertItem.danger .alertIcon,
+    html.darkTheme .pill.danger,
+    html.darkTheme .toast.error {
+      background: #43202a;
+    }
+
+    html.darkTheme .statCard.warning .statBadge,
+    html.darkTheme .alertItem.warning .alertIcon,
+    html.darkTheme .pill.warning {
+      color: var(--warning);
+      background: #42351b;
+    }
+
+    html.darkTheme .pill {
+      background: #173c32;
+    }
+
+    html.darkTheme .toast {
+      color: #8ff0c7;
+      background: #13352c;
+      border-color: #286a55;
+    }
+
+    html.darkTheme .signatureBox {
+      background:
+        linear-gradient(#f8fbff, #f8fbff) padding-box,
+        repeating-linear-gradient(45deg, #f8fbff 0, #f8fbff 8px, #eef3f8 8px, #eef3f8 16px);
+    }
+
+    html.darkTheme .signatureHint {
+      color: #66768a;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 232px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        padding-inline: 12px;
+      }
+
+      .main {
+        padding-inline: 22px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .contentGrid,
+      .inventoryHero {
+        grid-template-columns: 1fr;
+      }
+
+      .summaryCard {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-105%);
+        width: min(290px, 86vw);
+        transition: transform .25s ease;
+      }
+
+      .sidebar.open {
+        transform: none;
+      }
+
+      .mobileOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 19;
+        display: none;
+        background: rgba(2, 18, 49, .45);
+      }
+
+      .mobileOverlay.open {
+        display: block;
+      }
+
+      .main {
+        padding: 0 15px 34px;
+      }
+
+      .topbar {
+        min-height: 70px;
+      }
+
+      .menuButton {
+        display: grid;
+        place-items: center;
+      }
+
+      .topTitle h1 {
+        font-size: 16px;
+      }
+
+      .topTitle p {
+        display: none;
+      }
+
+      .topActions .primaryButton {
+        display: none;
+      }
+
+      .themeButton {
+        min-width: 42px;
+        width: 42px;
+        padding: 0;
+        grid-template-columns: 1fr;
+      }
+
+      .themeButton #themeLabel {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 26px 22px;
+      }
+
+      .heroPanel {
+        min-height: 128px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .statCard {
+        min-height: 113px;
+        padding: 15px;
+      }
+
+      .statCard strong {
+        font-size: 25px;
+      }
+
+      .filters,
+      .formGrid,
+      .settingsGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .selectedEpi {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .selectedEpi .field:first-child {
+        grid-column: 1 / -1;
+      }
+
+      .pageHeader {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .pageHeaderActions {
+        width: 100%;
+      }
+
+      .pageHeaderActions button {
+        flex: 1;
+      }
+
+      .inventoryHero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .pageHeaderActions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .pageHeaderActions #newMaterialButton {
+        grid-column: 1 / -1;
+      }
+
+      .heroButtons {
+        display: grid;
+      }
+
+      .heroButtons button {
+        width: 100%;
+      }
+
+      .selectedEpi {
+        grid-template-columns: 1fr;
+      }
+
+      .selectedEpi .field:first-child {
+        grid-column: auto;
+      }
+
+      .epiDatabaseInfo {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #printTerm,
+      #printTerm * {
+        visibility: visible;
+      }
+
+      #printTerm {
+        position: absolute;
+        inset: 0;
+        display: block !important;
+        padding: 36px;
+        color: #111;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skipLink" href="#conteudo">Ir para o conteúdo</a>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+      <div class="brand" aria-label="SESÉ Gestão de EPI">
+        <div class="brandMark">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZYAAAB8CAMAAAB9jmb0AAAAkFBMVEX///8AZvkAXPkAZPkAX/kAZ/myy/2zzf1EhfqJsPwmcPkAW/kAYPkacfkAYvkAWfmsxvz2+/+owfzL3f4ye/rx9/+fvvy70v3P3/7k7v5AgvqIr/zC1v1SjPpIh/ondvpunvvs9P9ilvuZuvze6v4AVfl5pPsAa/k5fvpbkfqStfzW5P5/qPtGivrg7P5xn/s41O9LAAAJyElEQVR4nO2daWPqKhCGDaC2DRJTl9jaunVxqafn//+7295TCJqNGSB67+H92go4D4RhZoidTlBQUFBQUFBQUFBQUFBQUFAQROtZNqzT/ezSI/zrlGarpUhIrd7mlx7lX6aHYzfmlEb1YreXHudfpck7Y01IApa21e8aQQlYWtV7YgYlYGlTC2IIJWBpUY/MmErA0pogVAKWtgSiErC0JBiVgKUdAakELG0ohVIJWNoQmErA4l/pjlCoSMDiWemv7QCs7eHSww4KCgoKCgoKCgr6v+gzu5/Ob8E6AqptJrPe9ADvY25yHFvPhqi2IWcKpInmGaCPk+803G8JIQyht6FhH7P5WMSoLlg3bWh7dBxzXNuk699ECa4g6WPDiTBNTJ+L9Iz6GC5jhu2D3tVjubdq22j4rysLE6FiYg8bwrEdRoZYenfEoot6LMOtXdsGw19vYhsTYbDcc47vMDLCMnk2LhIpVR2W9SK2bLvZRENLEyGwbOwsZoJlRO2+VR2WJ2HddqOJVrYmAmNJd+DkwbkasfRtv1UNlqGDtptM9GheeVQhKJZ0bDnXomYs9lQiuq3Acu+g7QYsLkzEXlqn0oTFAZWIjquo2A+/AUsbJvLRZUOfLqhE4pc3Kg1Y3JgohtxvcdNlPRYnVCL+7o1KPRY3JqJ83TqVWiw9J1TKu5g6oVKLxZGJ6LJ9KnVYHFGJ2IM3KnVYXJmI/26fSg0WV1TErti2mydYVIfFmYniJwwVSoWNkqpQpU4F2scJT1L0L/W1Yjd+vvVhohPwVe59TZeUxXT5uLjBa1cRtVZUqCBsOwa1uVhqXKgo7JiKCqLtc5V7eXYmWnQ1LMw0fqy6FGRwO5sYfgomRYWxfe/BdL6oT2sna1bwwyQVyjiibSPpJprDTXSnPSh4yc5Y1yUlY2x+plGSiiDvhqM60UseEyouFklFsCOmbRPlJlr2MR/X4s3sCO3SX7GfpMLGH6jPr/LnemFnkVTY7tV+oOWyNdFnvthNd5Z0+dMlHaG6NJGkQjbIBvK9hT+e/UlSISvLQVZLURHGPtSp+jmWxKyJnIq3uZZTWSEbeFBfi3bPHmGKivlhAKqcCm6pdzobtdhjs+Bxvjz9rxW+wLZwkFsLJWfhJEmFP9uOslJy4kYEuVY6qXLwDR8XysFoYV8pTHRzdaVvfT55XqQPZnwWACungr7+8CIXOzObPIoKJEwDlPKMyT22iQOpoKLOKzEoVA6RokIH2CYmEYVRkV1GBOP2GUnlC/HkX3/e2UHjirUSiYoEjL1yE8VoE0k30pBKJz+4VkUcrJVncdGLJV3+iV3Q5IzKUEVcYHklUN/KRGaFSiWaxjAqe3VGM44HQJVTASUZTvTIy6nMVIkLFX4iExqViBueAgvKfoZpSkUL7/lyw7SsV1nY10STXQWVdJu3fWM/1FJp0UmsGzaVB2lDN/RBe8sSQ/tItXrVSrYASQZdGa14gnV+5/EYX4t9o5UB4UyUbmQIoiICWtBei1Ob1t0CNdYC2myKaGC0kM51gcqHFsrH+3i16uvZAowHPjkw4G5/8rU8ucfDONJMZ1oxLrUe3Q6SH64FH6zTedZyUp52/Ds9mwB1jyevww1hMM+4o8cDvtV1J6bsrydJvlYkTDSJ1VO2hMoHsWi7TpGyf0+fVWATsYSoZwUxprI+LW0G3/ivljrZzU6/FrQd7ZMlHsmReRq+UI7wQtiMX/ukOZXO0Lpis0rqiXJrXTf7R5SV+Il3tPmDuN4klgn6nsSZyN6YSmcvmttDjkJi+eWmi1IqZyvRoRSWkaOJC6GSdn3NthzL0kkXpVT0bKVjKSw9N1ggVDozb19LYdGOexaivPSke+qwuJTCMnViIhAVV1OhdCAusVRQ6ey8PYPdYoFR6dz7x9IZOCjNr6CSetvx8zOcC6cISMUrFhk8sp/RVVR8bo0qvpbZmwhKxScWJmsCrJ09QasuHHjEwlc/fXzYmogmq4rhXwALVXfmD5YPZ7KsrPryiEXF7iaNPyxRLxHD8/D+sAgVwH6y6kMkNQkOj1jyK0GPNqudkgEiWeIPC1GR4hR/TKYiWdQV//jDokWK5/jVTolAlax4xPKpOtnjDheUE7Kvn2r+sKit5WtzwUUSqGDJ4AWXLp2+1f9MEki6ifRE4dPJ9+JGbcVJst0Mm1JOKY/dDf9k8uixaj1d9LUAjJQkbDdH//TXa6/vTvrUjfXicv3kwo9GbT3NjLKAfXfjz941LiclNPrJhd5lRq2N/NWmQqVhOa0M0jMW4DRYa9KP88nJlQVtWuELXy4lPXVzltvVHgPeimuspa2Ws1qNLM/gUuqpuMabtAg4Oyux1TLTwl+RsKVu1Nyh8efpnzSnhWDLwi+l/NgoCnUIB8XFY5WwndL82Jicl2qkkfobqkTkklJPKkqK+11eIujxSoCV8thXyT2PD1Xo5q0WzZNUopCW3qhRv9fAsVeOPEslUUvLU7K8WPd6fCwTPYs6KhqX63w6z9Qlh/KyR8XlWqdVueSZsYpKzqXiBToXlox8VRajKi7Fqqjr1WRLG6jkXOIr3DXl1ZmaEmHJhQ6u1GkpkSynr62c/uFS/08XUV9ecqhbyZKLx4uAbpUuzAwuubAr45Ixo3J6dRcCmm28jD7HpsvgRv7jVT3HDtLcTbue4rLz9T4Gd0oPXBg/nCSXeHE1fuaHfBeoQeF29hMmF+Kq5lVRnwf5FmizLeNG+mNk83QFW2ea7WXptlE5faa+7ODF34p5HfYsNHxZLZmspzfdyBfqXBlvn29x/atEjM3oe737+a9uXHuKLEpy+dog2fj3FNdx0yt1LNNgLA8am2/jist3Ag/X79vP0cE2Daa9gd/46kmWp/sEx40/abqo6CxpDHF6F/avvpZYnCWNAZccMptX9/+rxriaKywwl9eai3MsACoOuLSFBXoQseXiGguIyneJlWXpWDtY4Md2Sy6OsQCpfAcArfptBwsmmGLHxS0WMBVbLq1gwYW4rLg4xWJ+/VeTFZc2sJRc/zWSDReXWBBr5VtPFi9zbgELlsoXF3zfDrGALzlIWXDxj4VTfK4R/2tBzrDQBP8OxRHH1oz7xkLjR5uyqWmM/GKusHCrYsL1Duko+8VCGbeMo74+JigwbrCIZGEZbXxhDDMAj1ioIOJoX2GYLTE/EegAC+Xxzj4Zt37nBD6xDLCgXrwhGGG7qZuyz9GqSxgXoAEkCgvsc3L8nJHuCl1Pf6L1dPxlDAEaR+Edzucadu/gGuz2877DZEM6mq5ulpARdCWWAWL4d8vFajpzmOt56B2fx5CRbP8rxQBBQUFBQUFBQUFBQUFBQUFBQUFBQUHXoH8ACifibfjhQ5wAAAAASUVORK5CYII=" alt="Logo SESÉ">
+        </div>
+        <div class="brandText">
+          <strong>GESTÃO DE EPI</strong>
+          <small>Segurança operacional</small>
+        </div>
+      </div>
+
+      <p class="navLabel">Operação</p>
+      <nav class="nav">
+        <button class="navButton active" data-page="dashboard"><span class="navIcon">01</span>Painel geral</button>
+        <button class="navButton" data-page="materials"><span class="navIcon">02</span>Materiais</button>
+        <button class="navButton" data-page="withdrawal"><span class="navIcon">03</span>Nova retirada</button>
+        <button class="navButton" data-page="inventory"><span class="navIcon">04</span>Inventário</button>
+        <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">05</span>Alertas</button>
+        <button class="navButton" data-page="history"><span class="navIcon">06</span>Histórico</button>
+        <button class="navButton" data-page="settings"><span class="navIcon">07</span>Configurações</button>
+      </nav>
+
+      <div class="userCard">
+        <div class="avatar">RS</div>
+        <div>
+          <strong>Responsável SESMT</strong>
+          <small>Unidade operacional</small>
+        </div>
+      </div>
+    </aside>
+
+    <div class="mobileOverlay" id="mobileOverlay"></div>
+
+    <main class="main" id="conteudo">
+      <header class="topbar">
+        <div class="topTitle">
+          <button class="menuButton" id="menuButton" aria-label="Abrir menu">☰</button>
+          <div>
+            <h1 id="pageTitle">Painel geral</h1>
+            <p id="currentDate"></p>
+          </div>
+        </div>
+        <div class="topActions">
+          <button class="iconButton themeButton" id="themeToggle" type="button" aria-label="Ativar modo escuro" aria-pressed="false">
+            <span id="themeIcon">◐</span>
+            <span id="themeLabel">Modo escuro</span>
+          </button>
+          <button class="iconButton" data-page-jump="alerts" aria-label="Ver alertas">!</button>
+          <button class="primaryButton" data-page-jump="withdrawal"><span>＋</span> Registrar retirada</button>
+        </div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="hero">
+          <div class="heroContent">
+            <p class="eyebrow">Controle inteligente e seguro</p>
+            <h2>Proteção certa, no momento certo.</h2>
+            <p>Controle estoque, validade, CA, entregas e assinaturas eletrônicas em uma única jornada operacional.</p>
+            <div class="heroButtons">
+              <button class="secondaryButton" data-page-jump="withdrawal">Nova retirada de EPI</button>
+              <button class="ghostButton" data-page-jump="inventory">Iniciar inventário</button>
+            </div>
+          </div>
+          <div class="heroPanel">
+            <div>
+              <p class="eyebrow">Conformidade</p>
+              <div class="score"><strong id="complianceScore">94%</strong><span>situação segura</span></div>
+              <p>Cadastros com CA válido, estoque adequado e rastreabilidade completa.</p>
+            </div>
+            <div class="progress"><span style="width:94%"></span></div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <article class="statCard">
+            <div class="statTop"><span>Itens em estoque</span><span class="statBadge">E</span></div>
+            <strong id="statStock">0</strong>
+            <small>Unidades disponíveis</small>
+          </article>
+          <article class="statCard danger">
+            <div class="statTop"><span>Estoque crítico</span><span class="statBadge">!</span></div>
+            <strong id="statCritical">0</strong>
+            <small>Materiais para reposição</small>
+          </article>
+          <article class="statCard warning">
+            <div class="statTop"><span>Vencimentos</span><span class="statBadge">V</span></div>
+            <strong id="statExpiring">0</strong>
+            <small>Nos próximos 60 dias</small>
+          </article>
+          <article class="statCard">
+            <div class="statTop"><span>Retiradas no mês</span><span class="statBadge">R</span></div>
+            <strong id="statWithdrawals">0</strong>
+            <small>Entregas registradas</small>
+          </article>
+        </div>
+
+        <div class="contentGrid">
+          <article class="panel">
+            <div class="panelHeader">
+              <div>
+                <h3>Movimentação semanal</h3>
+                <p>Quantidade de EPIs entregues nos últimos sete dias</p>
+              </div>
+              <button class="textButton" data-page-jump="history">Ver histórico</button>
+            </div>
+            <div class="barChart" id="barChart"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panelHeader">
+              <div>
+                <h3>Atenção necessária</h3>
+                <p>Prioridades da operação</p>
+              </div>
+            </div>
+            <div class="alertList" id="dashboardAlerts"></div>
+          </article>
+        </div>
+
+        <article class="panel" style="margin-top:18px">
+          <div class="panelHeader">
+            <div>
+              <h3>Atividade recente</h3>
+              <p>Últimos registros realizados na ferramenta</p>
+            </div>
+            <button class="textButton" data-page-jump="history">Ver todos</button>
+          </div>
+          <div class="activityList" id="recentActivity"></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-materials">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Catálogo e saldo</p>
+            <h2>Materiais</h2>
+            <p>Controle por item, lote, CA, validade, localização e estoque mínimo.</p>
+          </div>
+          <div class="pageHeaderActions">
+            <input id="importMaterialsFile" type="file" accept=".xlsx,.xls,.csv" hidden>
+            <button class="ghostButton" id="importMaterials" type="button">Importar Excel</button>
+            <button class="ghostButton" id="exportMaterials" type="button">Exportar Excel</button>
+            <button class="primaryButton" id="newMaterialButton">＋ Novo material</button>
+          </div>
+        </div>
+        <div class="filters">
+          <input class="input" id="materialSearch" type="search" placeholder="Pesquisar descrição, código, lote ou CA">
+          <select class="select" id="categoryFilter" aria-label="Filtrar categoria">
+            <option value="">Todas as categorias</option>
+            <option>Proteção da cabeça</option>
+            <option>Proteção auditiva</option>
+            <option>Proteção das mãos</option>
+            <option>Proteção dos pés</option>
+            <option>Proteção respiratória</option>
+            <option>Proteção visual</option>
+          </select>
+          <select class="select" id="stockFilter" aria-label="Filtrar situação">
+            <option value="">Todas as situações</option>
+            <option value="normal">Estoque normal</option>
+            <option value="critical">Estoque crítico</option>
+            <option value="expired">CA vencido</option>
+          </select>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>CA</th>
+                <th>Lote</th>
+                <th>Validade CA</th>
+                <th>Saldo</th>
+                <th>Local</th>
+                <th>Situação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="materialsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-withdrawal">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Entrega rastreável</p>
+            <h2>Nova retirada</h2>
+            <p>Registre o colaborador, os EPIs e a assinatura eletrônica.</p>
+          </div>
+        </div>
+        <div class="contentGrid">
+          <form class="panel" id="withdrawalForm">
+            <h3 class="sectionTitle"><span>1</span> Identificação do colaborador</h3>
+            <div class="formGrid">
+              <div class="field">
+                <label for="employeeName">Nome completo <span class="required">*</span></label>
+                <input class="input" id="employeeName" required autocomplete="name">
+              </div>
+              <div class="field">
+                <label for="employeeId">Chapa <span class="required">*</span></label>
+                <input class="input" id="employeeId" required>
+              </div>
+              <div class="field">
+                <label for="employeeArea">Área <span class="required">*</span></label>
+                <select class="select" id="employeeArea" required>
+                  <option value="">Selecione</option>
+                  <option>Armazém</option>
+                  <option>Expedição</option>
+                  <option>Manutenção</option>
+                  <option>Operação logística</option>
+                  <option>Qualidade</option>
+                  <option>Transporte</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="employeeShift">Turno <span class="required">*</span></label>
+                <select class="select" id="employeeShift" required>
+                  <option value="">Selecione</option>
+                  <option>1º turno</option>
+                  <option>2º turno</option>
+                  <option>3º turno</option>
+                  <option>Administrativo</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="formSection">
+              <h3 class="sectionTitle"><span>2</span> EPI entregue</h3>
+              <div class="selectedEpi">
+                <div class="field">
+                  <label for="withdrawalMaterial">Material <span class="required">*</span></label>
+                  <select class="select" id="withdrawalMaterial" required></select>
+                </div>
+                <div class="field">
+                  <label for="withdrawalQty">Quantidade</label>
+                  <input class="input" id="withdrawalQty" type="number" min="1" value="1" required>
+                </div>
+                <div class="field">
+                  <label for="withdrawalReason">Motivo</label>
+                  <select class="select" id="withdrawalReason">
+                    <option>Primeira entrega</option>
+                    <option>Substituição periódica</option>
+                    <option>Dano no equipamento</option>
+                    <option>Perda justificada</option>
+                  </select>
+                </div>
+                <button class="miniButton" type="button" aria-label="Adicionar item" id="addWithdrawalItem">＋</button>
+              </div>
+              <div class="epiDatabaseInfo" aria-live="polite">
+                <div class="epiDatabaseItem">
+                  <span>Número do CA</span>
+                  <strong id="withdrawalCa">Selecione um EPI</strong>
+                </div>
+                <div class="epiDatabaseItem">
+                  <span>Vida útil cadastrada</span>
+                  <strong id="withdrawalLifetime">Selecione um EPI</strong>
+                </div>
+                <div class="epiDatabaseItem">
+                  <span>Data da próxima troca</span>
+                  <strong id="withdrawalNextChange">Selecione um EPI</strong>
+                </div>
+              </div>
+              <div class="activityList" id="withdrawalItems" style="margin-top:10px"></div>
+            </div>
+
+            <div class="formSection">
+              <h3 class="sectionTitle"><span>3</span> Declaração e assinatura</h3>
+              <div class="signatureBox" id="signatureBox">
+                <canvas id="signatureCanvas" width="900" height="260" aria-label="Campo para assinatura eletrônica"></canvas>
+                <div class="signatureHint">Assine neste espaço usando o mouse ou o dedo</div>
+              </div>
+              <div class="signatureTools">
+                <span>A assinatura será vinculada ao registro e ao termo de entrega.</span>
+                <button class="textButton" type="button" id="clearSignature">Limpar assinatura</button>
+              </div>
+              <label class="checkRow">
+                <input type="checkbox" id="acknowledgement" required>
+                <span>Declaro que recebi os equipamentos em perfeitas condições, fui orientado sobre uso, guarda, conservação e substituição e assumo o compromisso de utilizá los durante a atividade.</span>
+              </label>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px">
+              <button class="ghostButton" type="reset" id="cancelWithdrawal">Limpar</button>
+              <button class="primaryButton" type="submit">Finalizar e arquivar</button>
+            </div>
+          </form>
+
+          <aside class="panel summaryCard">
+            <div class="panelHeader">
+              <div>
+                <h3>Resumo da entrega</h3>
+                <p>Conferência antes da assinatura</p>
+              </div>
+            </div>
+            <div class="summaryList">
+              <div class="summaryLine"><span>Colaborador</span><strong id="summaryEmployee">Não informado</strong></div>
+              <div class="summaryLine"><span>Chapa</span><strong id="summaryId">Não informada</strong></div>
+              <div class="summaryLine"><span>Itens selecionados</span><strong id="summaryItems">0</strong></div>
+              <div class="summaryLine"><span>Número do CA</span><strong id="summaryCa">Sem item</strong></div>
+              <div class="summaryLine"><span>Responsável</span><strong>Responsável SESMT</strong></div>
+            </div>
+            <div class="summaryTotal">
+              <span>Próxima troca</span>
+              <strong id="summaryValidity">Sem item</strong>
+              <small>Calculada pelo prazo cadastrado do EPI</small>
+            </div>
+            <p style="color:var(--muted);font-size:10px;line-height:1.55">O termo final registra data, hora, materiais, lotes, CA, validade de uso, responsável e assinatura.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-inventory">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Conferência física</p>
+            <h2>Inventário</h2>
+            <p>Compare o saldo do sistema com a contagem real e trate divergências.</p>
+          </div>
+          <div class="pageHeaderActions">
+            <button class="ghostButton" id="exportInventory">Exportar planilha CSV</button>
+          </div>
+        </div>
+        <div class="inventoryHero">
+          <article class="inventoryStart">
+            <p class="eyebrow">Inventário cíclico</p>
+            <h3>Comece uma nova contagem por localização.</h3>
+            <p>O sistema cria uma sessão datada, apresenta o saldo esperado e permite justificar diferenças antes do ajuste.</p>
+            <button class="secondaryButton" id="startInventory">Iniciar nova contagem</button>
+          </article>
+          <div class="miniStats">
+            <article class="miniStat"><span>Última contagem</span><strong>24/07</strong></article>
+            <article class="miniStat"><span>Acuracidade</span><strong>98,6%</strong></article>
+            <article class="miniStat"><span>Divergências</span><strong>2</strong></article>
+            <article class="miniStat"><span>Itens pendentes</span><strong id="inventoryPending">0</strong></article>
+          </div>
+        </div>
+        <article class="panel">
+          <div class="panelHeader">
+            <div>
+              <h3>Contagem atual</h3>
+              <p>Informe a quantidade encontrada para cada material</p>
+            </div>
+            <button class="primaryButton" id="finishInventory" disabled>Finalizar inventário</button>
+          </div>
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Número do CA</th>
+                  <th>Local</th>
+                  <th>Saldo esperado</th>
+                  <th>Contagem física</th>
+                  <th>Diferença</th>
+                  <th>Justificativa</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="page" id="page-alerts">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Prevenção ativa</p>
+            <h2>Alertas</h2>
+            <p>Prioridades de estoque, certificados e substituições programadas.</p>
+          </div>
+        </div>
+        <div class="stats">
+          <article class="statCard danger"><div class="statTop"><span>CA vencido</span><span class="statBadge">!</span></div><strong id="alertExpired">0</strong><small>Bloqueados para retirada</small></article>
+          <article class="statCard warning"><div class="statTop"><span>CA a vencer</span><span class="statBadge">V</span></div><strong id="alertSoon">0</strong><small>Próximos 60 dias</small></article>
+          <article class="statCard danger"><div class="statTop"><span>Estoque mínimo</span><span class="statBadge">E</span></div><strong id="alertCritical">0</strong><small>Reposição necessária</small></article>
+          <article class="statCard"><div class="statTop"><span>Trocas previstas</span><span class="statBadge">T</span></div><strong id="alertReplacements">3</strong><small>Próximos sete dias</small></article>
+        </div>
+        <article class="panel">
+          <div class="panelHeader"><div><h3>Fila de tratativas</h3><p>Resolva primeiro os itens de maior risco</p></div></div>
+          <div class="alertList" id="allAlerts"></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Rastreabilidade completa</p>
+            <h2>Histórico</h2>
+            <p>Movimentações com data, responsável, colaborador e comprovante.</p>
+          </div>
+          <div class="pageHeaderActions">
+            <button class="ghostButton" id="exportHistory">Exportar CSV</button>
+            <button class="primaryButton" id="backupData">Baixar cópia dos dados</button>
+          </div>
+        </div>
+        <div class="filters">
+          <input class="input" id="historySearch" type="search" placeholder="Pesquisar colaborador, material ou responsável">
+          <select class="select" id="historyType">
+            <option value="">Todos os tipos</option>
+            <option>Retirada</option>
+            <option>Entrada</option>
+            <option>Ajuste</option>
+            <option>Inventário</option>
+          </select>
+          <input class="input" id="historyDate" type="date" aria-label="Filtrar por data">
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data e hora</th>
+                <th>Tipo</th>
+                <th>Material</th>
+                <th>Quantidade</th>
+                <th>Colaborador</th>
+                <th>Responsável</th>
+                <th>Comprovante</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Administração</p>
+            <h2>Configurações</h2>
+            <p>Personalize a unidade, responsáveis e proteção dos registros.</p>
+          </div>
+        </div>
+        <div class="settingsGrid">
+          <article class="settingCard">
+            <h3>Dados da unidade</h3>
+            <p>Nome da operação, endereço e responsável que aparecem nos termos.</p>
+            <button class="ghostButton" id="editUnit">Configurar</button>
+          </article>
+          <article class="settingCard">
+            <h3>Cópia de segurança</h3>
+            <p>Exporte todos os cadastros, saldos, assinaturas e movimentações.</p>
+            <button class="ghostButton" id="backupDataSettings">Baixar dados</button>
+          </article>
+          <article class="settingCard">
+            <h3>Dados demonstrativos</h3>
+            <p>Restaure os exemplos originais para treinamento da equipe.</p>
+            <button class="dangerButton" id="resetData">Restaurar exemplos</button>
+          </article>
+        </div>
+        <article class="panel" style="margin-top:18px">
+          <div class="panelHeader"><div><h3>Regras recomendadas</h3><p>Controles já considerados nesta versão</p></div></div>
+          <div class="alertList">
+            <div class="alertItem"><div class="alertIcon">01</div><div><strong>Rastreabilidade por lote e CA</strong><p>Cada saída preserva os dados vigentes no momento da entrega.</p></div></div>
+            <div class="alertItem"><div class="alertIcon">02</div><div><strong>Bloqueio preventivo</strong><p>Itens sem saldo ou com CA vencido não podem ser selecionados para retirada.</p></div></div>
+            <div class="alertItem"><div class="alertIcon">03</div><div><strong>Vida útil individual</strong><p>A próxima substituição é calculada a partir do prazo definido no cadastro.</p></div></div>
+            <div class="alertItem"><div class="alertIcon">04</div><div><strong>Termo arquivável</strong><p>A entrega gera comprovante com assinatura eletrônica e pode ser impressa em PDF.</p></div></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modalBackdrop" id="materialModal" role="dialog" aria-modal="true" aria-labelledby="materialModalTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3 id="materialModalTitle">Novo material</h3>
+        <button class="iconButton" type="button" data-close-modal aria-label="Fechar">×</button>
+      </div>
+      <form id="materialForm">
+        <div class="modalBody">
+          <div class="formGrid">
+            <div class="field full">
+              <label for="materialDescription">Descrição <span class="required">*</span></label>
+              <input class="input" id="materialDescription" required>
+            </div>
+            <div class="field">
+              <label for="materialCode">Código interno <span class="required">*</span></label>
+              <input class="input" id="materialCode" required>
+            </div>
+            <div class="field">
+              <label for="materialCategory">Categoria <span class="required">*</span></label>
+              <select class="select" id="materialCategory" required>
+                <option value="">Selecione</option>
+                <option>Proteção da cabeça</option>
+                <option>Proteção auditiva</option>
+                <option>Proteção das mãos</option>
+                <option>Proteção dos pés</option>
+                <option>Proteção respiratória</option>
+                <option>Proteção visual</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="materialCa">Número do CA <span class="required">*</span></label>
+              <input class="input" id="materialCa" required inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="materialCaValidity">Validade do CA <span class="required">*</span></label>
+              <input class="input" id="materialCaValidity" type="date" required>
+            </div>
+            <div class="field">
+              <label for="materialLot">Lote <span class="required">*</span></label>
+              <input class="input" id="materialLot" required>
+            </div>
+            <div class="field">
+              <label for="materialLotValidity">Validade do lote <span class="required">*</span></label>
+              <input class="input" id="materialLotValidity" type="date" required>
+            </div>
+            <div class="field">
+              <label for="materialStock">Saldo inicial <span class="required">*</span></label>
+              <input class="input" id="materialStock" type="number" min="0" required>
+            </div>
+            <div class="field">
+              <label for="materialMinimum">Estoque mínimo <span class="required">*</span></label>
+              <input class="input" id="materialMinimum" type="number" min="0" required>
+            </div>
+            <div class="field">
+              <label for="materialLifetime">Vida útil em dias <span class="required">*</span></label>
+              <input class="input" id="materialLifetime" type="number" min="1" required>
+            </div>
+            <div class="field">
+              <label for="materialLocation">Localização <span class="required">*</span></label>
+              <input class="input" id="materialLocation" required placeholder="Corredor A · Prateleira 01">
+            </div>
+            <div class="field full">
+              <label for="materialNotes">Observações de uso</label>
+              <textarea class="textarea" id="materialNotes" placeholder="Tamanho, fabricante, condições de conservação ou orientação específica"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modalFooter">
+          <button class="ghostButton" type="button" data-close-modal>Cancelar</button>
+          <button class="primaryButton" type="submit">Salvar material</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modalBackdrop" id="unitModal" role="dialog" aria-modal="true" aria-labelledby="unitModalTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3 id="unitModalTitle">Dados da unidade</h3>
+        <button class="iconButton" type="button" data-close-unit aria-label="Fechar">×</button>
+      </div>
+      <form id="unitForm">
+        <div class="modalBody">
+          <div class="formGrid">
+            <div class="field">
+              <label for="unitName">Nome da unidade</label>
+              <input class="input" id="unitName" required>
+            </div>
+            <div class="field">
+              <label for="unitResponsible">Responsável</label>
+              <input class="input" id="unitResponsible" required>
+            </div>
+            <div class="field full">
+              <label for="unitAddress">Endereço</label>
+              <input class="input" id="unitAddress" required>
+            </div>
+          </div>
+        </div>
+        <div class="modalFooter">
+          <button class="ghostButton" type="button" data-close-unit>Cancelar</button>
+          <button class="primaryButton" type="submit">Salvar configurações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="printTerm" style="display:none"></div>
+  <div class="toastStack" id="toastStack" aria-live="polite"></div>
+
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script>
+    const STORAGE_KEY = "sese_epi_manager_v1";
+    const THEME_KEY = "sese_epi_theme";
+
+    const seedData = {
+      settings: {
+        unit: "Unidade Operacional SESÉ",
+        address: "Centro Logístico",
+        responsible: "Responsável SESMT"
+      },
+      materials: [
+        { id: 1, code: "EPI001", description: "Capacete de segurança azul", category: "Proteção da cabeça", ca: "498", caValidity: "2027-10-30", lot: "CAP2607A", lotValidity: "2030-07-01", stock: 48, minimum: 15, lifetime: 365, location: "A01 · P02", notes: "Classe B com jugular" },
+        { id: 2, code: "EPI002", description: "Luva nitrílica anticorte", category: "Proteção das mãos", ca: "44512", caValidity: "2027-03-15", lot: "LUV2606C", lotValidity: "2029-06-10", stock: 12, minimum: 20, lifetime: 90, location: "B03 · P01", notes: "Tamanhos M e G" },
+        { id: 3, code: "EPI003", description: "Protetor auricular tipo plug", category: "Proteção auditiva", ca: "5745", caValidity: "2026-09-18", lot: "AUR2604B", lotValidity: "2028-04-12", stock: 86, minimum: 30, lifetime: 180, location: "A02 · P04", notes: "Cordão em PVC" },
+        { id: 4, code: "EPI004", description: "Óculos de proteção incolor", category: "Proteção visual", ca: "10344", caValidity: "2026-07-10", lot: "OCU2512D", lotValidity: "2028-12-09", stock: 21, minimum: 18, lifetime: 180, location: "A02 · P02", notes: "Lente antirrisco" },
+        { id: 5, code: "EPI005", description: "Botina de segurança com biqueira", category: "Proteção dos pés", ca: "28498", caValidity: "2028-02-08", lot: "BOT2607A", lotValidity: "2031-01-12", stock: 9, minimum: 12, lifetime: 365, location: "C01 · P03", notes: "Numeração 35 a 45" },
+        { id: 6, code: "EPI006", description: "Respirador semifacial PFF2", category: "Proteção respiratória", ca: "39210", caValidity: "2027-05-20", lot: "RES2606F", lotValidity: "2028-06-01", stock: 64, minimum: 25, lifetime: 7, location: "B01 · P05", notes: "Uso individual" }
+      ],
+      history: [
+        { id: 101, date: "2026-07-28T10:42:00", type: "Retirada", material: "Capacete de segurança azul", qty: 1, employee: "Carlos Henrique", responsible: "Responsável SESMT", signed: true },
+        { id: 102, date: "2026-07-28T09:18:00", type: "Retirada", material: "Luva nitrílica anticorte", qty: 2, employee: "Mariana Alves", responsible: "Responsável SESMT", signed: true },
+        { id: 103, date: "2026-07-27T16:05:00", type: "Entrada", material: "Respirador semifacial PFF2", qty: 50, employee: "Fornecedor homologado", responsible: "Almoxarifado", signed: false },
+        { id: 104, date: "2026-07-26T14:32:00", type: "Inventário", material: "Contagem geral", qty: 6, employee: "Unidade Operacional", responsible: "Responsável SESMT", signed: false },
+        { id: 105, date: "2026-07-24T11:10:00", type: "Ajuste", material: "Botina de segurança com biqueira", qty: -1, employee: "Divergência de contagem", responsible: "Almoxarifado", signed: false }
+      ],
+      withdrawals: []
+    };
+
+    let state = loadState();
+    let editingMaterialId = null;
+    let withdrawalSelection = [];
+    let inventoryActive = false;
+    let signatureStarted = false;
+
+    function cloneSeed() {
+      return JSON.parse(JSON.stringify(seedData));
+    }
+
+    function loadState() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : cloneSeed();
+      } catch {
+        return cloneSeed();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function applyTheme(theme) {
+      const dark = theme === "dark";
+      document.documentElement.classList.toggle("darkTheme", dark);
+      document.getElementById("themeToggle").setAttribute("aria-pressed", String(dark));
+      document.getElementById("themeToggle").setAttribute("aria-label", dark ? "Ativar modo claro" : "Ativar modo escuro");
+      document.getElementById("themeLabel").textContent = dark ? "Modo claro" : "Modo escuro";
+      document.getElementById("themeIcon").textContent = dark ? "☀" : "◐";
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#0b1522" : "#073b87");
+    }
+
+    function initializeTheme() {
+      applyTheme(localStorage.getItem(THEME_KEY) || "light");
+    }
+
+    function toggleTheme() {
+      const nextTheme = document.documentElement.classList.contains("darkTheme") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, nextTheme);
+      applyTheme(nextTheme);
+      resizeCanvas();
+    }
+
+    function formatDate(dateString, includeTime = false) {
+      if (!dateString) return "Não informada";
+      const date = new Date(dateString.includes("T") ? dateString : dateString + "T12:00:00");
+      return new Intl.DateTimeFormat("pt-BR", includeTime
+        ? { dateStyle: "short", timeStyle: "short" }
+        : { dateStyle: "short" }
+      ).format(date);
+    }
+
+    function daysUntil(dateString) {
+      const end = new Date(dateString + "T23:59:59");
+      const now = new Date();
+      return Math.ceil((end - now) / 86400000);
+    }
+
+    function calculateNextChange(lifetime, baseDate = new Date()) {
+      const date = new Date(baseDate);
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() + Number(lifetime || 0));
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function materialStatus(material) {
+      if (daysUntil(material.caValidity) < 0) return { key: "expired", label: "CA vencido", className: "danger" };
+      if (material.stock <= material.minimum) return { key: "critical", label: "Estoque crítico", className: "danger" };
+      if (daysUntil(material.caValidity) <= 60) return { key: "soon", label: "CA a vencer", className: "warning" };
+      return { key: "normal", label: "Regular", className: "" };
+    }
+
+    function showToast(message, error = false) {
+      const toast = document.createElement("div");
+      toast.className = "toast" + (error ? " error" : "");
+      toast.innerHTML = `<strong>${error ? "!" : "✓"}</strong><span>${message}</span>`;
+      document.getElementById("toastStack").appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function navigate(page) {
+      document.querySelectorAll(".page").forEach(section => section.classList.remove("active"));
+      document.querySelectorAll(".navButton").forEach(button => button.classList.remove("active"));
+      document.getElementById(`page-${page}`).classList.add("active");
+      const activeButton = document.querySelector(`.navButton[data-page="${page}"]`);
+      if (activeButton) activeButton.classList.add("active");
+      const titles = {
+        dashboard: "Painel geral",
+        materials: "Materiais",
+        withdrawal: "Nova retirada",
+        inventory: "Inventário",
+        alerts: "Alertas",
+        history: "Histórico",
+        settings: "Configurações"
+      };
+      document.getElementById("pageTitle").textContent = titles[page];
+      closeMobileMenu();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (page === "withdrawal") resizeCanvas();
+    }
+
+    function renderDashboard() {
+      const totalStock = state.materials.reduce((sum, material) => sum + Number(material.stock), 0);
+      const critical = state.materials.filter(material => material.stock <= material.minimum).length;
+      const expiring = state.materials.filter(material => {
+        const days = daysUntil(material.caValidity);
+        return days >= 0 && days <= 60;
+      }).length;
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const monthly = state.history.filter(item => item.type === "Retirada" && item.date.slice(0, 7) === currentMonth).length;
+      document.getElementById("statStock").textContent = totalStock.toLocaleString("pt-BR");
+      document.getElementById("statCritical").textContent = critical;
+      document.getElementById("statExpiring").textContent = expiring;
+      document.getElementById("statWithdrawals").textContent = monthly;
+
+      const chartValues = [13, 18, 11, 25, 31, 16, 22];
+      const chartLabels = ["Qua", "Qui", "Sex", "Sáb", "Dom", "Seg", "Hoje"];
+      const max = Math.max(...chartValues);
+      document.getElementById("barChart").innerHTML = chartValues.map((value, index) => `
+        <div class="barItem" title="${value} entregas">
+          <div class="bar" style="height:${Math.max(12, value / max * 145)}px"></div>
+          <span>${chartLabels[index]}</span>
+        </div>
+      `).join("");
+
+      const alerts = buildAlerts().slice(0, 3);
+      document.getElementById("dashboardAlerts").innerHTML = alerts.length ? alerts.map(alertTemplate).join("") : `
+        <div class="emptyState"><strong>Operação em dia</strong>Nenhum alerta prioritário.</div>
+      `;
+
+      document.getElementById("recentActivity").innerHTML = state.history
+        .slice()
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 4)
+        .map(item => `
+          <div class="activityItem">
+            <div class="activityIcon">${escapeHtml(item.type.slice(0, 1))}</div>
+            <div style="flex:1">
+              <strong>${escapeHtml(item.type)} · ${escapeHtml(item.material)}</strong>
+              <p>${escapeHtml(item.employee)} · ${formatDate(item.date, true)}</p>
+            </div>
+            <span class="pill">${item.qty > 0 ? "+" : ""}${item.qty}</span>
+          </div>
+        `).join("");
+    }
+
+    function buildAlerts() {
+      const alerts = [];
+      state.materials.forEach(material => {
+        const caDays = daysUntil(material.caValidity);
+        const lotDays = daysUntil(material.lotValidity);
+        if (caDays < 0) {
+          alerts.push({ type: "danger", icon: "CA", title: `${material.description}: CA vencido`, text: `Certificado ${material.ca} venceu em ${formatDate(material.caValidity)}. Item bloqueado para entrega.` });
+        } else if (caDays <= 60) {
+          alerts.push({ type: "warning", icon: "CA", title: `${material.description}: CA próximo do vencimento`, text: `Faltam ${caDays} dias para o vencimento do certificado ${material.ca}.` });
+        }
+        if (material.stock <= material.minimum) {
+          alerts.push({ type: "danger", icon: "E", title: `${material.description}: estoque crítico`, text: `Saldo atual de ${material.stock} unidades. Estoque mínimo definido em ${material.minimum}.` });
+        }
+        if (lotDays >= 0 && lotDays <= 90) {
+          alerts.push({ type: "warning", icon: "L", title: `${material.description}: lote próximo do vencimento`, text: `Lote ${material.lot} vence em ${formatDate(material.lotValidity)}.` });
+        }
+      });
+      return alerts;
+    }
+
+    function alertTemplate(alert) {
+      return `
+        <div class="alertItem ${alert.type}">
+          <div class="alertIcon">${escapeHtml(alert.icon)}</div>
+          <div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.text)}</p></div>
+        </div>
+      `;
+    }
+
+    function renderMaterials() {
+      const search = document.getElementById("materialSearch").value.trim().toLowerCase();
+      const category = document.getElementById("categoryFilter").value;
+      const filter = document.getElementById("stockFilter").value;
+      const materials = state.materials.filter(material => {
+        const searchable = `${material.description} ${material.code} ${material.lot} ${material.ca}`.toLowerCase();
+        const status = materialStatus(material);
+        return (!search || searchable.includes(search))
+          && (!category || material.category === category)
+          && (!filter || status.key === filter);
+      });
+
+      document.getElementById("materialsTable").innerHTML = materials.length ? materials.map(material => {
+        const status = materialStatus(material);
+        return `
+          <tr>
+            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
+            <td><strong>${escapeHtml(material.ca)}</strong></td>
+            <td>${escapeHtml(material.lot)}</td>
+            <td>${formatDate(material.caValidity)}</td>
+            <td><strong>${material.stock}</strong> un.</td>
+            <td>${escapeHtml(material.location)}</td>
+            <td><span class="pill ${status.className}">${status.label}</span></td>
+            <td><div class="actionsCell">
+              <button class="miniButton" type="button" title="Editar" onclick="editMaterial(${material.id})">✎</button>
+              <button class="miniButton" type="button" title="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
+              <button class="miniButton" type="button" title="Excluir" onclick="deleteMaterial(${material.id})">×</button>
+            </div></td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="8"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
+      populateWithdrawalMaterials();
+    }
+
+    function populateWithdrawalMaterials() {
+      const select = document.getElementById("withdrawalMaterial");
+      const current = select.value;
+      const available = state.materials.filter(material => material.stock > 0 && daysUntil(material.caValidity) >= 0);
+      select.innerHTML = `<option value="">Selecione um material</option>` + available.map(material => `
+        <option value="${material.id}">${escapeHtml(material.description)} · CA ${escapeHtml(material.ca)} · ${material.stock} un.</option>
+      `).join("");
+      if (available.some(material => String(material.id) === current)) select.value = current;
+      updateWithdrawalMaterialInfo();
+    }
+
+    function updateWithdrawalMaterialInfo() {
+      const materialId = Number(document.getElementById("withdrawalMaterial").value);
+      const material = state.materials.find(item => item.id === materialId);
+      document.getElementById("withdrawalCa").textContent = material ? material.ca : "Selecione um EPI";
+      document.getElementById("withdrawalLifetime").textContent = material ? `${material.lifetime} dias` : "Selecione um EPI";
+      document.getElementById("withdrawalNextChange").textContent = material
+        ? formatDate(calculateNextChange(material.lifetime))
+        : "Selecione um EPI";
+    }
+
+    function openMaterialModal(material = null) {
+      editingMaterialId = material ? material.id : null;
+      document.getElementById("materialModalTitle").textContent = material ? "Editar material" : "Novo material";
+      document.getElementById("materialForm").reset();
+      if (material) {
+        document.getElementById("materialDescription").value = material.description;
+        document.getElementById("materialCode").value = material.code;
+        document.getElementById("materialCategory").value = material.category;
+        document.getElementById("materialCa").value = material.ca;
+        document.getElementById("materialCaValidity").value = material.caValidity;
+        document.getElementById("materialLot").value = material.lot;
+        document.getElementById("materialLotValidity").value = material.lotValidity;
+        document.getElementById("materialStock").value = material.stock;
+        document.getElementById("materialMinimum").value = material.minimum;
+        document.getElementById("materialLifetime").value = material.lifetime;
+        document.getElementById("materialLocation").value = material.location;
+        document.getElementById("materialNotes").value = material.notes || "";
+      }
+      document.getElementById("materialModal").classList.add("open");
+      setTimeout(() => document.getElementById("materialDescription").focus(), 80);
+    }
+
+    function closeMaterialModal() {
+      document.getElementById("materialModal").classList.remove("open");
+      editingMaterialId = null;
+    }
+
+    window.editMaterial = function(id) {
+      openMaterialModal(state.materials.find(material => material.id === id));
+    };
+
+    window.addStock = function(id) {
+      const material = state.materials.find(item => item.id === id);
+      const value = prompt(`Informe a quantidade recebida para ${material.description}:`);
+      const quantity = Number(value);
+      if (!Number.isInteger(quantity) || quantity <= 0) return;
+      material.stock += quantity;
+      state.history.unshift({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        type: "Entrada",
+        material: material.description,
+        qty: quantity,
+        employee: "Recebimento de estoque",
+        responsible: state.settings.responsible,
+        signed: false
+      });
+      saveState();
+      renderAll();
+      showToast("Entrada registrada com sucesso.");
+    };
+
+    window.deleteMaterial = function(id) {
+      const material = state.materials.find(item => item.id === id);
+      if (!confirm(`Deseja excluir o cadastro de ${material.description}? O histórico será preservado.`)) return;
+      state.materials = state.materials.filter(item => item.id !== id);
+      saveState();
+      renderAll();
+      showToast("Material excluído. O histórico foi preservado.");
+    };
+
+    function renderWithdrawalSelection() {
+      const container = document.getElementById("withdrawalItems");
+      container.innerHTML = withdrawalSelection.length ? withdrawalSelection.map((entry, index) => `
+        <div class="activityItem">
+          <div class="activityIcon">${String(index + 1).padStart(2, "0")}</div>
+          <div style="flex:1"><strong>${escapeHtml(entry.description)}</strong><p>CA ${escapeHtml(entry.ca)} · Lote ${escapeHtml(entry.lot)} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
+          <strong>${entry.qty} un.</strong>
+          <button class="miniButton" type="button" onclick="removeWithdrawalItem(${index})">×</button>
+        </div>
+      `).join("") : `<div class="emptyState" style="padding:22px"><strong>Nenhum item adicionado</strong>Selecione o material e clique no botão de adição.</div>`;
+      document.getElementById("summaryItems").textContent = withdrawalSelection.reduce((sum, item) => sum + item.qty, 0);
+      if (withdrawalSelection.length) {
+        document.getElementById("summaryCa").textContent = withdrawalSelection
+          .map(item => item.ca)
+          .filter((ca, index, list) => list.indexOf(ca) === index)
+          .join(", ");
+        const nextChange = withdrawalSelection
+          .map(item => item.nextChange)
+          .sort()[0];
+        document.getElementById("summaryValidity").textContent = formatDate(nextChange);
+      } else {
+        document.getElementById("summaryCa").textContent = "Sem item";
+        document.getElementById("summaryValidity").textContent = "Sem item";
+      }
+    }
+
+    window.removeWithdrawalItem = function(index) {
+      withdrawalSelection.splice(index, 1);
+      renderWithdrawalSelection();
+    };
+
+    function resetWithdrawal() {
+      withdrawalSelection = [];
+      signatureStarted = false;
+      document.getElementById("signatureBox").classList.remove("signed");
+      document.getElementById("withdrawalForm").reset();
+      document.getElementById("withdrawalQty").value = 1;
+      clearCanvas();
+      updateWithdrawalMaterialInfo();
+      renderWithdrawalSelection();
+      updateWithdrawalSummary();
+    }
+
+    function updateWithdrawalSummary() {
+      document.getElementById("summaryEmployee").textContent = document.getElementById("employeeName").value || "Não informado";
+      document.getElementById("summaryId").textContent = document.getElementById("employeeId").value || "Não informada";
+    }
+
+    function renderInventory() {
+      document.getElementById("inventoryPending").textContent = inventoryActive ? state.materials.length : 0;
+      document.getElementById("finishInventory").disabled = !inventoryActive;
+      document.getElementById("inventoryTable").innerHTML = state.materials.map(material => `
+        <tr>
+          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>${escapeHtml(material.code)} · ${escapeHtml(material.lot)}</small></div></div></td>
+          <td><span class="caValue">CA ${escapeHtml(material.ca)}</span></td>
+          <td>${escapeHtml(material.location)}</td>
+          <td><strong>${material.stock}</strong></td>
+          <td><input class="input inventoryCount" data-id="${material.id}" type="number" min="0" ${inventoryActive ? "" : "disabled"} placeholder="Contar"></td>
+          <td><strong class="inventoryDifference" data-id="${material.id}">—</strong></td>
+          <td><input class="input inventoryReason" data-id="${material.id}" ${inventoryActive ? "" : "disabled"} placeholder="Justifique se houver diferença"></td>
+        </tr>
+      `).join("");
+
+      document.querySelectorAll(".inventoryCount").forEach(input => {
+        input.addEventListener("input", () => {
+          const material = state.materials.find(item => item.id === Number(input.dataset.id));
+          const output = document.querySelector(`.inventoryDifference[data-id="${input.dataset.id}"]`);
+          if (input.value === "") {
+            output.textContent = "—";
+            return;
+          }
+          const difference = Number(input.value) - material.stock;
+          output.textContent = difference > 0 ? `+${difference}` : difference;
+          output.style.color = difference === 0 ? "var(--success)" : "var(--danger)";
+        });
+      });
+    }
+
+    function renderAlerts() {
+      const alerts = buildAlerts();
+      const expired = state.materials.filter(material => daysUntil(material.caValidity) < 0).length;
+      const soon = state.materials.filter(material => daysUntil(material.caValidity) >= 0 && daysUntil(material.caValidity) <= 60).length;
+      const critical = state.materials.filter(material => material.stock <= material.minimum).length;
+      document.getElementById("alertExpired").textContent = expired;
+      document.getElementById("alertSoon").textContent = soon;
+      document.getElementById("alertCritical").textContent = critical;
+      document.getElementById("allAlerts").innerHTML = alerts.length ? alerts.map(alertTemplate).join("") : `<div class="emptyState"><strong>Nenhum alerta aberto</strong>Todos os controles estão dentro dos parâmetros definidos.</div>`;
+      document.querySelector('.navButton[data-page="alerts"]').dataset.count = alerts.length;
+    }
+
+    function renderHistory() {
+      const search = document.getElementById("historySearch").value.trim().toLowerCase();
+      const type = document.getElementById("historyType").value;
+      const date = document.getElementById("historyDate").value;
+      const records = state.history
+        .slice()
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .filter(item => {
+          const searchable = `${item.material} ${item.employee} ${item.responsible}`.toLowerCase();
+          return (!search || searchable.includes(search))
+            && (!type || item.type === type)
+            && (!date || item.date.slice(0, 10) === date);
+        });
+
+      document.getElementById("historyTable").innerHTML = records.length ? records.map(item => `
+        <tr>
+          <td>${formatDate(item.date, true)}</td>
+          <td><span class="pill">${escapeHtml(item.type)}</span></td>
+          <td><strong>${escapeHtml(item.material)}</strong></td>
+          <td>${item.qty > 0 ? "+" : ""}${item.qty}</td>
+          <td>${escapeHtml(item.employee)}</td>
+          <td>${escapeHtml(item.responsible)}</td>
+          <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Abrir termo</button>` : "Não aplicável"}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="7"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
+    }
+
+    function renderSettings() {
+      document.getElementById("unitName").value = state.settings.unit;
+      document.getElementById("unitAddress").value = state.settings.address;
+      document.getElementById("unitResponsible").value = state.settings.responsible;
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderMaterials();
+      renderInventory();
+      renderAlerts();
+      renderHistory();
+      renderSettings();
+      renderWithdrawalSelection();
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function toCsv(rows) {
+      return "\uFEFF" + rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";")).join("\n");
+    }
+
+    function exportMaterials() {
+      if (typeof XLSX === "undefined") {
+        showToast("Não foi possível carregar o recurso de Excel.", true);
+        return;
+      }
+      const rows = [["Código", "Descrição", "Categoria", "Número do CA", "Validade do CA", "Lote", "Validade do lote", "Saldo", "Estoque mínimo", "Vida útil em dias", "Localização", "Observações"]];
+      state.materials.forEach(item => rows.push([
+        item.code,
+        item.description,
+        item.category,
+        item.ca,
+        item.caValidity,
+        item.lot,
+        item.lotValidity,
+        Number(item.stock),
+        Number(item.minimum),
+        Number(item.lifetime),
+        item.location,
+        item.notes || ""
+      ]));
+      const sheet = XLSX.utils.aoa_to_sheet(rows);
+      sheet["!autofilter"] = { ref: sheet["!ref"] };
+      sheet["!freeze"] = { xSplit: 0, ySplit: 1 };
+      sheet["!cols"] = [
+        { wch: 15 },
+        { wch: 36 },
+        { wch: 27 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 19 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 20 },
+        { wch: 24 },
+        { wch: 40 }
+      ];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "MATERIAIS");
+      XLSX.writeFile(workbook, `materiais_epi_sese_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("Planilha de materiais exportada com sucesso.");
+    }
+
+    const materialColumnAliases = {
+      code: ["codigo", "codigo interno", "cod", "id material"],
+      description: ["descricao", "material", "epi", "nome do material"],
+      category: ["categoria", "tipo", "grupo"],
+      ca: ["numero do ca", "ca", "certificado de aprovacao", "certificado"],
+      caValidity: ["validade do ca", "validade ca", "vencimento do ca", "vencimento ca"],
+      lot: ["lote", "numero do lote"],
+      lotValidity: ["validade do lote", "validade lote", "vencimento do lote", "vencimento lote"],
+      stock: ["saldo", "estoque", "quantidade", "quantidade em estoque"],
+      minimum: ["estoque minimo", "saldo minimo", "minimo"],
+      lifetime: ["vida util em dias", "vida util", "prazo de troca em dias", "prazo de troca"],
+      location: ["localizacao", "local", "endereco de estoque"],
+      notes: ["observacoes", "observacao", "notas", "orientacoes"]
+    };
+
+    function normalizeColumnName(value) {
+      return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+    }
+
+    function normalizedRow(row) {
+      return Object.entries(row).reduce((output, [key, value]) => {
+        output[normalizeColumnName(key)] = value;
+        return output;
+      }, {});
+    }
+
+    function importedValue(row, field) {
+      const alias = materialColumnAliases[field].find(name => Object.prototype.hasOwnProperty.call(row, name));
+      return alias ? row[alias] : "";
+    }
+
+    function importedText(value) {
+      return String(value ?? "").trim();
+    }
+
+    function importedNumber(value) {
+      if (typeof value === "number") return value;
+      const normalized = String(value ?? "").trim().replace(/\s/g, "").replace(",", ".");
+      return normalized === "" ? NaN : Number(normalized);
+    }
+
+    function importedDate(value) {
+      if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        return value.toISOString().slice(0, 10);
+      }
+      if (typeof value === "number" && typeof XLSX !== "undefined") {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (parsed) {
+          return `${parsed.y}-${String(parsed.m).padStart(2, "0")}-${String(parsed.d).padStart(2, "0")}`;
+        }
+      }
+      const text = importedText(value);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const brazilian = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+      if (brazilian) {
+        return `${brazilian[3]}-${brazilian[2].padStart(2, "0")}-${brazilian[1].padStart(2, "0")}`;
+      }
+      const parsed = new Date(text);
+      return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+    }
+
+    function prepareImportedMaterial(sourceRow, existing, rowNumber) {
+      const row = normalizedRow(sourceRow);
+      const valueOrExisting = (field, parser = importedText) => {
+        const value = importedValue(row, field);
+        if (importedText(value) === "" && existing) return existing[field];
+        return parser(value);
+      };
+      const material = {
+        id: existing ? existing.id : Date.now() + rowNumber,
+        code: valueOrExisting("code"),
+        description: valueOrExisting("description"),
+        category: valueOrExisting("category"),
+        ca: valueOrExisting("ca"),
+        caValidity: valueOrExisting("caValidity", importedDate),
+        lot: valueOrExisting("lot"),
+        lotValidity: valueOrExisting("lotValidity", importedDate),
+        stock: valueOrExisting("stock", importedNumber),
+        minimum: valueOrExisting("minimum", importedNumber),
+        lifetime: valueOrExisting("lifetime", importedNumber),
+        location: valueOrExisting("location"),
+        notes: valueOrExisting("notes")
+      };
+      const textFields = ["code", "description", "category", "ca", "caValidity", "lot", "lotValidity", "location"];
+      const textMissing = textFields.some(field => importedText(material[field]) === "");
+      const numbersInvalid = !Number.isFinite(material.stock)
+        || material.stock < 0
+        || !Number.isFinite(material.minimum)
+        || material.minimum < 0
+        || !Number.isFinite(material.lifetime)
+        || material.lifetime < 1;
+      return {
+        material,
+        valid: !textMissing && !numbersInvalid,
+        rowNumber
+      };
+    }
+
+    async function importMaterialsFromExcel(file) {
+      if (!file) return;
+      if (typeof XLSX === "undefined") {
+        showToast("Não foi possível carregar o recurso de Excel.", true);
+        return;
+      }
+      try {
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: true });
+        if (!rows.length) {
+          showToast("A planilha não possui materiais para importar.", true);
+          return;
+        }
+
+        const existingByCode = new Map(state.materials.map(item => [normalizeColumnName(item.code), item]));
+        const seenCodes = new Set();
+        const prepared = [];
+        let rejected = 0;
+        let added = 0;
+        let updated = 0;
+
+        rows.forEach((sourceRow, index) => {
+          const normalized = normalizedRow(sourceRow);
+          const code = normalizeColumnName(importedValue(normalized, "code"));
+          const existing = existingByCode.get(code);
+          const result = prepareImportedMaterial(sourceRow, existing, index + 2);
+          if (!code || seenCodes.has(code) || !result.valid) {
+            rejected += 1;
+            return;
+          }
+          seenCodes.add(code);
+          prepared.push({ ...result, existing: Boolean(existing) });
+          if (existing) updated += 1;
+          else added += 1;
+        });
+
+        if (!prepared.length) {
+          showToast(`Nenhum material válido encontrado. Linhas rejeitadas: ${rejected}.`, true);
+          return;
+        }
+
+        const message = `Foram encontrados ${added} materiais novos, ${updated} atualizações e ${rejected} linhas rejeitadas. Deseja aplicar os registros válidos?`;
+        if (!confirm(message)) return;
+
+        prepared.forEach(entry => {
+          if (entry.existing) {
+            const index = state.materials.findIndex(item => item.id === entry.material.id);
+            state.materials[index] = entry.material;
+          } else {
+            state.materials.push(entry.material);
+          }
+        });
+        saveState();
+        renderAll();
+        showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updated}. Rejeitados: ${rejected}.`);
+      } catch {
+        showToast("Não foi possível ler a planilha. Verifique o arquivo e tente novamente.", true);
+      } finally {
+        document.getElementById("importMaterialsFile").value = "";
+      }
+    }
+
+    function exportInventory() {
+      const rows = [["Data do inventário", "Código", "Descrição", "Número do CA", "Validade do CA", "Lote", "Localização", "Saldo esperado"]];
+      const inventoryDate = formatDate(new Date().toISOString(), true);
+      state.materials.forEach(item => rows.push([inventoryDate, item.code, item.description, item.ca, item.caValidity, item.lot, item.location, item.stock]));
+      downloadFile("inventario_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
+    }
+
+    function exportHistory() {
+      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Responsável", "Assinado"]];
+      state.history.forEach(item => rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, item.responsible, item.signed ? "Sim" : "Não"]));
+      downloadFile("historico_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
+    }
+
+    function backupData() {
+      downloadFile(`copia_gestao_epi_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(state, null, 2), "application/json");
+      showToast("Cópia dos dados preparada para download.");
+    }
+
+    function buildTerm(withdrawal) {
+      const items = withdrawal.items.map(item => `
+        <tr><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.description)}</td><td style="padding:8px;border:1px solid #ccc">${item.qty}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.ca)}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.lot)}</td><td style="padding:8px;border:1px solid #ccc">${item.lifetime} dias</td><td style="padding:8px;border:1px solid #ccc">${formatDate(item.nextChange || calculateNextChange(item.lifetime, withdrawal.date))}</td></tr>
+      `).join("");
+      return `
+        <div style="font-family:Poppins,Arial,sans-serif;max-width:820px;margin:auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:5px solid #063c88;padding-bottom:18px">
+            <div><img src="${document.querySelector(".brandMark img").src}" alt="Logo SESÉ" style="display:block;width:150px;height:auto"><div style="font-size:11px;margin-top:7px">GESTÃO DE ESTOQUE EPI</div></div>
+            <div style="text-align:right"><strong>TERMO DE ENTREGA DE EPI</strong><div style="font-size:11px;margin-top:5px">Registro ${withdrawal.id}</div></div>
+          </div>
+          <div style="padding:22px 0;font-size:12px;line-height:1.6">
+            <p><strong>Unidade:</strong> ${escapeHtml(state.settings.unit)}<br><strong>Endereço:</strong> ${escapeHtml(state.settings.address)}</p>
+            <p><strong>Colaborador:</strong> ${escapeHtml(withdrawal.employee)}<br><strong>Chapa:</strong> ${escapeHtml(withdrawal.employeeId)}<br><strong>Área e turno:</strong> ${escapeHtml(withdrawal.area)} · ${escapeHtml(withdrawal.shift)}</p>
+            <table style="width:100%;border-collapse:collapse;margin:18px 0">
+              <thead><tr><th style="padding:8px;border:1px solid #ccc;text-align:left">EPI</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Quantidade</th><th style="padding:8px;border:1px solid #ccc;text-align:left">CA</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Lote</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Vida útil</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Próxima troca</th></tr></thead>
+              <tbody>${items}</tbody>
+            </table>
+            <p>Declaro que recebi os equipamentos descritos em perfeitas condições, fui orientado sobre uso, guarda, conservação e substituição e assumo o compromisso de utilizá los durante a atividade.</p>
+            <p><strong>Data e hora:</strong> ${formatDate(withdrawal.date, true)}<br><strong>Responsável pela entrega:</strong> ${escapeHtml(withdrawal.responsible)}</p>
+            <div style="display:flex;gap:40px;margin-top:50px">
+              <div style="flex:1;text-align:center;border-top:1px solid #333;padding-top:8px">Responsável pela entrega</div>
+              <div style="flex:1;text-align:center"><img src="${withdrawal.signature}" alt="Assinatura eletrônica" style="max-width:230px;max-height:85px;display:block;margin:-48px auto 4px"><div style="border-top:1px solid #333;padding-top:8px">Assinatura do colaborador</div></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.printHistoryTerm = function(historyId) {
+      const withdrawal = state.withdrawals.find(item => item.historyId === historyId);
+      if (!withdrawal) {
+        showToast("O comprovante completo deste registro demonstrativo não está disponível.", true);
+        return;
+      }
+      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal);
+      window.print();
+    };
+
+    const canvas = document.getElementById("signatureCanvas");
+    const context = canvas.getContext("2d");
+    let drawing = false;
+
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const saved = signatureStarted ? canvas.toDataURL() : null;
+      canvas.width = rect.width * ratio;
+      canvas.height = 190 * ratio;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.lineWidth = 2.2;
+      context.strokeStyle = document.documentElement.classList.contains("darkTheme") ? "#0874c9" : "#083b82";
+      if (saved) {
+        const image = new Image();
+        image.onload = () => context.drawImage(image, 0, 0, rect.width, 190);
+        image.src = saved;
+      }
+    }
+
+    function canvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      const source = event.touches ? event.touches[0] : event;
+      return { x: source.clientX - rect.left, y: source.clientY - rect.top };
+    }
+
+    function beginSignature(event) {
+      drawing = true;
+      signatureStarted = true;
+      document.getElementById("signatureBox").classList.add("signed");
+      const point = canvasPoint(event);
+      context.beginPath();
+      context.moveTo(point.x, point.y);
+      event.preventDefault();
+    }
+
+    function drawSignature(event) {
+      if (!drawing) return;
+      const point = canvasPoint(event);
+      context.lineTo(point.x, point.y);
+      context.stroke();
+      event.preventDefault();
+    }
+
+    function endSignature() {
+      drawing = false;
+    }
+
+    function clearCanvas() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      signatureStarted = false;
+      document.getElementById("signatureBox").classList.remove("signed");
+    }
+
+    function openMobileMenu() {
+      document.getElementById("sidebar").classList.add("open");
+      document.getElementById("mobileOverlay").classList.add("open");
+    }
+
+    function closeMobileMenu() {
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("mobileOverlay").classList.remove("open");
+    }
+
+    document.querySelectorAll("[data-page], [data-page-jump]").forEach(button => {
+      button.addEventListener("click", () => navigate(button.dataset.page || button.dataset.pageJump));
+    });
+
+    document.getElementById("menuButton").addEventListener("click", openMobileMenu);
+    document.getElementById("mobileOverlay").addEventListener("click", closeMobileMenu);
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
+    document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeMaterialModal));
+    document.getElementById("materialModal").addEventListener("click", event => {
+      if (event.target.id === "materialModal") closeMaterialModal();
+    });
+
+    document.getElementById("materialForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const wasEditing = Boolean(editingMaterialId);
+      const material = {
+        id: editingMaterialId || Date.now(),
+        description: document.getElementById("materialDescription").value.trim(),
+        code: document.getElementById("materialCode").value.trim(),
+        category: document.getElementById("materialCategory").value,
+        ca: document.getElementById("materialCa").value.trim(),
+        caValidity: document.getElementById("materialCaValidity").value,
+        lot: document.getElementById("materialLot").value.trim(),
+        lotValidity: document.getElementById("materialLotValidity").value,
+        stock: Number(document.getElementById("materialStock").value),
+        minimum: Number(document.getElementById("materialMinimum").value),
+        lifetime: Number(document.getElementById("materialLifetime").value),
+        location: document.getElementById("materialLocation").value.trim(),
+        notes: document.getElementById("materialNotes").value.trim()
+      };
+      if (editingMaterialId) {
+        const index = state.materials.findIndex(item => item.id === editingMaterialId);
+        state.materials[index] = material;
+      } else {
+        state.materials.push(material);
+      }
+      saveState();
+      closeMaterialModal();
+      renderAll();
+      showToast(wasEditing ? "Material atualizado com sucesso." : "Material cadastrado com sucesso.");
+    });
+
+    ["materialSearch", "categoryFilter", "stockFilter"].forEach(id => {
+      document.getElementById(id).addEventListener("input", renderMaterials);
+    });
+
+    ["historySearch", "historyType", "historyDate"].forEach(id => {
+      document.getElementById(id).addEventListener("input", renderHistory);
+    });
+
+    ["employeeName", "employeeId"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updateWithdrawalSummary);
+    });
+
+    document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
+
+    document.getElementById("addWithdrawalItem").addEventListener("click", () => {
+      const id = Number(document.getElementById("withdrawalMaterial").value);
+      const qty = Number(document.getElementById("withdrawalQty").value);
+      const material = state.materials.find(item => item.id === id);
+      if (!material || !Number.isInteger(qty) || qty <= 0) {
+        showToast("Selecione um material e informe uma quantidade válida.", true);
+        return;
+      }
+      const already = withdrawalSelection.filter(item => item.id === id).reduce((sum, item) => sum + item.qty, 0);
+      if (qty + already > material.stock) {
+        showToast(`Saldo insuficiente. Disponível: ${material.stock} unidades.`, true);
+        return;
+      }
+      withdrawalSelection.push({
+        id: material.id,
+        description: material.description,
+        qty,
+        ca: material.ca,
+        lot: material.lot,
+        lifetime: material.lifetime,
+        nextChange: calculateNextChange(material.lifetime),
+        reason: document.getElementById("withdrawalReason").value
+      });
+      renderWithdrawalSelection();
+      document.getElementById("withdrawalMaterial").value = "";
+      document.getElementById("withdrawalQty").value = 1;
+      updateWithdrawalMaterialInfo();
+    });
+
+    canvas.addEventListener("mousedown", beginSignature);
+    canvas.addEventListener("mousemove", drawSignature);
+    window.addEventListener("mouseup", endSignature);
+    canvas.addEventListener("touchstart", beginSignature, { passive: false });
+    canvas.addEventListener("touchmove", drawSignature, { passive: false });
+    canvas.addEventListener("touchend", endSignature);
+    document.getElementById("clearSignature").addEventListener("click", clearCanvas);
+    document.getElementById("cancelWithdrawal").addEventListener("click", () => setTimeout(resetWithdrawal));
+
+    document.getElementById("withdrawalForm").addEventListener("submit", event => {
+      event.preventDefault();
+      if (!withdrawalSelection.length) {
+        showToast("Adicione pelo menos um EPI à retirada.", true);
+        return;
+      }
+      if (!signatureStarted) {
+        showToast("A assinatura eletrônica é obrigatória.", true);
+        return;
+      }
+      if (!document.getElementById("acknowledgement").checked) {
+        showToast("Confirme a declaração de recebimento.", true);
+        return;
+      }
+
+      const now = new Date();
+      const historyId = Date.now();
+      const withdrawal = {
+        id: `RET${historyId}`,
+        historyId,
+        date: now.toISOString(),
+        employee: document.getElementById("employeeName").value.trim(),
+        employeeId: document.getElementById("employeeId").value.trim(),
+        area: document.getElementById("employeeArea").value,
+        shift: document.getElementById("employeeShift").value,
+        responsible: state.settings.responsible,
+        items: JSON.parse(JSON.stringify(withdrawalSelection)),
+        signature: canvas.toDataURL("image/png")
+      };
+
+      withdrawal.items.forEach(entry => {
+        const material = state.materials.find(item => item.id === entry.id);
+        material.stock -= entry.qty;
+      });
+      state.withdrawals.push(withdrawal);
+      state.history.unshift({
+        id: historyId,
+        date: withdrawal.date,
+        type: "Retirada",
+        material: withdrawal.items.map(item => item.description).join(" + "),
+        qty: withdrawal.items.reduce((sum, item) => sum + item.qty, 0),
+        employee: withdrawal.employee,
+        responsible: withdrawal.responsible,
+        signed: true
+      });
+      saveState();
+      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal);
+      renderAll();
+      resetWithdrawal();
+      showToast("Retirada finalizada e termo arquivado com sucesso.");
+      setTimeout(() => {
+        if (confirm("Deseja imprimir ou salvar o termo de entrega em PDF agora?")) window.print();
+      }, 150);
+    });
+
+    document.getElementById("startInventory").addEventListener("click", () => {
+      inventoryActive = true;
+      renderInventory();
+      showToast("Nova contagem iniciada.");
+    });
+
+    document.getElementById("finishInventory").addEventListener("click", () => {
+      const counts = Array.from(document.querySelectorAll(".inventoryCount"));
+      if (counts.some(input => input.value === "")) {
+        showToast("Preencha a contagem física de todos os materiais.", true);
+        return;
+      }
+      const missingReason = counts.some(input => {
+        const material = state.materials.find(item => item.id === Number(input.dataset.id));
+        const difference = Number(input.value) - material.stock;
+        const reason = document.querySelector(`.inventoryReason[data-id="${input.dataset.id}"]`).value.trim();
+        return difference !== 0 && !reason;
+      });
+      if (missingReason) {
+        showToast("Justifique todas as divergências encontradas.", true);
+        return;
+      }
+      counts.forEach(input => {
+        const material = state.materials.find(item => item.id === Number(input.dataset.id));
+        material.stock = Number(input.value);
+      });
+      state.history.unshift({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        type: "Inventário",
+        material: "Contagem geral finalizada",
+        qty: state.materials.length,
+        employee: state.settings.unit,
+        responsible: state.settings.responsible,
+        signed: false
+      });
+      inventoryActive = false;
+      saveState();
+      renderAll();
+      showToast("Inventário finalizado e saldos atualizados.");
+    });
+
+    document.getElementById("importMaterials").addEventListener("click", () => {
+      document.getElementById("importMaterialsFile").click();
+    });
+    document.getElementById("importMaterialsFile").addEventListener("change", event => {
+      importMaterialsFromExcel(event.target.files[0]);
+    });
+    document.getElementById("exportMaterials").addEventListener("click", exportMaterials);
+    document.getElementById("exportHistory").addEventListener("click", exportHistory);
+    document.getElementById("exportInventory").addEventListener("click", exportInventory);
+    document.getElementById("backupData").addEventListener("click", backupData);
+    document.getElementById("backupDataSettings").addEventListener("click", backupData);
+
+    document.getElementById("editUnit").addEventListener("click", () => {
+      renderSettings();
+      document.getElementById("unitModal").classList.add("open");
+    });
+    document.querySelectorAll("[data-close-unit]").forEach(button => button.addEventListener("click", () => {
+      document.getElementById("unitModal").classList.remove("open");
+    }));
+    document.getElementById("unitForm").addEventListener("submit", event => {
+      event.preventDefault();
+      state.settings.unit = document.getElementById("unitName").value.trim();
+      state.settings.address = document.getElementById("unitAddress").value.trim();
+      state.settings.responsible = document.getElementById("unitResponsible").value.trim();
+      saveState();
+      document.getElementById("unitModal").classList.remove("open");
+      renderAll();
+      showToast("Configurações atualizadas.");
+    });
+
+    document.getElementById("resetData").addEventListener("click", () => {
+      if (!confirm("Deseja restaurar os dados demonstrativos? Os registros atuais serão substituídos.")) return;
+      state = cloneSeed();
+      saveState();
+      renderAll();
+      showToast("Dados demonstrativos restaurados.");
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeMaterialModal();
+        document.getElementById("unitModal").classList.remove("open");
+        closeMobileMenu();
+      }
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+    document.getElementById("currentDate").textContent = new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    }).format(new Date());
+
+    initializeTheme();
+    renderAll();
+    resizeCanvas();
+  </script>
+</body>
+</html>
