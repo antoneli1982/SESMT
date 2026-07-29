@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#073b87">
+  <meta name="theme-color" content="#000f2a">
   <title>Gestão de Estoque EPI | SESÉ</title>
   <style>
     @font-face {
@@ -47,33 +47,35 @@
     }
 
     :root {
-      --blue: #0057c8;
-      --blue-strong: #003b91;
-      --blue-soft: #e3f0ff;
-      --cyan: #00c2e8;
-      --lime: #cfff00;
-      --ink: #0d213b;
-      --muted: #526984;
-      --line: #ccd9e8;
+      --blue: #0059f7;
+      --blue-strong: #000f2a;
+      --blue-soft: #e8f0ff;
+      --cyan: #2f83ff;
+      --accent: #a9c5ff;
+      --ink: #000f2a;
+      --muted: #4e6383;
+      --line: #c9d6ea;
       --surface: #ffffff;
-      --canvas: #edf4fb;
+      --canvas: #f2f6fc;
       --danger: #ed2346;
       --warning: #f39b00;
       --success: #00a86b;
-      --shadow: 0 14px 40px rgba(0, 55, 135, .12);
+      --shadow: 0 14px 40px rgba(0, 15, 42, .12);
       --radius: 20px;
     }
 
     html.darkTheme {
       color-scheme: dark;
-      --blue: #43b5ff;
-      --blue-strong: #0b87e8;
-      --blue-soft: #12395f;
-      --ink: #f4f9ff;
-      --muted: #b9c9dc;
-      --line: #345372;
-      --surface: #122942;
-      --canvas: #07182b;
+      --blue: #4f8fff;
+      --blue-strong: #0059f7;
+      --blue-soft: #102a52;
+      --cyan: #72a7ff;
+      --accent: #9bbcff;
+      --ink: #f4f7ff;
+      --muted: #b7c5db;
+      --line: #29466d;
+      --surface: #0b1d38;
+      --canvas: #030b18;
       --danger: #ff6479;
       --warning: #ffc14a;
       --success: #42e6a3;
@@ -139,8 +141,8 @@
       overflow: hidden;
       color: white;
       background:
-        radial-gradient(circle at 15% 88%, rgba(0, 166, 214, .23), transparent 34%),
-        linear-gradient(160deg, #064893 0%, #002c6c 72%);
+        radial-gradient(circle at 15% 88%, rgba(0, 89, 247, .32), transparent 35%),
+        linear-gradient(160deg, #002b78 0%, #000f2a 72%);
       z-index: 20;
     }
 
@@ -151,7 +153,7 @@
       bottom: 48px;
       width: 260px;
       height: 260px;
-      border: 24px solid rgba(200, 255, 0, .11);
+      border: 24px solid rgba(92, 145, 255, .18);
       border-radius: 50%;
       pointer-events: none;
     }
@@ -240,7 +242,7 @@
 
     .navButton.active {
       color: var(--blue-strong);
-      background: var(--lime);
+      background: white;
       box-shadow: 0 9px 22px rgba(0, 24, 69, .22);
     }
 
@@ -293,8 +295,8 @@
       width: 38px;
       height: 38px;
       border-radius: 12px;
-      background: var(--lime);
-      color: var(--blue-strong);
+      background: var(--blue);
+      color: white;
       font-weight: 900;
     }
 
@@ -417,8 +419,8 @@
     .primaryButton {
       border: 1px solid var(--blue);
       color: white;
-      background: linear-gradient(135deg, var(--blue), #007edb);
-      box-shadow: 0 10px 24px rgba(0, 87, 200, .28);
+      background: linear-gradient(135deg, var(--blue), #0047c7);
+      box-shadow: 0 10px 24px rgba(0, 89, 247, .28);
     }
 
     .primaryButton:hover {
@@ -427,10 +429,10 @@
     }
 
     .secondaryButton {
-      border: 1px solid var(--lime);
+      border: 1px solid var(--accent);
       color: var(--blue-strong);
-      background: linear-gradient(135deg, var(--lime), #aaf000);
-      box-shadow: 0 9px 22px rgba(158, 220, 0, .22);
+      background: linear-gradient(135deg, #ffffff, var(--blue-soft));
+      box-shadow: 0 9px 22px rgba(0, 89, 247, .16);
     }
 
     .ghostButton {
@@ -476,7 +478,7 @@
       border-radius: 24px;
       color: white;
       background:
-        linear-gradient(108deg, rgba(0, 46, 112, .98) 0%, rgba(6, 60, 136, .96) 61%, rgba(0, 132, 184, .9) 100%);
+        linear-gradient(108deg, rgba(0, 15, 42, .99) 0%, rgba(0, 38, 105, .97) 61%, rgba(0, 89, 247, .92) 100%);
       box-shadow: var(--shadow);
     }
 
@@ -498,7 +500,7 @@
       bottom: -94px;
       width: 280px;
       height: 280px;
-      border: 32px solid rgba(200, 255, 0, .2);
+      border: 32px solid rgba(126, 169, 255, .25);
       border-radius: 50%;
     }
 
@@ -513,7 +515,7 @@
       align-items: center;
       gap: 9px;
       margin: 0 0 13px;
-      color: var(--lime);
+      color: var(--accent);
       font-size: 10px;
       font-weight: 850;
       letter-spacing: .15em;
@@ -579,7 +581,7 @@
     }
 
     .heroPanel .score span {
-      color: var(--lime);
+      color: var(--accent);
       font-size: 12px;
       font-weight: 800;
     }
@@ -601,7 +603,7 @@
       display: block;
       height: 100%;
       border-radius: inherit;
-      background: var(--lime);
+      background: var(--blue);
     }
 
     .stats {
@@ -769,7 +771,7 @@
     }
 
     .barItem:nth-child(5) .bar {
-      background: linear-gradient(180deg, var(--lime), #87b500);
+      background: linear-gradient(180deg, var(--accent), var(--blue));
     }
 
     .barItem span {
@@ -834,6 +836,31 @@
       line-height: 1.45;
     }
 
+    .alertItem > div:last-child {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .alertMeta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .alertMeta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
     .pageHeader {
       display: flex;
       align-items: flex-end;
@@ -856,6 +883,22 @@
       grid-template-columns: minmax(210px, 1fr) repeat(2, minmax(130px, .35fr));
       gap: 10px;
       margin-bottom: 16px;
+    }
+
+    .historyFilters {
+      grid-template-columns: repeat(3, minmax(170px, 1fr));
+    }
+
+    .alertFilters {
+      grid-template-columns: repeat(3, minmax(170px, 1fr));
+    }
+
+    .alertFilters .filterClear,
+    .historyFilters .filterClear {
+      grid-column: 1 / -1;
+      justify-self: end;
+      min-height: 43px;
+      min-width: 160px;
     }
 
     .inputGroup {
@@ -1188,7 +1231,7 @@
       border-radius: 16px;
       color: white;
       background: linear-gradient(135deg, var(--blue-strong), var(--blue), var(--cyan));
-      box-shadow: 0 14px 30px rgba(0, 87, 200, .22);
+      box-shadow: 0 14px 30px rgba(0, 89, 247, .22);
     }
 
     .summaryTotal span,
@@ -1211,7 +1254,7 @@
     }
 
     .summaryTotal small {
-      color: var(--lime);
+      color: var(--accent);
       font-size: 10px;
       font-weight: 700;
     }
@@ -1258,7 +1301,7 @@
       bottom: -50px;
       width: 180px;
       height: 180px;
-      border: 24px solid rgba(200, 255, 0, .2);
+      border: 24px solid rgba(169, 197, 255, .28);
       border-radius: 50%;
     }
 
@@ -1678,6 +1721,16 @@
         grid-template-columns: 1fr;
       }
 
+      .historyFilters .filterClear {
+        width: 100%;
+        justify-self: stretch;
+      }
+
+      .alertFilters .filterClear {
+        width: 100%;
+        justify-self: stretch;
+      }
+
       .field.full {
         grid-column: auto;
       }
@@ -1970,6 +2023,18 @@
                 <input class="input" id="employeeId" required>
               </div>
               <div class="field">
+                <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
+                <input class="input" id="employeeCategory" list="employeeCategoryOptions" placeholder="Informe ou selecione" required>
+                <datalist id="employeeCategoryOptions">
+                  <option value="Operacional">
+                  <option value="Administrativo">
+                  <option value="Liderança">
+                  <option value="Manutenção">
+                  <option value="Motorista">
+                  <option value="Terceirizado">
+                </datalist>
+              </div>
+              <div class="field">
                 <label for="employeeArea">Área <span class="required">*</span></label>
                 <select class="select" id="employeeArea" required>
                   <option value="">Selecione</option>
@@ -2064,6 +2129,7 @@
             <div class="summaryList">
               <div class="summaryLine"><span>Colaborador</span><strong id="summaryEmployee">Não informado</strong></div>
               <div class="summaryLine"><span>Chapa</span><strong id="summaryId">Não informada</strong></div>
+              <div class="summaryLine"><span>Categoria</span><strong id="summaryCategory">Não informada</strong></div>
               <div class="summaryLine"><span>Itens selecionados</span><strong id="summaryItems">0</strong></div>
               <div class="summaryLine"><span>Número do CA</span><strong id="summaryCa">Sem item</strong></div>
               <div class="summaryLine"><span>Responsável</span><strong>Responsável SESMT</strong></div>
@@ -2142,7 +2208,33 @@
           <article class="statCard danger"><div class="statTop"><span>CA vencido</span><span class="statBadge">!</span></div><strong id="alertExpired">0</strong><small>Bloqueados para retirada</small></article>
           <article class="statCard warning"><div class="statTop"><span>CA a vencer</span><span class="statBadge">V</span></div><strong id="alertSoon">0</strong><small>Próximos 60 dias</small></article>
           <article class="statCard danger"><div class="statTop"><span>Estoque mínimo</span><span class="statBadge">E</span></div><strong id="alertCritical">0</strong><small>Reposição necessária</small></article>
-          <article class="statCard"><div class="statTop"><span>Trocas previstas</span><span class="statBadge">T</span></div><strong id="alertReplacements">3</strong><small>Próximos sete dias</small></article>
+          <article class="statCard"><div class="statTop"><span>Trocas previstas</span><span class="statBadge">T</span></div><strong id="alertReplacements">0</strong><small>Próximos sete dias</small></article>
+        </div>
+        <div class="filters alertFilters">
+          <select class="select" id="alertOrigin" aria-label="Filtrar origem do alerta">
+            <option value="">Todas as origens</option>
+            <option value="material">Materiais</option>
+            <option value="collaborator">Colaboradores</option>
+          </select>
+          <select class="select" id="alertEmployee" aria-label="Filtrar por colaborador">
+            <option value="">Todos os colaboradores</option>
+          </select>
+          <select class="select" id="alertEmployeeId" aria-label="Filtrar por chapa">
+            <option value="">Todas as chapas</option>
+          </select>
+          <select class="select" id="alertEmployeeCategory" aria-label="Filtrar categoria do colaborador">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select class="select" id="alertEmployeeArea" aria-label="Filtrar por área do colaborador">
+            <option value="">Todas as áreas</option>
+          </select>
+          <select class="select" id="alertEmployeeShift" aria-label="Filtrar por turno do colaborador">
+            <option value="">Todos os turnos</option>
+          </select>
+          <select class="select" id="alertEpi" aria-label="Filtrar por EPI">
+            <option value="">Todos os EPIs</option>
+          </select>
+          <button class="ghostButton filterClear" id="clearAlertFilters" type="button">Limpar filtros</button>
         </div>
         <article class="panel">
           <div class="panelHeader"><div><h3>Fila de tratativas</h3><p>Resolva primeiro os itens de maior risco</p></div></div>
@@ -2162,16 +2254,26 @@
             <button class="primaryButton" id="backupData">Baixar cópia dos dados</button>
           </div>
         </div>
-        <div class="filters">
-          <input class="input" id="historySearch" type="search" placeholder="Pesquisar colaborador, material ou responsável">
-          <select class="select" id="historyType">
+        <div class="filters historyFilters">
+          <select class="select" id="historyType" aria-label="Filtrar histórico por tipo">
             <option value="">Todos os tipos</option>
-            <option>Retirada</option>
-            <option>Entrada</option>
-            <option>Ajuste</option>
-            <option>Inventário</option>
           </select>
-          <input class="input" id="historyDate" type="date" aria-label="Filtrar por data">
+          <select class="select" id="historyMaterial" aria-label="Filtrar histórico por material">
+            <option value="">Todos os materiais</option>
+          </select>
+          <select class="select" id="historyEmployee" aria-label="Filtrar histórico por colaborador">
+            <option value="">Todos os colaboradores</option>
+          </select>
+          <select class="select" id="historyEmployeeCategory" aria-label="Filtrar histórico por categoria do colaborador">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select class="select" id="historyResponsible" aria-label="Filtrar histórico por responsável">
+            <option value="">Todos os responsáveis</option>
+          </select>
+          <select class="select" id="historyDate" aria-label="Filtrar histórico por data">
+            <option value="">Todas as datas</option>
+          </select>
+          <button class="ghostButton filterClear" id="clearHistoryFilters" type="button">Limpar filtros</button>
         </div>
         <div class="tableWrap">
           <table>
@@ -2182,6 +2284,7 @@
                 <th>Material</th>
                 <th>Quantidade</th>
                 <th>Colaborador</th>
+                <th>Categoria</th>
                 <th>Responsável</th>
                 <th>Comprovante</th>
               </tr>
@@ -2397,7 +2500,7 @@
       document.getElementById("themeToggle").setAttribute("aria-label", dark ? "Ativar modo claro" : "Ativar modo escuro");
       document.getElementById("themeLabel").textContent = dark ? "Modo claro" : "Modo escuro";
       document.getElementById("themeIcon").textContent = dark ? "☀" : "◐";
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#0b1522" : "#073b87");
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#030b18" : "#000f2a");
     }
 
     function initializeTheme() {
@@ -2533,25 +2636,114 @@
         const caDays = daysUntil(material.caValidity);
         const lotDays = daysUntil(material.lotValidity);
         if (caDays < 0) {
-          alerts.push({ type: "danger", icon: "CA", title: `${material.description}: CA vencido`, text: `Certificado ${material.ca} venceu em ${formatDate(material.caValidity)}. Item bloqueado para entrega.` });
+          alerts.push({
+            type: "danger",
+            icon: "CA",
+            origin: "material",
+            epi: material.description,
+            title: `${material.description}: CA vencido`,
+            text: `Certificado ${material.ca} venceu em ${formatDate(material.caValidity)}. Item bloqueado para entrega.`,
+            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+          });
         } else if (caDays <= 60) {
-          alerts.push({ type: "warning", icon: "CA", title: `${material.description}: CA próximo do vencimento`, text: `Faltam ${caDays} dias para o vencimento do certificado ${material.ca}.` });
+          alerts.push({
+            type: "warning",
+            icon: "CA",
+            origin: "material",
+            epi: material.description,
+            title: `${material.description}: CA próximo do vencimento`,
+            text: `Faltam ${caDays} dias para o vencimento do certificado ${material.ca}.`,
+            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+          });
         }
         if (material.stock <= material.minimum) {
-          alerts.push({ type: "danger", icon: "E", title: `${material.description}: estoque crítico`, text: `Saldo atual de ${material.stock} unidades. Estoque mínimo definido em ${material.minimum}.` });
+          alerts.push({
+            type: "danger",
+            icon: "E",
+            origin: "material",
+            epi: material.description,
+            title: `${material.description}: estoque crítico`,
+            text: `Saldo atual de ${material.stock} unidades. Estoque mínimo definido em ${material.minimum}.`,
+            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+          });
         }
         if (lotDays >= 0 && lotDays <= 90) {
-          alerts.push({ type: "warning", icon: "L", title: `${material.description}: lote próximo do vencimento`, text: `Lote ${material.lot} vence em ${formatDate(material.lotValidity)}.` });
+          alerts.push({
+            type: "warning",
+            icon: "L",
+            origin: "material",
+            epi: material.description,
+            title: `${material.description}: lote próximo do vencimento`,
+            text: `Lote ${material.lot} vence em ${formatDate(material.lotValidity)}.`,
+            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+          });
         }
       });
-      return alerts;
+      return alerts.concat(buildReplacementAlerts());
+    }
+
+    function buildReplacementAlerts() {
+      const latestDeliveries = new Map();
+      (state.withdrawals || []).forEach(withdrawal => {
+        (withdrawal.items || []).forEach(item => {
+          const key = `${withdrawal.employeeId || withdrawal.employee}|${item.id || item.description}`;
+          const current = latestDeliveries.get(key);
+          if (!current || new Date(withdrawal.date) > new Date(current.withdrawal.date)) {
+            latestDeliveries.set(key, { withdrawal, item });
+          }
+        });
+      });
+
+      return Array.from(latestDeliveries.values()).reduce((alerts, entry) => {
+        const { withdrawal, item } = entry;
+        const nextChange = item.nextChange || calculateNextChange(item.lifetime, withdrawal.date);
+        const remainingDays = daysUntil(nextChange);
+        if (remainingDays > 7) return alerts;
+
+        const employeeCategory = withdrawal.employeeCategory || "Não informada";
+        let deadlineText = `Troca prevista para ${formatDate(nextChange)}.`;
+        if (remainingDays < 0) deadlineText = `Troca atrasada há ${Math.abs(remainingDays)} dias. Data prevista: ${formatDate(nextChange)}.`;
+        if (remainingDays === 0) deadlineText = `Troca prevista para hoje, ${formatDate(nextChange)}.`;
+
+        alerts.push({
+          type: remainingDays < 0 ? "danger" : "warning",
+          icon: "T",
+          origin: "collaborator",
+          employee: withdrawal.employee || "Não informado",
+          employeeId: withdrawal.employeeId || "Não informada",
+          employeeCategory,
+          employeeArea: withdrawal.area || "Não informada",
+          employeeShift: withdrawal.shift || "Não informado",
+          epi: item.description || "Não informado",
+          remainingDays,
+          title: `${withdrawal.employee}: troca de ${item.description}`,
+          text: deadlineText,
+          meta: [
+            `Categoria do colaborador: ${employeeCategory}`,
+            `Chapa: ${withdrawal.employeeId || "Não informada"}`,
+            `Área: ${withdrawal.area || "Não informada"}`,
+            `Turno: ${withdrawal.shift || "Não informado"}`,
+            `EPI: ${item.description || "Não informado"}`,
+            `CA: ${item.ca || "Não informado"}`,
+            `Responsável: ${withdrawal.responsible || "Não informado"}`,
+            `Entrega: ${formatDate(withdrawal.date, true)}`,
+            `Próxima troca: ${formatDate(nextChange)}`
+          ]
+        });
+        return alerts;
+      }, []);
     }
 
     function alertTemplate(alert) {
+      const meta = (alert.meta || []).map(item => `<span>${escapeHtml(item)}</span>`).join("");
       return `
         <div class="alertItem ${alert.type}">
           <div class="alertIcon">${escapeHtml(alert.icon)}</div>
-          <div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.text)}</p></div>
+          <div>
+            <strong>${escapeHtml(alert.title)}</strong>
+            <p>${escapeHtml(alert.text)}</p>
+            ${meta ? `<div class="alertMeta">${meta}</div>` : ""}
+          </div>
         </div>
       `;
     }
@@ -2718,6 +2910,7 @@
     function updateWithdrawalSummary() {
       document.getElementById("summaryEmployee").textContent = document.getElementById("employeeName").value || "Não informado";
       document.getElementById("summaryId").textContent = document.getElementById("employeeId").value || "Não informada";
+      document.getElementById("summaryCategory").textContent = document.getElementById("employeeCategory").value || "Não informada";
     }
 
     function renderInventory() {
@@ -2752,27 +2945,95 @@
 
     function renderAlerts() {
       const alerts = buildAlerts();
+      const collaboratorAlerts = alerts.filter(alert => alert.origin === "collaborator");
+      const setAlertOptions = (id, values, emptyLabel) => {
+        const select = document.getElementById(id);
+        const selected = select.value;
+        const options = Array.from(new Set(values.filter(Boolean)))
+          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+        select.innerHTML = `<option value="">${emptyLabel}</option>` + options
+          .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+          .join("");
+        if (options.includes(selected)) select.value = selected;
+      };
+
+      setAlertOptions("alertEmployee", collaboratorAlerts.map(alert => alert.employee), "Todos os colaboradores");
+      setAlertOptions("alertEmployeeId", collaboratorAlerts.map(alert => alert.employeeId), "Todas as chapas");
+      setAlertOptions("alertEmployeeCategory", collaboratorAlerts.map(alert => alert.employeeCategory), "Todas as categorias");
+      setAlertOptions("alertEmployeeArea", collaboratorAlerts.map(alert => alert.employeeArea), "Todas as áreas");
+      setAlertOptions("alertEmployeeShift", collaboratorAlerts.map(alert => alert.employeeShift), "Todos os turnos");
+      setAlertOptions("alertEpi", alerts.map(alert => alert.epi), "Todos os EPIs");
+
+      const origin = document.getElementById("alertOrigin").value;
+      const employee = document.getElementById("alertEmployee").value;
+      const employeeId = document.getElementById("alertEmployeeId").value;
+      const employeeCategory = document.getElementById("alertEmployeeCategory").value;
+      const employeeArea = document.getElementById("alertEmployeeArea").value;
+      const employeeShift = document.getElementById("alertEmployeeShift").value;
+      const epi = document.getElementById("alertEpi").value;
+      const filteredAlerts = alerts.filter(alert => {
+        return (!origin || alert.origin === origin)
+          && (!employee || alert.employee === employee)
+          && (!employeeId || alert.employeeId === employeeId)
+          && (!employeeCategory || alert.employeeCategory === employeeCategory)
+          && (!employeeArea || alert.employeeArea === employeeArea)
+          && (!employeeShift || alert.employeeShift === employeeShift)
+          && (!epi || alert.epi === epi);
+      });
       const expired = state.materials.filter(material => daysUntil(material.caValidity) < 0).length;
       const soon = state.materials.filter(material => daysUntil(material.caValidity) >= 0 && daysUntil(material.caValidity) <= 60).length;
       const critical = state.materials.filter(material => material.stock <= material.minimum).length;
+      const replacements = alerts.filter(alert => alert.origin === "collaborator" && alert.remainingDays >= 0 && alert.remainingDays <= 7).length;
       document.getElementById("alertExpired").textContent = expired;
       document.getElementById("alertSoon").textContent = soon;
       document.getElementById("alertCritical").textContent = critical;
-      document.getElementById("allAlerts").innerHTML = alerts.length ? alerts.map(alertTemplate).join("") : `<div class="emptyState"><strong>Nenhum alerta aberto</strong>Todos os controles estão dentro dos parâmetros definidos.</div>`;
+      document.getElementById("alertReplacements").textContent = replacements;
+      document.getElementById("allAlerts").innerHTML = filteredAlerts.length ? filteredAlerts.map(alertTemplate).join("") : `<div class="emptyState"><strong>Nenhum alerta encontrado</strong>Não há ocorrências para os filtros selecionados.</div>`;
       document.querySelector('.navButton[data-page="alerts"]').dataset.count = alerts.length;
     }
 
     function renderHistory() {
-      const search = document.getElementById("historySearch").value.trim().toLowerCase();
+      const historyCategory = item => item.employeeCategory
+        || state.withdrawals.find(withdrawal => withdrawal.historyId === item.id)?.employeeCategory
+        || "";
+      const setHistoryOptions = (id, values, emptyLabel, formatLabel = value => value) => {
+        const select = document.getElementById(id);
+        const selected = select.value;
+        const options = Array.from(new Set(values.filter(Boolean)))
+          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+        select.innerHTML = `<option value="">${emptyLabel}</option>` + options
+          .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(formatLabel(value))}</option>`)
+          .join("");
+        if (options.includes(selected)) select.value = selected;
+      };
+
+      setHistoryOptions("historyType", state.history.map(item => item.type), "Todos os tipos");
+      setHistoryOptions("historyMaterial", state.history.map(item => item.material), "Todos os materiais");
+      setHistoryOptions("historyEmployee", state.history.map(item => item.employee), "Todos os colaboradores");
+      setHistoryOptions("historyEmployeeCategory", state.history.map(historyCategory), "Todas as categorias");
+      setHistoryOptions("historyResponsible", state.history.map(item => item.responsible), "Todos os responsáveis");
+      setHistoryOptions(
+        "historyDate",
+        state.history.map(item => item.date.slice(0, 10)).sort((a, b) => b.localeCompare(a)),
+        "Todas as datas",
+        value => formatDate(value)
+      );
+
       const type = document.getElementById("historyType").value;
+      const material = document.getElementById("historyMaterial").value;
+      const employee = document.getElementById("historyEmployee").value;
+      const employeeCategory = document.getElementById("historyEmployeeCategory").value;
+      const responsible = document.getElementById("historyResponsible").value;
       const date = document.getElementById("historyDate").value;
       const records = state.history
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .filter(item => {
-          const searchable = `${item.material} ${item.employee} ${item.responsible}`.toLowerCase();
-          return (!search || searchable.includes(search))
-            && (!type || item.type === type)
+          return (!type || item.type === type)
+            && (!material || item.material === material)
+            && (!employee || item.employee === employee)
+            && (!employeeCategory || historyCategory(item) === employeeCategory)
+            && (!responsible || item.responsible === responsible)
             && (!date || item.date.slice(0, 10) === date);
         });
 
@@ -2783,10 +3044,11 @@
           <td><strong>${escapeHtml(item.material)}</strong></td>
           <td>${item.qty > 0 ? "+" : ""}${item.qty}</td>
           <td>${escapeHtml(item.employee)}</td>
+          <td>${escapeHtml(historyCategory(item) || "Não informada")}</td>
           <td>${escapeHtml(item.responsible)}</td>
           <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Abrir termo</button>` : "Não aplicável"}</td>
         </tr>
-      `).join("") : `<tr><td colspan="7"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
+      `).join("") : `<tr><td colspan="8"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
     }
 
     function renderSettings() {
@@ -3036,8 +3298,8 @@
     }
 
     function exportHistory() {
-      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Responsável", "Assinado"]];
-      state.history.forEach(item => rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, item.responsible, item.signed ? "Sim" : "Não"]));
+      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Categoria do colaborador", "Responsável", "Assinado"]];
+      state.history.forEach(item => rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, item.employeeCategory || "", item.responsible, item.signed ? "Sim" : "Não"]));
       downloadFile("historico_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
     }
 
@@ -3058,7 +3320,7 @@
           </div>
           <div style="padding:22px 0;font-size:12px;line-height:1.6">
             <p><strong>Unidade:</strong> ${escapeHtml(state.settings.unit)}<br><strong>Endereço:</strong> ${escapeHtml(state.settings.address)}</p>
-            <p><strong>Colaborador:</strong> ${escapeHtml(withdrawal.employee)}<br><strong>Chapa:</strong> ${escapeHtml(withdrawal.employeeId)}<br><strong>Área e turno:</strong> ${escapeHtml(withdrawal.area)} · ${escapeHtml(withdrawal.shift)}</p>
+            <p><strong>Colaborador:</strong> ${escapeHtml(withdrawal.employee)}<br><strong>Chapa:</strong> ${escapeHtml(withdrawal.employeeId)}<br><strong>Categoria:</strong> ${escapeHtml(withdrawal.employeeCategory || "Não informada")}<br><strong>Área e turno:</strong> ${escapeHtml(withdrawal.area)} · ${escapeHtml(withdrawal.shift)}</p>
             <table style="width:100%;border-collapse:collapse;margin:18px 0">
               <thead><tr><th style="padding:8px;border:1px solid #ccc;text-align:left">EPI</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Quantidade</th><th style="padding:8px;border:1px solid #ccc;text-align:left">CA</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Lote</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Vida útil</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Próxima troca</th></tr></thead>
               <tbody>${items}</tbody>
@@ -3198,11 +3460,29 @@
       document.getElementById(id).addEventListener("input", renderMaterials);
     });
 
-    ["historySearch", "historyType", "historyDate"].forEach(id => {
-      document.getElementById(id).addEventListener("input", renderHistory);
+    ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeCategory", "historyResponsible", "historyDate"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderHistory);
     });
 
-    ["employeeName", "employeeId"].forEach(id => {
+    document.getElementById("clearHistoryFilters").addEventListener("click", () => {
+      ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeCategory", "historyResponsible", "historyDate"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      renderHistory();
+    });
+
+    ["alertOrigin", "alertEmployee", "alertEmployeeId", "alertEmployeeCategory", "alertEmployeeArea", "alertEmployeeShift", "alertEpi"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderAlerts);
+    });
+
+    document.getElementById("clearAlertFilters").addEventListener("click", () => {
+      ["alertOrigin", "alertEmployee", "alertEmployeeId", "alertEmployeeCategory", "alertEmployeeArea", "alertEmployeeShift", "alertEpi"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      renderAlerts();
+    });
+
+    ["employeeName", "employeeId", "employeeCategory"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateWithdrawalSummary);
     });
 
@@ -3269,6 +3549,7 @@
         date: now.toISOString(),
         employee: document.getElementById("employeeName").value.trim(),
         employeeId: document.getElementById("employeeId").value.trim(),
+        employeeCategory: document.getElementById("employeeCategory").value.trim(),
         area: document.getElementById("employeeArea").value,
         shift: document.getElementById("employeeShift").value,
         responsible: state.settings.responsible,
@@ -3288,6 +3569,7 @@
         material: withdrawal.items.map(item => item.description).join(" + "),
         qty: withdrawal.items.reduce((sum, item) => sum + item.qty, 0),
         employee: withdrawal.employee,
+        employeeCategory: withdrawal.employeeCategory,
         responsible: withdrawal.responsible,
         signed: true
       });
