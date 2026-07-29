@@ -893,8 +893,13 @@
       grid-template-columns: repeat(3, minmax(170px, 1fr));
     }
 
+    .collaboratorFilters {
+      grid-template-columns: repeat(3, minmax(170px, 1fr));
+    }
+
     .alertFilters .filterClear,
-    .historyFilters .filterClear {
+    .historyFilters .filterClear,
+    .collaboratorFilters .filterClear {
       grid-column: 1 / -1;
       justify-self: end;
       min-height: 43px;
@@ -1731,6 +1736,11 @@
         justify-self: stretch;
       }
 
+      .collaboratorFilters .filterClear {
+        width: 100%;
+        justify-self: stretch;
+      }
+
       .field.full {
         grid-column: auto;
       }
@@ -1772,6 +1782,10 @@
       }
 
       .pageHeaderActions #newMaterialButton {
+        grid-column: 1 / -1;
+      }
+
+      .pageHeaderActions #newCollaboratorButton {
         grid-column: 1 / -1;
       }
 
@@ -1835,11 +1849,12 @@
       <nav class="nav">
         <button class="navButton active" data-page="dashboard"><span class="navIcon">01</span>Painel geral</button>
         <button class="navButton" data-page="materials"><span class="navIcon">02</span>Materiais</button>
-        <button class="navButton" data-page="withdrawal"><span class="navIcon">03</span>Nova retirada</button>
-        <button class="navButton" data-page="inventory"><span class="navIcon">04</span>Inventário</button>
-        <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">05</span>Alertas</button>
-        <button class="navButton" data-page="history"><span class="navIcon">06</span>Histórico</button>
-        <button class="navButton" data-page="settings"><span class="navIcon">07</span>Configurações</button>
+        <button class="navButton" data-page="collaborators"><span class="navIcon">03</span>Colaboradores</button>
+        <button class="navButton" data-page="withdrawal"><span class="navIcon">04</span>Nova retirada</button>
+        <button class="navButton" data-page="inventory"><span class="navIcon">05</span>Inventário</button>
+        <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">06</span>Alertas</button>
+        <button class="navButton" data-page="history"><span class="navIcon">07</span>Histórico</button>
+        <button class="navButton" data-page="settings"><span class="navIcon">08</span>Configurações</button>
       </nav>
 
       <div class="userCard">
@@ -2002,6 +2017,56 @@
         </div>
       </section>
 
+      <section class="page" id="page-collaborators">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Base de pessoas</p>
+            <h2>Colaboradores</h2>
+            <p>Cadastre, importe e consulte os dados operacionais de cada colaborador.</p>
+          </div>
+          <div class="pageHeaderActions">
+            <input id="importCollaboratorsFile" type="file" accept=".xlsx,.xls,.csv" hidden>
+            <button class="ghostButton" id="importCollaborators" type="button">Importar Excel</button>
+            <button class="ghostButton" id="exportCollaborators" type="button">Exportar Excel</button>
+            <button class="primaryButton" id="newCollaboratorButton" type="button">＋ Novo colaborador</button>
+          </div>
+        </div>
+        <div class="stats">
+          <article class="statCard"><div class="statTop"><span>Total ativo</span><span class="statBadge">C</span></div><strong id="collaboratorTotal">0</strong><small>Colaboradores cadastrados</small></article>
+          <article class="statCard"><div class="statTop"><span>Operacional</span><span class="statBadge">O</span></div><strong id="collaboratorOperational">0</strong><small>Turnos operacionais</small></article>
+          <article class="statCard"><div class="statTop"><span>Administrativo</span><span class="statBadge">A</span></div><strong id="collaboratorAdministrative">0</strong><small>Turnos administrativos</small></article>
+          <article class="statCard"><div class="statTop"><span>PCD</span><span class="statBadge">P</span></div><strong id="collaboratorPcdTotal">0</strong><small>Registros identificados</small></article>
+        </div>
+        <div class="filters collaboratorFilters">
+          <select class="select" id="collaboratorNameFilter" aria-label="Filtrar por colaborador"><option value="">Todos os colaboradores</option></select>
+          <select class="select" id="collaboratorIdFilter" aria-label="Filtrar por matrícula"><option value="">Todas as matrículas</option></select>
+          <select class="select" id="collaboratorRoleFilter" aria-label="Filtrar por cargo"><option value="">Todos os cargos</option></select>
+          <select class="select" id="collaboratorShiftFilter" aria-label="Filtrar por turno"><option value="">Todos os turnos</option></select>
+          <select class="select" id="collaboratorWorkstationFilter" aria-label="Filtrar por posto"><option value="">Todos os postos</option></select>
+          <select class="select" id="collaboratorManagerFilter" aria-label="Filtrar por responsável"><option value="">Todos os responsáveis</option></select>
+          <button class="ghostButton filterClear" id="clearCollaboratorFilters" type="button">Limpar filtros</button>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Colaborador</th>
+                <th>Chapa VW</th>
+                <th>Matrícula SESÉ</th>
+                <th>Admissão</th>
+                <th>Cargo atual</th>
+                <th>Turno</th>
+                <th>Posto de trabalho</th>
+                <th>Responsável</th>
+                <th>Condição</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="collaboratorsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="page" id="page-withdrawal">
         <div class="pageHeader">
           <div>
@@ -2016,11 +2081,13 @@
             <div class="formGrid">
               <div class="field">
                 <label for="employeeName">Nome completo <span class="required">*</span></label>
-                <input class="input" id="employeeName" required autocomplete="name">
+                <input class="input" id="employeeName" list="employeeNameOptions" required autocomplete="name" placeholder="Selecione um colaborador cadastrado">
+                <datalist id="employeeNameOptions"></datalist>
               </div>
               <div class="field">
                 <label for="employeeId">Chapa <span class="required">*</span></label>
-                <input class="input" id="employeeId" required>
+                <input class="input" id="employeeId" list="employeeIdOptions" required>
+                <datalist id="employeeIdOptions"></datalist>
               </div>
               <div class="field">
                 <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
@@ -2036,25 +2103,13 @@
               </div>
               <div class="field">
                 <label for="employeeArea">Área <span class="required">*</span></label>
-                <select class="select" id="employeeArea" required>
-                  <option value="">Selecione</option>
-                  <option>Armazém</option>
-                  <option>Expedição</option>
-                  <option>Manutenção</option>
-                  <option>Operação logística</option>
-                  <option>Qualidade</option>
-                  <option>Transporte</option>
-                </select>
+                <input class="input" id="employeeArea" list="employeeAreaOptions" required placeholder="Posto de trabalho">
+                <datalist id="employeeAreaOptions"></datalist>
               </div>
               <div class="field">
                 <label for="employeeShift">Turno <span class="required">*</span></label>
-                <select class="select" id="employeeShift" required>
-                  <option value="">Selecione</option>
-                  <option>1º turno</option>
-                  <option>2º turno</option>
-                  <option>3º turno</option>
-                  <option>Administrativo</option>
-                </select>
+                <input class="input" id="employeeShift" list="employeeShiftOptions" required placeholder="Turno cadastrado">
+                <datalist id="employeeShiftOptions"></datalist>
               </div>
             </div>
 
@@ -2407,6 +2462,89 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="collaboratorModal" role="dialog" aria-modal="true" aria-labelledby="collaboratorModalTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3 id="collaboratorModalTitle">Novo colaborador</h3>
+        <button class="iconButton" type="button" data-close-collaborator aria-label="Fechar">×</button>
+      </div>
+      <form id="collaboratorForm">
+        <div class="modalBody">
+          <div class="formGrid">
+            <div class="field full">
+              <label for="collaboratorName">Nome completo <span class="required">*</span></label>
+              <input class="input" id="collaboratorName" required>
+            </div>
+            <div class="field">
+              <label for="collaboratorVwId">Chapa VW</label>
+              <input class="input" id="collaboratorVwId">
+            </div>
+            <div class="field">
+              <label for="collaboratorCompanyId">Matrícula SESÉ <span class="required">*</span></label>
+              <input class="input" id="collaboratorCompanyId" required>
+            </div>
+            <div class="field">
+              <label for="collaboratorAdmission">Admissão</label>
+              <input class="input" id="collaboratorAdmission" type="date">
+            </div>
+            <div class="field">
+              <label for="collaboratorProbation45">Avaliação em 45 dias</label>
+              <input class="input" id="collaboratorProbation45" type="date">
+            </div>
+            <div class="field">
+              <label for="collaboratorProbation90">Avaliação em 90 dias</label>
+              <input class="input" id="collaboratorProbation90" type="date">
+            </div>
+            <div class="field">
+              <label for="collaboratorRole">Cargo atual <span class="required">*</span></label>
+              <input class="input" id="collaboratorRole" required>
+            </div>
+            <div class="field">
+              <label for="collaboratorShift">Turno <span class="required">*</span></label>
+              <input class="input" id="collaboratorShift" required>
+            </div>
+            <div class="field full">
+              <label for="collaboratorVersatility">Carta de versatilidade</label>
+              <input class="input" id="collaboratorVersatility">
+            </div>
+            <div class="field full">
+              <label for="collaboratorWorkstation">Posto de trabalho</label>
+              <input class="input" id="collaboratorWorkstation">
+            </div>
+            <div class="field">
+              <label for="collaboratorManager">Responsável</label>
+              <input class="input" id="collaboratorManager">
+            </div>
+            <div class="field">
+              <label for="collaboratorReturnDate">Retorno</label>
+              <input class="input" id="collaboratorReturnDate" type="date">
+            </div>
+            <div class="field">
+              <label for="collaboratorPcd">PCD</label>
+              <input class="input" id="collaboratorPcd" placeholder="Informe quando aplicável">
+            </div>
+            <div class="field">
+              <label for="collaboratorCommittee">Brigadista e Cipeiro</label>
+              <input class="input" id="collaboratorCommittee">
+            </div>
+            <div class="field full">
+              <label for="collaboratorOperationNotes">Observação da operação</label>
+              <textarea class="textarea" id="collaboratorOperationNotes"></textarea>
+            </div>
+            <div class="field full">
+              <label for="collaboratorHrNotes">Observação do RH</label>
+              <textarea class="textarea" id="collaboratorHrNotes"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modalFooter">
+          <button class="ghostButton" type="button" data-close-collaborator>Cancelar</button>
+          <button class="primaryButton" type="submit">Salvar colaborador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="modalBackdrop" id="unitModal" role="dialog" aria-modal="true" aria-labelledby="unitModalTitle">
     <div class="modal">
       <div class="modalHeader">
@@ -2441,7 +2579,7 @@
   <div id="printTerm" style="display:none"></div>
   <div class="toastStack" id="toastStack" aria-live="polite"></div>
 
-  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const STORAGE_KEY = "sese_epi_manager_v1";
     const THEME_KEY = "sese_epi_theme";
@@ -2460,6 +2598,7 @@
         { id: 5, code: "EPI005", description: "Botina de segurança com biqueira", category: "Proteção dos pés", ca: "28498", caValidity: "2028-02-08", lot: "BOT2607A", lotValidity: "2031-01-12", stock: 9, minimum: 12, lifetime: 365, location: "C01 · P03", notes: "Numeração 35 a 45" },
         { id: 6, code: "EPI006", description: "Respirador semifacial PFF2", category: "Proteção respiratória", ca: "39210", caValidity: "2027-05-20", lot: "RES2606F", lotValidity: "2028-06-01", stock: 64, minimum: 25, lifetime: 7, location: "B01 · P05", notes: "Uso individual" }
       ],
+      collaborators: [],
       history: [
         { id: 101, date: "2026-07-28T10:42:00", type: "Retirada", material: "Capacete de segurança azul", qty: 1, employee: "Carlos Henrique", responsible: "Responsável SESMT", signed: true },
         { id: 102, date: "2026-07-28T09:18:00", type: "Retirada", material: "Luva nitrílica anticorte", qty: 2, employee: "Mariana Alves", responsible: "Responsável SESMT", signed: true },
@@ -2472,6 +2611,7 @@
 
     let state = loadState();
     let editingMaterialId = null;
+    let editingCollaboratorId = null;
     let withdrawalSelection = [];
     let inventoryActive = false;
     let signatureStarted = false;
@@ -2483,7 +2623,12 @@
     function loadState() {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : cloneSeed();
+        const loaded = stored ? JSON.parse(stored) : cloneSeed();
+        if (!Array.isArray(loaded.collaborators)) loaded.collaborators = [];
+        if (!Array.isArray(loaded.materials)) loaded.materials = [];
+        if (!Array.isArray(loaded.history)) loaded.history = [];
+        if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
+        return loaded;
       } catch {
         return cloneSeed();
       }
@@ -2573,6 +2718,7 @@
       const titles = {
         dashboard: "Painel geral",
         materials: "Materiais",
+        collaborators: "Colaboradores",
         withdrawal: "Nova retirada",
         inventory: "Inventário",
         alerts: "Alertas",
@@ -2696,11 +2842,23 @@
 
       return Array.from(latestDeliveries.values()).reduce((alerts, entry) => {
         const { withdrawal, item } = entry;
+        const collaborator = (state.collaborators || []).find(person => {
+          const withdrawalId = normalizeColumnName(withdrawal.employeeId);
+          const withdrawalName = normalizeColumnName(withdrawal.employee);
+          return (withdrawalId && [
+            normalizeColumnName(person.companyId),
+            normalizeColumnName(person.vwId)
+          ].includes(withdrawalId)) || (withdrawalName && normalizeColumnName(person.name) === withdrawalName);
+        });
         const nextChange = item.nextChange || calculateNextChange(item.lifetime, withdrawal.date);
         const remainingDays = daysUntil(nextChange);
         if (remainingDays > 7) return alerts;
 
-        const employeeCategory = withdrawal.employeeCategory || "Não informada";
+        const employeeName = collaborator?.name || withdrawal.employee || "Não informado";
+        const employeeId = collaborator?.companyId || collaborator?.vwId || withdrawal.employeeId || "Não informada";
+        const employeeCategory = collaborator?.role || withdrawal.employeeCategory || "Não informada";
+        const employeeArea = collaborator?.workstation || withdrawal.area || "Não informada";
+        const employeeShift = collaborator?.shift || withdrawal.shift || "Não informado";
         let deadlineText = `Troca prevista para ${formatDate(nextChange)}.`;
         if (remainingDays < 0) deadlineText = `Troca atrasada há ${Math.abs(remainingDays)} dias. Data prevista: ${formatDate(nextChange)}.`;
         if (remainingDays === 0) deadlineText = `Troca prevista para hoje, ${formatDate(nextChange)}.`;
@@ -2709,20 +2867,20 @@
           type: remainingDays < 0 ? "danger" : "warning",
           icon: "T",
           origin: "collaborator",
-          employee: withdrawal.employee || "Não informado",
-          employeeId: withdrawal.employeeId || "Não informada",
+          employee: employeeName,
+          employeeId,
           employeeCategory,
-          employeeArea: withdrawal.area || "Não informada",
-          employeeShift: withdrawal.shift || "Não informado",
+          employeeArea,
+          employeeShift,
           epi: item.description || "Não informado",
           remainingDays,
-          title: `${withdrawal.employee}: troca de ${item.description}`,
+          title: `${employeeName}: troca de ${item.description}`,
           text: deadlineText,
           meta: [
             `Categoria do colaborador: ${employeeCategory}`,
-            `Chapa: ${withdrawal.employeeId || "Não informada"}`,
-            `Área: ${withdrawal.area || "Não informada"}`,
-            `Turno: ${withdrawal.shift || "Não informado"}`,
+            `Chapa: ${employeeId}`,
+            `Área: ${employeeArea}`,
+            `Turno: ${employeeShift}`,
             `EPI: ${item.description || "Não informado"}`,
             `CA: ${item.ca || "Não informado"}`,
             `Responsável: ${withdrawal.responsible || "Não informado"}`,
@@ -2781,6 +2939,168 @@
       }).join("") : `<tr><td colspan="8"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
       populateWithdrawalMaterials();
     }
+
+    function uniqueSorted(values) {
+      return Array.from(new Set(values.map(value => String(value || "").trim()).filter(Boolean)))
+        .sort((a, b) => a.localeCompare(b, "pt-BR"));
+    }
+
+    function setDynamicSelectOptions(id, values, emptyLabel) {
+      const select = document.getElementById(id);
+      const selected = select.value;
+      const options = uniqueSorted(values);
+      select.innerHTML = `<option value="">${emptyLabel}</option>` + options
+        .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+        .join("");
+      if (options.includes(selected)) select.value = selected;
+    }
+
+    function renderCollaborators() {
+      const collaborators = Array.isArray(state.collaborators) ? state.collaborators : [];
+      setDynamicSelectOptions("collaboratorNameFilter", collaborators.map(item => item.name), "Todos os colaboradores");
+      setDynamicSelectOptions("collaboratorIdFilter", collaborators.map(item => item.companyId), "Todas as matrículas");
+      setDynamicSelectOptions("collaboratorRoleFilter", collaborators.map(item => item.role), "Todos os cargos");
+      setDynamicSelectOptions("collaboratorShiftFilter", collaborators.map(item => item.shift), "Todos os turnos");
+      setDynamicSelectOptions("collaboratorWorkstationFilter", collaborators.map(item => item.workstation), "Todos os postos");
+      setDynamicSelectOptions("collaboratorManagerFilter", collaborators.map(item => item.manager), "Todos os responsáveis");
+
+      const filters = {
+        name: document.getElementById("collaboratorNameFilter").value,
+        companyId: document.getElementById("collaboratorIdFilter").value,
+        role: document.getElementById("collaboratorRoleFilter").value,
+        shift: document.getElementById("collaboratorShiftFilter").value,
+        workstation: document.getElementById("collaboratorWorkstationFilter").value,
+        manager: document.getElementById("collaboratorManagerFilter").value
+      };
+      const filtered = collaborators
+        .filter(item => Object.entries(filters).every(([field, value]) => !value || String(item[field] || "") === value))
+        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+
+      const isPcd = item => {
+        const value = normalizeColumnName(item.pcd);
+        return Boolean(value) && !["nao", "n a", "n"].includes(value);
+      };
+      const administrative = collaborators.filter(item => normalizeColumnName(item.shift).includes("adm")).length;
+      document.getElementById("collaboratorTotal").textContent = collaborators.length.toLocaleString("pt-BR");
+      document.getElementById("collaboratorAdministrative").textContent = administrative.toLocaleString("pt-BR");
+      document.getElementById("collaboratorOperational").textContent = Math.max(0, collaborators.length - administrative).toLocaleString("pt-BR");
+      document.getElementById("collaboratorPcdTotal").textContent = collaborators.filter(isPcd).length.toLocaleString("pt-BR");
+
+      document.getElementById("collaboratorsTable").innerHTML = filtered.length ? filtered.map(item => {
+        const initials = String(item.name || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+        const conditions = [isPcd(item) ? "PCD" : "", item.committee || ""].filter(Boolean).join(" · ") || "Regular";
+        return `
+          <tr>
+            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(initials)}</div><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
+            <td>${escapeHtml(item.vwId || "Não informada")}</td>
+            <td><strong>${escapeHtml(item.companyId || "Não informada")}</strong></td>
+            <td>${formatDate(item.admission)}</td>
+            <td>${escapeHtml(item.role || "Não informado")}</td>
+            <td><span class="pill">${escapeHtml(item.shift || "Não informado")}</span></td>
+            <td>${escapeHtml(item.workstation || "Não informado")}</td>
+            <td>${escapeHtml(item.manager || "Não informado")}</td>
+            <td>${escapeHtml(conditions)}</td>
+            <td><div class="actionsCell">
+              <button class="miniButton" type="button" title="Editar" onclick="editCollaborator(${item.id})">✎</button>
+              <button class="miniButton" type="button" title="Excluir" onclick="deleteCollaborator(${item.id})">×</button>
+            </div></td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="10"><div class="emptyState"><strong>Nenhum colaborador encontrado</strong>Importe a planilha ou ajuste os filtros.</div></td></tr>`;
+
+      populateWithdrawalCollaborators();
+    }
+
+    function populateWithdrawalCollaborators() {
+      const collaborators = Array.isArray(state.collaborators) ? state.collaborators : [];
+      document.getElementById("employeeNameOptions").innerHTML = collaborators
+        .map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.companyId || item.vwId || "")}</option>`)
+        .join("");
+      document.getElementById("employeeIdOptions").innerHTML = collaborators
+        .map(item => `<option value="${escapeHtml(item.companyId || item.vwId || "")}">${escapeHtml(item.name)}</option>`)
+        .join("");
+      document.getElementById("employeeAreaOptions").innerHTML = uniqueSorted(collaborators.map(item => item.workstation))
+        .map(value => `<option value="${escapeHtml(value)}"></option>`)
+        .join("");
+      document.getElementById("employeeShiftOptions").innerHTML = uniqueSorted(collaborators.map(item => item.shift))
+        .map(value => `<option value="${escapeHtml(value)}"></option>`)
+        .join("");
+      document.getElementById("employeeCategoryOptions").innerHTML = uniqueSorted([
+        ...collaborators.map(item => item.role),
+        "Operacional",
+        "Administrativo",
+        "Liderança",
+        "Manutenção",
+        "Motorista",
+        "Terceirizado"
+      ]).map(value => `<option value="${escapeHtml(value)}"></option>`).join("");
+    }
+
+    function fillWithdrawalFromCollaborator(value) {
+      const normalized = normalizeColumnName(value);
+      const collaborator = state.collaborators.find(item => {
+        return normalizeColumnName(item.name) === normalized
+          || normalizeColumnName(item.companyId) === normalized
+          || normalizeColumnName(item.vwId) === normalized;
+      });
+      if (!collaborator) return;
+      document.getElementById("employeeName").value = collaborator.name || "";
+      document.getElementById("employeeId").value = collaborator.companyId || collaborator.vwId || "";
+      document.getElementById("employeeCategory").value = collaborator.role || "";
+      document.getElementById("employeeArea").value = collaborator.workstation || "";
+      document.getElementById("employeeShift").value = collaborator.shift || "";
+      updateWithdrawalSummary();
+    }
+
+    function openCollaboratorModal(collaborator = null) {
+      editingCollaboratorId = collaborator ? collaborator.id : null;
+      document.getElementById("collaboratorModalTitle").textContent = collaborator ? "Editar colaborador" : "Novo colaborador";
+      document.getElementById("collaboratorForm").reset();
+      const fields = {
+        collaboratorName: "name",
+        collaboratorVwId: "vwId",
+        collaboratorCompanyId: "companyId",
+        collaboratorAdmission: "admission",
+        collaboratorProbation45: "probation45",
+        collaboratorProbation90: "probation90",
+        collaboratorRole: "role",
+        collaboratorShift: "shift",
+        collaboratorVersatility: "versatility",
+        collaboratorWorkstation: "workstation",
+        collaboratorManager: "manager",
+        collaboratorReturnDate: "returnDate",
+        collaboratorPcd: "pcd",
+        collaboratorCommittee: "committee",
+        collaboratorOperationNotes: "operationNotes",
+        collaboratorHrNotes: "hrNotes"
+      };
+      if (collaborator) {
+        Object.entries(fields).forEach(([id, field]) => {
+          document.getElementById(id).value = collaborator[field] || "";
+        });
+      }
+      document.getElementById("collaboratorModal").classList.add("open");
+      setTimeout(() => document.getElementById("collaboratorName").focus(), 80);
+    }
+
+    function closeCollaboratorModal() {
+      document.getElementById("collaboratorModal").classList.remove("open");
+      editingCollaboratorId = null;
+    }
+
+    window.editCollaborator = function(id) {
+      openCollaboratorModal(state.collaborators.find(item => item.id === id));
+    };
+
+    window.deleteCollaborator = function(id) {
+      const collaborator = state.collaborators.find(item => item.id === id);
+      if (!collaborator) return;
+      if (!confirm(`Deseja excluir o cadastro de ${collaborator.name}? As retiradas já registradas serão preservadas.`)) return;
+      state.collaborators = state.collaborators.filter(item => item.id !== id);
+      saveState();
+      renderAll();
+      showToast("Colaborador excluído. O histórico foi preservado.");
+    };
 
     function populateWithdrawalMaterials() {
       const select = document.getElementById("withdrawalMaterial");
@@ -2995,6 +3315,7 @@
     function renderHistory() {
       const historyCategory = item => item.employeeCategory
         || state.withdrawals.find(withdrawal => withdrawal.historyId === item.id)?.employeeCategory
+        || state.collaborators.find(collaborator => normalizeColumnName(collaborator.name) === normalizeColumnName(item.employee))?.role
         || "";
       const setHistoryOptions = (id, values, emptyLabel, formatLabel = value => value) => {
         const select = document.getElementById(id);
@@ -3060,6 +3381,7 @@
     function renderAll() {
       renderDashboard();
       renderMaterials();
+      renderCollaborators();
       renderInventory();
       renderAlerts();
       renderHistory();
@@ -3122,6 +3444,45 @@
       XLSX.utils.book_append_sheet(workbook, sheet, "MATERIAIS");
       XLSX.writeFile(workbook, `materiais_epi_sese_${new Date().toISOString().slice(0, 10)}.xlsx`);
       showToast("Planilha de materiais exportada com sucesso.");
+    }
+
+    function exportCollaborators() {
+      if (typeof XLSX === "undefined") {
+        showToast("Não foi possível carregar o recurso de Excel.", true);
+        return;
+      }
+      const rows = [["Chapa VW", "Matrícula SESÉ", "Nome", "Admissão", "45 Dias", "90 Dias", "Cargo Atual", "Turno", "Carta de Versatilidade", "Posto de Trabalho", "Responsável", "Observação da Operação", "Observação do RH", "Retorno", "PCD", "Brigadista e Cipeiro"]];
+      state.collaborators.forEach(item => rows.push([
+        item.vwId || "",
+        item.companyId || "",
+        item.name || "",
+        item.admission || "",
+        item.probation45 || "",
+        item.probation90 || "",
+        item.role || "",
+        item.shift || "",
+        item.versatility || "",
+        item.workstation || "",
+        item.manager || "",
+        item.operationNotes || "",
+        item.hrNotes || "",
+        item.returnDate || "",
+        item.pcd || "",
+        item.committee || ""
+      ]));
+      const sheet = XLSX.utils.aoa_to_sheet(rows);
+      sheet["!autofilter"] = { ref: sheet["!ref"] };
+      sheet["!freeze"] = { xSplit: 0, ySplit: 1 };
+      sheet["!cols"] = [
+        { wch: 14 }, { wch: 18 }, { wch: 38 }, { wch: 14 },
+        { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 13 },
+        { wch: 42 }, { wch: 42 }, { wch: 24 }, { wch: 35 },
+        { wch: 35 }, { wch: 14 }, { wch: 14 }, { wch: 28 }
+      ];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "COLABORADORES");
+      XLSX.writeFile(workbook, `colaboradores_sese_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("Cadastro de colaboradores exportado com sucesso.");
     }
 
     const materialColumnAliases = {
@@ -3290,6 +3651,165 @@
       }
     }
 
+    const collaboratorColumnAliases = {
+      vwId: ["chapa vw", "chapa volkswagen", "id vw"],
+      companyId: ["matricula", "matricula sese", "chapa sese", "chapa"],
+      name: ["nome", "nome completo", "colaborador"],
+      admission: ["admissao", "data de admissao"],
+      probation45: ["45 dias", "avaliacao 45 dias"],
+      probation90: ["90 dias", "avaliacao 90 dias"],
+      role: ["cargo atual", "cargo", "funcao", "categoria"],
+      shift: ["turno", "horario"],
+      versatility: ["carta de versatilidade", "carta"],
+      workstation: ["posto de trabalho", "posto", "area"],
+      manager: ["responsavel", "gestor", "lider"],
+      operationNotes: ["observacao da operacao", "observacoes da operacao"],
+      hrNotes: ["observacao do rh", "observacoes do rh"],
+      returnDate: ["retorno", "data de retorno"],
+      pcd: ["pcd"],
+      committee: ["brigadista e cipeiro", "brigadista", "cipeiro", "brigada e cipa"]
+    };
+
+    function collaboratorImportedValue(row, field) {
+      const alias = collaboratorColumnAliases[field].find(name => Object.prototype.hasOwnProperty.call(row, name));
+      return alias ? row[alias] : "";
+    }
+
+    function prepareImportedCollaborator(sourceRow, existing, rowNumber) {
+      const row = normalizedRow(sourceRow);
+      const textOrExisting = field => {
+        const value = importedText(collaboratorImportedValue(row, field));
+        return value || (existing ? existing[field] || "" : "");
+      };
+      const dateOrExisting = field => {
+        const source = collaboratorImportedValue(row, field);
+        const value = importedDate(source);
+        return value || (existing ? existing[field] || "" : "");
+      };
+      const collaborator = {
+        id: existing ? existing.id : Date.now() + rowNumber,
+        vwId: textOrExisting("vwId"),
+        companyId: textOrExisting("companyId"),
+        name: textOrExisting("name"),
+        admission: dateOrExisting("admission"),
+        probation45: dateOrExisting("probation45"),
+        probation90: dateOrExisting("probation90"),
+        role: textOrExisting("role"),
+        shift: textOrExisting("shift"),
+        versatility: textOrExisting("versatility"),
+        workstation: textOrExisting("workstation"),
+        manager: textOrExisting("manager"),
+        operationNotes: textOrExisting("operationNotes"),
+        hrNotes: textOrExisting("hrNotes"),
+        returnDate: dateOrExisting("returnDate"),
+        pcd: textOrExisting("pcd"),
+        committee: textOrExisting("committee"),
+        status: "Ativo"
+      };
+      const valid = Boolean(
+        collaborator.name
+        && (collaborator.companyId || collaborator.vwId)
+        && collaborator.role
+        && collaborator.shift
+      );
+      return { collaborator, valid, rowNumber };
+    }
+
+    function findCollaboratorSheet(workbook) {
+      for (const sheetName of workbook.SheetNames) {
+        if (normalizeColumnName(sheetName).includes("demitid")) continue;
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: true });
+        const headerIndex = rows.findIndex(row => {
+          const headers = row.map(normalizeColumnName);
+          return headers.includes("nome")
+            && headers.some(value => ["matricula", "matricula sese", "chapa vw", "chapa"].includes(value))
+            && headers.some(value => ["cargo atual", "cargo", "funcao"].includes(value));
+        });
+        if (headerIndex >= 0) return { sheet, rows, headerIndex, sheetName };
+      }
+      return null;
+    }
+
+    async function importCollaboratorsFromExcel(file) {
+      if (!file) return;
+      if (typeof XLSX === "undefined") {
+        showToast("Não foi possível carregar o recurso de Excel.", true);
+        return;
+      }
+      try {
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+        const source = findCollaboratorSheet(workbook);
+        if (!source) {
+          showToast("Não encontrei uma aba com nome, matrícula, cargo e turno.", true);
+          return;
+        }
+        const headers = source.rows[source.headerIndex].map(normalizeColumnName);
+        const dataRows = source.rows.slice(source.headerIndex + 1)
+          .filter(row => row.some(value => importedText(value) !== ""))
+          .map(row => headers.reduce((output, header, index) => {
+            if (header) output[header] = row[index] ?? "";
+            return output;
+          }, {}));
+
+        const existingByKey = new Map();
+        state.collaborators.forEach(item => {
+          if (item.companyId) existingByKey.set(`company:${normalizeColumnName(item.companyId)}`, item);
+          if (item.vwId) existingByKey.set(`vw:${normalizeColumnName(item.vwId)}`, item);
+        });
+
+        const seen = new Set();
+        const prepared = [];
+        let rejected = 0;
+        let added = 0;
+        let updated = 0;
+
+        dataRows.forEach((sourceRow, index) => {
+          const row = normalizedRow(sourceRow);
+          const companyId = normalizeColumnName(collaboratorImportedValue(row, "companyId"));
+          const vwId = normalizeColumnName(collaboratorImportedValue(row, "vwId"));
+          const key = companyId ? `company:${companyId}` : `vw:${vwId}`;
+          const existing = existingByKey.get(key)
+            || (vwId ? existingByKey.get(`vw:${vwId}`) : null)
+            || (companyId ? existingByKey.get(`company:${companyId}`) : null);
+          const result = prepareImportedCollaborator(sourceRow, existing, source.headerIndex + index + 2);
+          if ((!companyId && !vwId) || seen.has(key) || !result.valid) {
+            rejected += 1;
+            return;
+          }
+          seen.add(key);
+          prepared.push({ ...result, existing: Boolean(existing) });
+          if (existing) updated += 1;
+          else added += 1;
+        });
+
+        if (!prepared.length) {
+          showToast(`Nenhum colaborador válido encontrado. Linhas não importadas: ${rejected}.`, true);
+          return;
+        }
+
+        const message = `Prévia da aba ${source.sheetName}\n\nNovos colaboradores: ${added}\nCadastros atualizados: ${updated}\nLinhas não importadas: ${rejected}\n\nDeseja confirmar a importação dos registros válidos?`;
+        if (!confirm(message)) return;
+
+        prepared.forEach(entry => {
+          if (entry.existing) {
+            const index = state.collaborators.findIndex(item => item.id === entry.collaborator.id);
+            state.collaborators[index] = entry.collaborator;
+          } else {
+            state.collaborators.push(entry.collaborator);
+          }
+        });
+        saveState();
+        renderAll();
+        showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updated}. Não importados: ${rejected}.`);
+      } catch (error) {
+        console.error(error);
+        showToast("Não foi possível ler a planilha de colaboradores.", true);
+      } finally {
+        document.getElementById("importCollaboratorsFile").value = "";
+      }
+    }
+
     function exportInventory() {
       const rows = [["Data do inventário", "Código", "Descrição", "Número do CA", "Validade do CA", "Lote", "Localização", "Saldo esperado"]];
       const inventoryDate = formatDate(new Date().toISOString(), true);
@@ -3421,9 +3941,14 @@
     document.getElementById("mobileOverlay").addEventListener("click", closeMobileMenu);
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
+    document.getElementById("newCollaboratorButton").addEventListener("click", () => openCollaboratorModal());
     document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeMaterialModal));
+    document.querySelectorAll("[data-close-collaborator]").forEach(button => button.addEventListener("click", closeCollaboratorModal));
     document.getElementById("materialModal").addEventListener("click", event => {
       if (event.target.id === "materialModal") closeMaterialModal();
+    });
+    document.getElementById("collaboratorModal").addEventListener("click", event => {
+      if (event.target.id === "collaboratorModal") closeCollaboratorModal();
     });
 
     document.getElementById("materialForm").addEventListener("submit", event => {
@@ -3456,8 +3981,66 @@
       showToast(wasEditing ? "Material atualizado com sucesso." : "Material cadastrado com sucesso.");
     });
 
+    document.getElementById("collaboratorForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const wasEditing = Boolean(editingCollaboratorId);
+      const collaborator = {
+        id: editingCollaboratorId || Date.now(),
+        name: document.getElementById("collaboratorName").value.trim(),
+        vwId: document.getElementById("collaboratorVwId").value.trim(),
+        companyId: document.getElementById("collaboratorCompanyId").value.trim(),
+        admission: document.getElementById("collaboratorAdmission").value,
+        probation45: document.getElementById("collaboratorProbation45").value,
+        probation90: document.getElementById("collaboratorProbation90").value,
+        role: document.getElementById("collaboratorRole").value.trim(),
+        shift: document.getElementById("collaboratorShift").value.trim(),
+        versatility: document.getElementById("collaboratorVersatility").value.trim(),
+        workstation: document.getElementById("collaboratorWorkstation").value.trim(),
+        manager: document.getElementById("collaboratorManager").value.trim(),
+        returnDate: document.getElementById("collaboratorReturnDate").value,
+        pcd: document.getElementById("collaboratorPcd").value.trim(),
+        committee: document.getElementById("collaboratorCommittee").value.trim(),
+        operationNotes: document.getElementById("collaboratorOperationNotes").value.trim(),
+        hrNotes: document.getElementById("collaboratorHrNotes").value.trim(),
+        status: "Ativo"
+      };
+      const duplicate = state.collaborators.find(item => {
+        if (item.id === editingCollaboratorId) return false;
+        const sameCompanyId = collaborator.companyId
+          && normalizeColumnName(item.companyId) === normalizeColumnName(collaborator.companyId);
+        const sameVwId = collaborator.vwId
+          && normalizeColumnName(item.vwId) === normalizeColumnName(collaborator.vwId);
+        return sameCompanyId || sameVwId;
+      });
+      if (duplicate) {
+        showToast(`Já existe um cadastro para ${duplicate.name}.`, true);
+        return;
+      }
+      if (editingCollaboratorId) {
+        const index = state.collaborators.findIndex(item => item.id === editingCollaboratorId);
+        state.collaborators[index] = collaborator;
+      } else {
+        state.collaborators.push(collaborator);
+      }
+      saveState();
+      closeCollaboratorModal();
+      renderAll();
+      showToast(wasEditing ? "Colaborador atualizado com sucesso." : "Colaborador cadastrado com sucesso.");
+    });
+
     ["materialSearch", "categoryFilter", "stockFilter"].forEach(id => {
       document.getElementById(id).addEventListener("input", renderMaterials);
+    });
+
+    ["collaboratorNameFilter", "collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderCollaborators);
+    });
+
+    document.getElementById("clearCollaboratorFilters").addEventListener("click", () => {
+      ["collaboratorNameFilter", "collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      renderCollaborators();
     });
 
     ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeCategory", "historyResponsible", "historyDate"].forEach(id => {
@@ -3485,6 +4068,8 @@
     ["employeeName", "employeeId", "employeeCategory"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateWithdrawalSummary);
     });
+    document.getElementById("employeeName").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
+    document.getElementById("employeeId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
 
     document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
 
@@ -3631,7 +4216,14 @@
     document.getElementById("importMaterialsFile").addEventListener("change", event => {
       importMaterialsFromExcel(event.target.files[0]);
     });
+    document.getElementById("importCollaborators").addEventListener("click", () => {
+      document.getElementById("importCollaboratorsFile").click();
+    });
+    document.getElementById("importCollaboratorsFile").addEventListener("change", event => {
+      importCollaboratorsFromExcel(event.target.files[0]);
+    });
     document.getElementById("exportMaterials").addEventListener("click", exportMaterials);
+    document.getElementById("exportCollaborators").addEventListener("click", exportCollaborators);
     document.getElementById("exportHistory").addEventListener("click", exportHistory);
     document.getElementById("exportInventory").addEventListener("click", exportInventory);
     document.getElementById("backupData").addEventListener("click", backupData);
@@ -3666,6 +4258,7 @@
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") {
         closeMaterialModal();
+        closeCollaboratorModal();
         document.getElementById("unitModal").classList.remove("open");
         closeMobileMenu();
       }
