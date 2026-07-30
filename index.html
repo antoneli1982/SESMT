@@ -975,6 +975,135 @@
       grid-template-columns: repeat(3, minmax(170px, 1fr));
     }
 
+    .searchableFilter {
+      position: relative;
+      min-width: 0;
+    }
+
+    .searchableFilter .input {
+      padding-right: 78px;
+    }
+
+    .searchableFilter .input::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .searchableFilterClear {
+      position: absolute;
+      top: 50%;
+      right: 40px;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      padding: 0;
+      border: 0;
+      border-radius: 9px;
+      color: #53627a;
+      background: transparent;
+      font-size: 19px;
+      line-height: 1;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    .searchableFilterToggle {
+      position: absolute;
+      top: 50%;
+      right: 7px;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      padding: 0;
+      border: 0;
+      border-radius: 9px;
+      color: #53627a;
+      background: transparent;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    .searchableFilterClear:hover,
+    .searchableFilterClear:focus-visible,
+    .searchableFilterToggle:hover,
+    .searchableFilterToggle:focus-visible {
+      color: var(--blue);
+      background: rgba(0, 89, 247, .09);
+      outline: none;
+    }
+
+    .searchableFilterList {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 40;
+      max-height: 340px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--surface);
+      box-shadow: 0 18px 40px rgba(8, 32, 67, .18);
+      overscroll-behavior: contain;
+    }
+
+    .searchableFilterList[hidden] {
+      display: none;
+    }
+
+    .searchableFilterOption {
+      display: block;
+      width: 100%;
+      padding: 10px 13px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--surface);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .searchableFilterOption:last-child {
+      border-bottom: 0;
+    }
+
+    .searchableFilterOption strong,
+    .searchableFilterOption small {
+      display: block;
+    }
+
+    .searchableFilterOption strong {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .searchableFilterOption small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .searchableFilterOption:hover,
+    .searchableFilterOption.active,
+    .searchableFilterOption:focus-visible {
+      color: var(--blue);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .searchableFilterEmpty {
+      padding: 13px;
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
     .alertFilters .filterClear,
     .historyFilters .filterClear,
     .collaboratorFilters .filterClear {
@@ -2710,7 +2839,12 @@
           <article class="statCard"><div class="statTop"><span>PCD</span><span class="statBadge">P</span></div><strong id="collaboratorPcdTotal">0</strong><small>Registros identificados</small></article>
         </div>
         <div class="filters collaboratorFilters">
-          <select class="select" id="collaboratorNameFilter" aria-label="Filtrar por colaborador"><option value="">Todos os colaboradores</option></select>
+          <div class="searchableFilter" id="collaboratorNameSearch">
+            <input class="input" id="collaboratorNameFilter" type="search" placeholder="Digite ou abra a lista de colaboradores" autocomplete="off" aria-label="Pesquisar ou selecionar colaborador" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="collaboratorNameSuggestions">
+            <button class="searchableFilterClear" id="clearCollaboratorNameSearch" type="button" title="Limpar nome" aria-label="Limpar pesquisa por nome" hidden>×</button>
+            <button class="searchableFilterToggle" id="toggleCollaboratorNameSuggestions" type="button" title="Abrir lista" aria-label="Abrir lista de colaboradores" aria-haspopup="listbox" aria-expanded="false">▾</button>
+            <div class="searchableFilterList" id="collaboratorNameSuggestions" role="listbox" aria-label="Sugestões de colaboradores" hidden></div>
+          </div>
           <select class="select" id="collaboratorIdFilter" aria-label="Filtrar por matrícula"><option value="">Todas as matrículas</option></select>
           <select class="select" id="collaboratorRoleFilter" aria-label="Filtrar por cargo"><option value="">Todos os cargos</option></select>
           <select class="select" id="collaboratorShiftFilter" aria-label="Filtrar por turno"><option value="">Todos os turnos</option></select>
@@ -4546,17 +4680,97 @@
       if (options.includes(selected)) select.value = selected;
     }
 
+    let collaboratorSuggestionIndex = -1;
+    let suppressCollaboratorSuggestions = false;
+
+    function collaboratorNameMatches(query) {
+      const terms = normalizeColumnName(query).split(/\s+/).filter(Boolean);
+      return (Array.isArray(state.collaborators) ? state.collaborators : [])
+        .filter(item => {
+          const name = normalizeColumnName(item.name);
+          const identifiers = normalizeColumnName(`${item.companyId || ""} ${item.vwId || ""}`);
+          return terms.every(term => name.includes(term) || identifiers.includes(term));
+        })
+        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+    }
+
+    function closeCollaboratorNameSuggestions() {
+      const input = document.getElementById("collaboratorNameFilter");
+      const list = document.getElementById("collaboratorNameSuggestions");
+      collaboratorSuggestionIndex = -1;
+      list.hidden = true;
+      list.innerHTML = "";
+      input.setAttribute("aria-expanded", "false");
+      document.getElementById("toggleCollaboratorNameSuggestions").setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function renderCollaboratorNameSuggestions() {
+      const input = document.getElementById("collaboratorNameFilter");
+      const list = document.getElementById("collaboratorNameSuggestions");
+      const clearButton = document.getElementById("clearCollaboratorNameSearch");
+      const query = input.value.trim();
+      clearButton.hidden = !query;
+      collaboratorSuggestionIndex = -1;
+      input.removeAttribute("aria-activedescendant");
+
+      if (suppressCollaboratorSuggestions || document.activeElement !== input) {
+        list.hidden = true;
+        list.innerHTML = "";
+        input.setAttribute("aria-expanded", "false");
+        document.getElementById("toggleCollaboratorNameSuggestions").setAttribute("aria-expanded", "false");
+        return;
+      }
+
+      const matches = collaboratorNameMatches(query);
+      list.innerHTML = matches.length ? matches.map((item, index) => `
+        <button class="searchableFilterOption" id="collaboratorSuggestion${index}" type="button" role="option" data-collaborator-name="${escapeHtml(item.name)}" aria-selected="false">
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>Matrícula SESÉ: ${escapeHtml(item.companyId || "Não informada")} · Chapa VW: ${escapeHtml(item.vwId || "Não informada")}</small>
+          <small>Caminho: ${escapeHtml(item.role || "Cargo não informado")} › ${escapeHtml(item.shift || "Turno não informado")} › ${escapeHtml(item.workstation || "Posto não informado")}</small>
+        </button>
+      `).join("") : `<div class="searchableFilterEmpty">Nenhum colaborador corresponde à pesquisa.</div>`;
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      document.getElementById("toggleCollaboratorNameSuggestions").setAttribute("aria-expanded", "true");
+    }
+
+    function selectCollaboratorNameSuggestion(name) {
+      const input = document.getElementById("collaboratorNameFilter");
+      input.value = name;
+      suppressCollaboratorSuggestions = true;
+      closeCollaboratorNameSuggestions();
+      renderCollaborators();
+      input.focus();
+      suppressCollaboratorSuggestions = false;
+    }
+
+    function moveCollaboratorSuggestion(direction) {
+      const input = document.getElementById("collaboratorNameFilter");
+      const options = Array.from(document.querySelectorAll("#collaboratorNameSuggestions .searchableFilterOption"));
+      if (!options.length) return;
+      collaboratorSuggestionIndex = (collaboratorSuggestionIndex + direction + options.length) % options.length;
+      options.forEach((option, index) => {
+        const active = index === collaboratorSuggestionIndex;
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) {
+          option.scrollIntoView({ block: "nearest" });
+          input.setAttribute("aria-activedescendant", option.id);
+        }
+      });
+    }
+
     function renderCollaborators() {
       const collaborators = Array.isArray(state.collaborators) ? state.collaborators : [];
-      setDynamicSelectOptions("collaboratorNameFilter", collaborators.map(item => item.name), "Todos os colaboradores");
       setDynamicSelectOptions("collaboratorIdFilter", collaborators.map(item => item.companyId), "Todas as matrículas");
       setDynamicSelectOptions("collaboratorRoleFilter", collaborators.map(item => item.role), "Todos os cargos");
       setDynamicSelectOptions("collaboratorShiftFilter", collaborators.map(item => item.shift), "Todos os turnos");
       setDynamicSelectOptions("collaboratorWorkstationFilter", collaborators.map(item => item.workstation), "Todos os postos");
       setDynamicSelectOptions("collaboratorManagerFilter", collaborators.map(item => item.manager), "Todos os responsáveis");
 
+      const nameTerms = normalizeColumnName(document.getElementById("collaboratorNameFilter").value).split(/\s+/).filter(Boolean);
       const filters = {
-        name: document.getElementById("collaboratorNameFilter").value,
         companyId: document.getElementById("collaboratorIdFilter").value,
         role: document.getElementById("collaboratorRoleFilter").value,
         shift: document.getElementById("collaboratorShiftFilter").value,
@@ -4564,7 +4778,12 @@
         manager: document.getElementById("collaboratorManagerFilter").value
       };
       const filtered = collaborators
-        .filter(item => Object.entries(filters).every(([field, value]) => !value || String(item[field] || "") === value))
+        .filter(item => {
+          const name = normalizeColumnName(item.name);
+          const nameMatches = nameTerms.every(term => name.includes(term));
+          const otherFiltersMatch = Object.entries(filters).every(([field, value]) => !value || String(item[field] || "") === value);
+          return nameMatches && otherFiltersMatch;
+        })
         .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
 
       const isPcd = item => {
@@ -4601,6 +4820,7 @@
 
       hydrateCollaboratorPhotos();
       populateWithdrawalCollaborators();
+      renderCollaboratorNameSuggestions();
     }
 
     async function hydrateCollaboratorPhotos() {
@@ -6261,14 +6481,65 @@
       document.getElementById(id).addEventListener("input", renderMaterials);
     });
 
-    ["collaboratorNameFilter", "collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
+    ["collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
       document.getElementById(id).addEventListener("change", renderCollaborators);
+    });
+
+    const collaboratorNameFilter = document.getElementById("collaboratorNameFilter");
+    collaboratorNameFilter.addEventListener("input", renderCollaborators);
+    collaboratorNameFilter.addEventListener("focus", renderCollaboratorNameSuggestions);
+    collaboratorNameFilter.addEventListener("keydown", event => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (document.getElementById("collaboratorNameSuggestions").hidden) renderCollaboratorNameSuggestions();
+        moveCollaboratorSuggestion(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (document.getElementById("collaboratorNameSuggestions").hidden) renderCollaboratorNameSuggestions();
+        moveCollaboratorSuggestion(-1);
+      } else if (event.key === "Enter" && collaboratorSuggestionIndex >= 0) {
+        event.preventDefault();
+        const option = document.querySelectorAll("#collaboratorNameSuggestions .searchableFilterOption")[collaboratorSuggestionIndex];
+        if (option) selectCollaboratorNameSuggestion(option.dataset.collaboratorName);
+      } else if (event.key === "Escape") {
+        closeCollaboratorNameSuggestions();
+      }
+    });
+
+    document.getElementById("collaboratorNameSuggestions").addEventListener("pointerdown", event => {
+      const option = event.target.closest("[data-collaborator-name]");
+      if (!option) return;
+      event.preventDefault();
+      selectCollaboratorNameSuggestion(option.dataset.collaboratorName);
+    });
+
+    document.getElementById("toggleCollaboratorNameSuggestions").addEventListener("click", () => {
+      const list = document.getElementById("collaboratorNameSuggestions");
+      if (!list.hidden && document.activeElement === collaboratorNameFilter) {
+        closeCollaboratorNameSuggestions();
+        return;
+      }
+      suppressCollaboratorSuggestions = false;
+      collaboratorNameFilter.focus();
+      renderCollaboratorNameSuggestions();
+    });
+
+    document.getElementById("clearCollaboratorNameSearch").addEventListener("click", () => {
+      collaboratorNameFilter.value = "";
+      closeCollaboratorNameSuggestions();
+      renderCollaborators();
+      collaboratorNameFilter.focus();
+    });
+
+    document.addEventListener("pointerdown", event => {
+      if (!event.target.closest("#collaboratorNameSearch")) closeCollaboratorNameSuggestions();
     });
 
     document.getElementById("clearCollaboratorFilters").addEventListener("click", () => {
       ["collaboratorNameFilter", "collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
         document.getElementById(id).value = "";
       });
+      closeCollaboratorNameSuggestions();
       renderCollaborators();
     });
 
