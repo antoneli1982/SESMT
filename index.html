@@ -3561,29 +3561,19 @@
                 </div>
                 <div class="field">
                   <label for="employeeVwId">Chapa Volkswagen <span class="required">*</span></label>
-                  <input class="input" id="employeeVwId" list="employeeVwIdOptions" required placeholder="Chapa Volkswagen">
-                  <datalist id="employeeVwIdOptions"></datalist>
+                  <input class="input" id="employeeVwId" required readonly aria-readonly="true" placeholder="Preenchida pelo cadastro">
                 </div>
                 <div class="field">
                   <label for="employeeCompanyId">Matrícula SESÉ</label>
-                  <input class="input" id="employeeCompanyId" list="employeeCompanyIdOptions" placeholder="Matrícula SESÉ">
-                  <datalist id="employeeCompanyIdOptions"></datalist>
+                  <input class="input" id="employeeCompanyId" readonly aria-readonly="true" placeholder="Preenchida pelo cadastro">
                 </div>
                 <div class="field">
                   <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
-                  <input class="input" id="employeeCategory" list="employeeCategoryOptions" placeholder="Informe ou selecione" required>
-                  <datalist id="employeeCategoryOptions">
-                    <option value="Operacional">
-                    <option value="Administrativo">
-                    <option value="Liderança">
-                    <option value="Manutenção">
-                    <option value="Motorista">
-                    <option value="Terceirizado">
-                  </datalist>
+                  <input class="input" id="employeeCategory" readonly aria-readonly="true" placeholder="Preenchida pelo cadastro" required>
                 </div>
                 <div class="field">
                   <label for="employeeShift">Turno <span class="required">*</span></label>
-                  <select class="select" id="employeeShift" required>
+                  <select class="select" id="employeeShift" required disabled aria-disabled="true">
                     <option value="">Selecione o turno</option>
                     <option value="ADM">ADM</option>
                     <option value="1º">1º</option>
@@ -5668,23 +5658,6 @@
       document.getElementById("employeeNameOptions").innerHTML = collaborators
         .map(item => `<option value="${escapeHtml(item.name)}">Volkswagen ${escapeHtml(item.vwId || "Não informada")} · SESÉ ${escapeHtml(item.companyId || "Não informada")}</option>`)
         .join("");
-      document.getElementById("employeeVwIdOptions").innerHTML = collaborators
-        .filter(item => item.vwId)
-        .map(item => `<option value="${escapeHtml(item.vwId)}">${escapeHtml(item.name)}</option>`)
-        .join("");
-      document.getElementById("employeeCompanyIdOptions").innerHTML = collaborators
-        .filter(item => item.companyId)
-        .map(item => `<option value="${escapeHtml(item.companyId)}">${escapeHtml(item.name)}</option>`)
-        .join("");
-      document.getElementById("employeeCategoryOptions").innerHTML = uniqueSorted([
-        ...collaborators.map(item => item.role),
-        "Operacional",
-        "Administrativo",
-        "Liderança",
-        "Manutenção",
-        "Motorista",
-        "Terceirizado"
-      ]).map(value => `<option value="${escapeHtml(value)}"></option>`).join("");
     }
 
     async function renderWithdrawalCollaboratorPhoto(collaborator = null) {
@@ -7814,12 +7787,23 @@
 
     document.getElementById("consumptionPeriod").addEventListener("change", renderDashboard);
 
-    ["employeeName", "employeeVwId", "employeeCompanyId", "employeeCategory"].forEach(id => {
-      document.getElementById(id).addEventListener("input", updateWithdrawalSummary);
+    document.getElementById("employeeName").addEventListener("input", event => {
+      const typedName = normalizeColumnName(event.target.value);
+      const selectedCollaborator = (state.collaborators || []).find(item =>
+        item.status !== "Demitido" && normalizeColumnName(item.name) === typedName
+      );
+      if (selectedCollaborator) {
+        fillWithdrawalFromCollaborator(selectedCollaborator.name);
+        return;
+      }
+      document.getElementById("employeeVwId").value = "";
+      document.getElementById("employeeCompanyId").value = "";
+      document.getElementById("employeeCategory").value = "";
+      document.getElementById("employeeShift").value = "";
+      updateWithdrawalSummary();
+      renderWithdrawalCollaboratorPhoto();
     });
     document.getElementById("employeeName").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
-    document.getElementById("employeeVwId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
-    document.getElementById("employeeCompanyId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
 
     document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
 
@@ -7906,6 +7890,15 @@
         employeeCompanyId,
         employeeId: employeeCompanyId || employeeVwId
       });
+      if (
+        !collaborator
+        || collaborator.status === "Demitido"
+        || normalizeColumnName(collaborator.name) !== normalizeColumnName(document.getElementById("employeeName").value)
+      ) {
+        showToast("Selecione um colaborador ativo e cadastrado.", true);
+        document.getElementById("employeeName").focus();
+        return;
+      }
       const withdrawal = {
         id: `RET${historyId}`,
         historyId,
