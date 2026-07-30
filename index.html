@@ -4192,6 +4192,14 @@
               <input class="input" id="collaboratorCommittee">
             </div>
             <div class="field full">
+              <label>Situação do colaborador</label>
+              <button class="ghostButton" id="toggleCollaboratorDismissed" type="button" aria-pressed="false">Marcar como demitido</button>
+            </div>
+            <div class="field full" id="collaboratorDismissalField" hidden>
+              <label for="collaboratorDismissalDate">DEMITIDO · Data de demissão <span class="required">*</span></label>
+              <input class="input" id="collaboratorDismissalDate" type="date">
+            </div>
+            <div class="field full">
               <label for="collaboratorOperationNotes">Observação da operação</label>
               <textarea class="textarea" id="collaboratorOperationNotes"></textarea>
             </div>
@@ -4844,6 +4852,11 @@
           ...material,
           size: material.size || "",
           manufacturer: material.manufacturer || ""
+        }));
+        loaded.collaborators = loaded.collaborators.map(collaborator => ({
+          ...collaborator,
+          status: collaborator.status === "Demitido" ? "Demitido" : "Ativo",
+          dismissalDate: collaborator.dismissalDate || ""
         }));
         const greatestMaterialSequence = loaded.materials.reduce((greatest, material) => {
           const match = String(material.code || "").match(/(\d+)$/);
@@ -5558,15 +5571,19 @@
         const value = normalizeColumnName(item.pcd);
         return Boolean(value) && !["nao", "n a", "n"].includes(value);
       };
-      const administrative = collaborators.filter(item => normalizeColumnName(item.shift).includes("adm")).length;
-      document.getElementById("collaboratorTotal").textContent = collaborators.length.toLocaleString("pt-BR");
+      const activeCollaborators = collaborators.filter(item => item.status !== "Demitido");
+      const administrative = activeCollaborators.filter(item => normalizeColumnName(item.shift).includes("adm")).length;
+      document.getElementById("collaboratorTotal").textContent = activeCollaborators.length.toLocaleString("pt-BR");
       document.getElementById("collaboratorAdministrative").textContent = administrative.toLocaleString("pt-BR");
-      document.getElementById("collaboratorOperational").textContent = Math.max(0, collaborators.length - administrative).toLocaleString("pt-BR");
+      document.getElementById("collaboratorOperational").textContent = Math.max(0, activeCollaborators.length - administrative).toLocaleString("pt-BR");
       document.getElementById("collaboratorPcdTotal").textContent = collaborators.filter(isPcd).length.toLocaleString("pt-BR");
 
       document.getElementById("collaboratorsTable").innerHTML = filtered.length ? filtered.map(item => {
         const initials = collaboratorInitials(item.name);
-        const conditions = [isPcd(item) ? "PCD" : "", item.committee || ""].filter(Boolean).join(" · ") || "Regular";
+        const dismissal = item.status === "Demitido"
+          ? `DEMITIDO${item.dismissalDate ? ` · ${formatDate(item.dismissalDate)}` : ""}`
+          : "";
+        const conditions = [dismissal, isPcd(item) ? "PCD" : "", item.committee || ""].filter(Boolean).join(" · ") || "Ativo";
         return `
           <tr>
             <td data-label="Colaborador"><div class="materialCell"><div class="collaboratorAvatar"><span>${escapeHtml(initials)}</span>${item.photoKey ? `<img data-collaborator-photo="${escapeHtml(item.photoKey)}" alt="Foto de ${escapeHtml(item.name)}" hidden>` : ""}</div><div><strong>${escapeHtml(item.name)}</strong><small>${item.photoKey ? "Foto otimizada cadastrada" : "Sem foto"} · ${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
@@ -5615,7 +5632,12 @@
     }
 
     function populateWithdrawalCollaborators() {
-      const collaborators = Array.isArray(state.collaborators) ? state.collaborators : [];
+      const collaborators = (Array.isArray(state.collaborators) ? state.collaborators : [])
+        .filter(item => item.status !== "Demitido")
+        .sort((a, b) => {
+          const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
+          return admissionDifference || Number(b.id || 0) - Number(a.id || 0);
+        });
       document.getElementById("employeeNameOptions").innerHTML = collaborators
         .map(item => `<option value="${escapeHtml(item.name)}">Volkswagen ${escapeHtml(item.vwId || "Não informada")} · SESÉ ${escapeHtml(item.companyId || "Não informada")}</option>`)
         .join("");
@@ -5694,11 +5716,17 @@
 
     function fillWithdrawalFromCollaborator(value) {
       const normalized = normalizeColumnName(value);
-      const collaborator = state.collaborators.find(item => {
-        return normalizeColumnName(item.name) === normalized
-          || normalizeColumnName(item.companyId) === normalized
-          || normalizeColumnName(item.vwId) === normalized;
-      });
+      const collaborator = (state.collaborators || [])
+        .filter(item => item.status !== "Demitido")
+        .filter(item => {
+          return normalizeColumnName(item.name) === normalized
+            || normalizeColumnName(item.companyId) === normalized
+            || normalizeColumnName(item.vwId) === normalized;
+        })
+        .sort((a, b) => {
+          const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
+          return admissionDifference || Number(b.id || 0) - Number(a.id || 0);
+        })[0];
       if (!collaborator) {
         renderWithdrawalCollaboratorPhoto();
         return;
@@ -5801,6 +5829,7 @@
         collaboratorReturnDate: "returnDate",
         collaboratorPcd: "pcd",
         collaboratorCommittee: "committee",
+        collaboratorDismissalDate: "dismissalDate",
         collaboratorOperationNotes: "operationNotes",
         collaboratorHrNotes: "hrNotes"
       };
@@ -5809,10 +5838,64 @@
           document.getElementById(id).value = collaborator[field] || "";
         });
       }
+      setCollaboratorDismissedState(collaborator?.status === "Demitido");
       document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(collaborator?.name);
       document.getElementById("collaboratorModal").classList.add("open");
       await loadCollaboratorPhotoPreview(collaborator);
       setTimeout(() => document.getElementById("collaboratorName").focus(), 80);
+    }
+
+    function setCollaboratorDismissedState(isDismissed) {
+      const button = document.getElementById("toggleCollaboratorDismissed");
+      const field = document.getElementById("collaboratorDismissalField");
+      const dateInput = document.getElementById("collaboratorDismissalDate");
+      button.setAttribute("aria-pressed", String(isDismissed));
+      button.textContent = isDismissed ? "DEMITIDO · Remover marcação" : "Marcar como demitido";
+      field.hidden = !isDismissed;
+      dateInput.required = isDismissed;
+      if (!isDismissed) dateInput.value = "";
+    }
+
+    function collaboratorComparableValue(value) {
+      return normalizeColumnName(String(value || ""));
+    }
+
+    const collaboratorDuplicateFields = [
+      ["Nome completo", "name"],
+      ["Chapa VW", "vwId"],
+      ["Matrícula SESÉ", "companyId"],
+      ["Admissão", "admission"],
+      ["Avaliação em 45 dias", "probation45"],
+      ["Avaliação em 90 dias", "probation90"],
+      ["Cargo atual", "role"],
+      ["Turno", "shift"],
+      ["Carta de versatilidade", "versatility"],
+      ["Posto de trabalho", "workstation"],
+      ["Responsável", "manager"],
+      ["Retorno", "returnDate"],
+      ["PCD", "pcd"],
+      ["Brigadista e Cipeiro", "committee"],
+      ["Situação", "status"],
+      ["Data de demissão", "dismissalDate"],
+      ["Observação da operação", "operationNotes"],
+      ["Observação do RH", "hrNotes"]
+    ];
+
+    function findExactCollaboratorDuplicate(candidate, ignoredId = null) {
+      return (state.collaborators || []).find(item => {
+        if (String(item.id) === String(ignoredId)) return false;
+        return collaboratorDuplicateFields.every(([, field]) => {
+          return collaboratorComparableValue(item[field]) === collaboratorComparableValue(candidate[field]);
+        });
+      }) || null;
+    }
+
+    function showExactCollaboratorDuplicate(duplicate) {
+      const details = collaboratorDuplicateFields
+        .map(([label, field]) => `${label}: ${duplicate[field] || "Não informado"}`)
+        .join("\n");
+      alert(`DUPLICIDADE IDENTIFICADA\n\nJá existe um cadastro com exatamente os mesmos dados:\n\n${details}`);
+      showToast("Cadastro não salvo. Todos os dados informados já existem.", true);
     }
 
     function closeCollaboratorModal() {
@@ -6453,7 +6536,12 @@
       document.getElementById("employeeHistoryName").textContent = collaborator.name || "Não informado";
       document.getElementById("employeeHistoryUnit").textContent = [state.settings.unit, state.settings.address]
         .filter(Boolean).join(" · ") || "Não informada";
-      document.getElementById("employeeHistoryRole").textContent = collaborator.role || "Não informada";
+      document.getElementById("employeeHistoryRole").textContent = [
+        collaborator.role || "Não informada",
+        collaborator.status === "Demitido"
+          ? `DEMITIDO${collaborator.dismissalDate ? ` em ${formatDate(collaborator.dismissalDate)}` : ""}`
+          : "Ativo"
+      ].join(" · ");
       document.getElementById("employeeHistoryAdmission").textContent = formatDate(collaborator.admission);
       document.getElementById("employeeHistoryVwId").textContent = collaborator.vwId || "Não informada";
       document.getElementById("employeeHistoryCompanyId").textContent = collaborator.companyId || "Não informada";
@@ -7397,6 +7485,10 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
     document.getElementById("newCollaboratorButton").addEventListener("click", () => openCollaboratorModal());
+    document.getElementById("toggleCollaboratorDismissed").addEventListener("click", () => {
+      const button = document.getElementById("toggleCollaboratorDismissed");
+      setCollaboratorDismissedState(button.getAttribute("aria-pressed") !== "true");
+    });
     document.getElementById("clearAllMaterials").addEventListener("click", () => openProtectedAction("materials"));
     document.getElementById("clearAllCollaborators").addEventListener("click", () => openProtectedAction("collaborators"));
     document.getElementById("factoryResetDashboard").addEventListener("click", () => openProtectedAction("factory"));
@@ -7528,21 +7620,22 @@
         returnDate: document.getElementById("collaboratorReturnDate").value,
         pcd: document.getElementById("collaboratorPcd").value.trim(),
         committee: document.getElementById("collaboratorCommittee").value.trim(),
+        dismissalDate: document.getElementById("collaboratorDismissalDate").value,
         operationNotes: document.getElementById("collaboratorOperationNotes").value.trim(),
         hrNotes: document.getElementById("collaboratorHrNotes").value.trim(),
         photoKey: existingCollaborator?.photoKey || "",
-        status: "Ativo"
+        status: document.getElementById("toggleCollaboratorDismissed").getAttribute("aria-pressed") === "true"
+          ? "Demitido"
+          : "Ativo"
       };
-      const duplicate = state.collaborators.find(item => {
-        if (item.id === editingCollaboratorId) return false;
-        const sameCompanyId = collaborator.companyId
-          && normalizeColumnName(item.companyId) === normalizeColumnName(collaborator.companyId);
-        const sameVwId = collaborator.vwId
-          && normalizeColumnName(item.vwId) === normalizeColumnName(collaborator.vwId);
-        return sameCompanyId || sameVwId;
-      });
+      if (collaborator.status === "Demitido" && !collaborator.dismissalDate) {
+        document.getElementById("collaboratorDismissalDate").reportValidity();
+        showToast("Informe a data de demissão para concluir o cadastro.", true);
+        return;
+      }
+      const duplicate = findExactCollaboratorDuplicate(collaborator, editingCollaboratorId);
       if (duplicate) {
-        showToast(`Já existe um cadastro para ${duplicate.name}.`, true);
+        showExactCollaboratorDuplicate(duplicate);
         return;
       }
       try {
