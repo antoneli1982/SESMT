@@ -1231,6 +1231,55 @@
       justify-content: center;
     }
 
+    .collaboratorPagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .collaboratorPaginationInfo {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .collaboratorPaginationControls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .collaboratorPageSize {
+      width: auto;
+      min-width: 132px;
+    }
+
+    .collaboratorPageNumber {
+      min-width: 90px;
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .collaboratorPagination .miniButton {
+      width: auto;
+      min-width: 42px;
+      padding-inline: 12px;
+    }
+
+    .collaboratorPagination .miniButton:disabled {
+      opacity: .38;
+      cursor: not-allowed;
+    }
+
     .materialsCatalogTable {
       min-width: 1480px;
     }
@@ -3008,6 +3057,25 @@
         grid-template-columns: 1fr;
       }
 
+      .collaboratorPagination {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .collaboratorPaginationInfo {
+        text-align: center;
+      }
+
+      .collaboratorPaginationControls {
+        display: grid;
+        grid-template-columns: 42px minmax(100px, 1fr) 42px;
+      }
+
+      .collaboratorPageSize {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
       .employeeHistoryControls {
         grid-template-columns: 1fr;
       }
@@ -3538,6 +3606,20 @@
             </thead>
             <tbody id="collaboratorsTable"></tbody>
           </table>
+        </div>
+        <div class="collaboratorPagination" id="collaboratorPagination" aria-label="Paginação dos colaboradores">
+          <span class="collaboratorPaginationInfo" id="collaboratorPaginationInfo">Nenhum registro encontrado</span>
+          <div class="collaboratorPaginationControls">
+            <select class="select collaboratorPageSize" id="collaboratorPageSize" aria-label="Quantidade de colaboradores por página">
+              <option value="10">10 por página</option>
+              <option value="20" selected>20 por página</option>
+              <option value="30">30 por página</option>
+              <option value="50">50 por página</option>
+            </select>
+            <button class="miniButton" id="collaboratorPreviousPage" type="button" aria-label="Página anterior">‹</button>
+            <span class="collaboratorPageNumber" id="collaboratorPageNumber">Página 1 de 1</span>
+            <button class="miniButton" id="collaboratorNextPage" type="button" aria-label="Próxima página">›</button>
+          </div>
         </div>
       </section>
 
@@ -5480,6 +5562,7 @@
 
     let collaboratorSuggestionIndex = -1;
     let suppressCollaboratorSuggestions = false;
+    let collaboratorCurrentPage = 1;
 
     function collaboratorNameMatches(query) {
       const terms = normalizeColumnName(query).split(/\s+/).filter(Boolean);
@@ -5536,6 +5619,7 @@
     function selectCollaboratorNameSuggestion(name) {
       const input = document.getElementById("collaboratorNameFilter");
       input.value = name;
+      collaboratorCurrentPage = 1;
       suppressCollaboratorSuggestions = true;
       closeCollaboratorNameSuggestions();
       renderCollaborators();
@@ -5583,6 +5667,20 @@
           return nameMatches && otherFiltersMatch;
         })
         .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+      const pageSize = Math.max(1, Number(document.getElementById("collaboratorPageSize").value) || 20);
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      collaboratorCurrentPage = Math.min(Math.max(1, collaboratorCurrentPage), totalPages);
+      const pageStart = (collaboratorCurrentPage - 1) * pageSize;
+      const visibleCollaborators = filtered.slice(pageStart, pageStart + pageSize);
+      const visibleStart = filtered.length ? pageStart + 1 : 0;
+      const visibleEnd = Math.min(pageStart + pageSize, filtered.length);
+
+      document.getElementById("collaboratorPaginationInfo").textContent = filtered.length
+        ? `Mostrando ${visibleStart} a ${visibleEnd} de ${filtered.length} colaboradores`
+        : "Nenhum registro encontrado";
+      document.getElementById("collaboratorPageNumber").textContent = `Página ${collaboratorCurrentPage} de ${totalPages}`;
+      document.getElementById("collaboratorPreviousPage").disabled = collaboratorCurrentPage <= 1;
+      document.getElementById("collaboratorNextPage").disabled = collaboratorCurrentPage >= totalPages;
 
       const isPcd = item => {
         const value = normalizeColumnName(item.pcd);
@@ -5595,7 +5693,7 @@
       document.getElementById("collaboratorOperational").textContent = Math.max(0, activeCollaborators.length - administrative).toLocaleString("pt-BR");
       document.getElementById("collaboratorPcdTotal").textContent = collaborators.filter(isPcd).length.toLocaleString("pt-BR");
 
-      document.getElementById("collaboratorsTable").innerHTML = filtered.length ? filtered.map(item => {
+      document.getElementById("collaboratorsTable").innerHTML = filtered.length ? visibleCollaborators.map(item => {
         const initials = collaboratorInitials(item.name);
         const dismissal = item.status === "Demitido"
           ? `DEMITIDO${item.dismissalDate ? ` · ${formatDate(item.dismissalDate)}` : ""}`
@@ -7676,11 +7774,17 @@
     });
 
     ["collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
-      document.getElementById(id).addEventListener("change", renderCollaborators);
+      document.getElementById(id).addEventListener("change", () => {
+        collaboratorCurrentPage = 1;
+        renderCollaborators();
+      });
     });
 
     const collaboratorNameFilter = document.getElementById("collaboratorNameFilter");
-    collaboratorNameFilter.addEventListener("input", renderCollaborators);
+    collaboratorNameFilter.addEventListener("input", () => {
+      collaboratorCurrentPage = 1;
+      renderCollaborators();
+    });
     collaboratorNameFilter.addEventListener("focus", renderCollaboratorNameSuggestions);
     collaboratorNameFilter.addEventListener("keydown", event => {
       if (event.key === "ArrowDown") {
@@ -7720,6 +7824,7 @@
 
     document.getElementById("clearCollaboratorNameSearch").addEventListener("click", () => {
       collaboratorNameFilter.value = "";
+      collaboratorCurrentPage = 1;
       closeCollaboratorNameSuggestions();
       renderCollaborators();
       collaboratorNameFilter.focus();
@@ -7734,7 +7839,26 @@
         document.getElementById(id).value = "";
       });
       closeCollaboratorNameSuggestions();
+      collaboratorCurrentPage = 1;
       renderCollaborators();
+    });
+
+    document.getElementById("collaboratorPageSize").addEventListener("change", () => {
+      collaboratorCurrentPage = 1;
+      renderCollaborators();
+    });
+
+    document.getElementById("collaboratorPreviousPage").addEventListener("click", () => {
+      if (collaboratorCurrentPage <= 1) return;
+      collaboratorCurrentPage -= 1;
+      renderCollaborators();
+      document.getElementById("page-collaborators").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("collaboratorNextPage").addEventListener("click", () => {
+      collaboratorCurrentPage += 1;
+      renderCollaborators();
+      document.getElementById("page-collaborators").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeVwId", "historyEmployeeCompanyId", "historyEmployeeCategory", "historyResponsible", "historyPeriod", "historyDate"].forEach(id => {
