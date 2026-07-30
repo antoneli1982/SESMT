@@ -2185,7 +2185,7 @@
 
     .employeeHistoryControls {
       display: grid;
-      grid-template-columns: minmax(260px, 1.7fr) repeat(3, minmax(150px, 1fr)) auto;
+      grid-template-columns: minmax(220px, 1.7fr) repeat(3, minmax(120px, 1fr));
       align-items: end;
       gap: 12px;
       margin-bottom: 18px;
@@ -2201,7 +2201,11 @@
     }
 
     .employeeHistoryClear {
+      grid-column: 1 / -1;
+      justify-self: end;
       min-height: 42px;
+      min-width: 160px;
+      max-width: 100%;
       white-space: nowrap;
     }
 
@@ -2997,6 +3001,7 @@
       }
 
       .employeeHistoryClear {
+        justify-self: stretch;
         width: 100%;
       }
 
