@@ -3066,7 +3066,7 @@
               <div class="selectedEpi">
                 <div class="field">
                   <label for="withdrawalMaterial">Material <span class="required">*</span></label>
-                  <select class="select" id="withdrawalMaterial" required></select>
+                  <select class="select" id="withdrawalMaterial"></select>
                 </div>
                 <div class="field">
                   <label for="withdrawalQty">Quantidade</label>
@@ -6760,18 +6760,20 @@
 
     document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
 
-    document.getElementById("addWithdrawalItem").addEventListener("click", () => {
+    function addSelectedWithdrawalItem(options = {}) {
+      const { silentWhenEmpty = false } = options;
       const id = Number(document.getElementById("withdrawalMaterial").value);
       const qty = Number(document.getElementById("withdrawalQty").value);
       const material = state.materials.find(item => item.id === id);
+      if (!material && silentWhenEmpty) return true;
       if (!material || !Number.isInteger(qty) || qty <= 0) {
         showToast("Selecione um material e informe uma quantidade válida.", true);
-        return;
+        return false;
       }
       const already = withdrawalSelection.filter(item => item.id === id).reduce((sum, item) => sum + item.qty, 0);
       if (qty + already > material.stock) {
         showToast(`Saldo insuficiente. Disponível: ${material.stock} unidades.`, true);
-        return;
+        return false;
       }
       withdrawalSelection.push({
         id: material.id,
@@ -6792,6 +6794,11 @@
       document.getElementById("withdrawalMaterial").value = "";
       document.getElementById("withdrawalQty").value = 1;
       updateWithdrawalMaterialInfo();
+      return true;
+    }
+
+    document.getElementById("addWithdrawalItem").addEventListener("click", () => {
+      addSelectedWithdrawalItem();
     });
 
     canvas.addEventListener("mousedown", beginSignature);
@@ -6805,6 +6812,10 @@
 
     document.getElementById("withdrawalForm").addEventListener("submit", async event => {
       event.preventDefault();
+      if (document.getElementById("withdrawalMaterial").value) {
+        const pendingItemAdded = addSelectedWithdrawalItem();
+        if (!pendingItemAdded) return;
+      }
       if (!withdrawalSelection.length) {
         showToast("Adicione pelo menos um EPI à retirada.", true);
         return;
