@@ -1807,6 +1807,43 @@
       width: min(590px, 100%);
     }
 
+    .protectedActionModal {
+      width: min(540px, 100%);
+    }
+
+    .protectedActionContent {
+      display: grid;
+      gap: 16px;
+    }
+
+    .protectedActionWarning {
+      padding: 14px 16px;
+      border: 1px solid #ffd7dc;
+      border-radius: 14px;
+      color: #8f1830;
+      background: #fff3f5;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .protectedActionHint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .protectedActionError {
+      margin: 0;
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .protectedActionError[hidden] {
+      display: none;
+    }
+
     .duplicateDecisionContent {
       display: grid;
       gap: 16px;
@@ -1890,6 +1927,12 @@
     html.darkTheme .duplicateDecisionList,
     html.darkTheme .duplicateDecisionItem {
       background: var(--surface);
+    }
+
+    html.darkTheme .protectedActionWarning {
+      border-color: rgba(255, 93, 118, .28);
+      color: #ff9dad;
+      background: rgba(255, 74, 103, .1);
     }
 
     .toastStack {
@@ -2495,6 +2538,7 @@
             <div class="heroButtons">
               <button class="secondaryButton" data-page-jump="withdrawal">Nova retirada de EPI</button>
               <button class="ghostButton" data-page-jump="inventory">Iniciar inventário</button>
+              <button class="dangerButton" id="factoryResetDashboard" type="button">Restauração de fábrica</button>
             </div>
           </div>
           <div class="heroPanel">
@@ -2599,6 +2643,7 @@
             <input id="importMaterialsFile" type="file" accept=".xlsx,.xls,.csv" hidden>
             <button class="ghostButton" id="importMaterials" type="button">Importar Excel</button>
             <button class="ghostButton" id="exportMaterials" type="button">Exportar Excel</button>
+            <button class="dangerButton" id="clearAllMaterials" type="button">Limpar tudo</button>
             <button class="primaryButton" id="newMaterialButton">＋ Novo material</button>
           </div>
         </div>
@@ -2654,6 +2699,7 @@
             <input id="importCollaboratorsFile" type="file" accept=".xlsx,.xls,.csv" hidden>
             <button class="ghostButton" id="importCollaborators" type="button">Importar Excel</button>
             <button class="ghostButton" id="exportCollaborators" type="button">Exportar Excel</button>
+            <button class="dangerButton" id="clearAllCollaborators" type="button">Limpar tudo</button>
             <button class="primaryButton" id="newCollaboratorButton" type="button">＋ Novo colaborador</button>
           </div>
         </div>
@@ -3319,6 +3365,30 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="protectedActionModal" role="dialog" aria-modal="true" aria-labelledby="protectedActionTitle">
+    <div class="modal protectedActionModal">
+      <div class="modalHeader">
+        <h3 id="protectedActionTitle">Confirmar limpeza</h3>
+        <button class="iconButton" id="closeProtectedAction" type="button" aria-label="Fechar">×</button>
+      </div>
+      <form id="protectedActionForm">
+        <div class="modalBody protectedActionContent">
+          <div class="protectedActionWarning" id="protectedActionDescription"></div>
+          <div class="field">
+            <label for="protectedActionPassword">Senha de segurança <span class="required">*</span></label>
+            <input class="input" id="protectedActionPassword" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" autocapitalize="off" spellcheck="false" required placeholder="Digite a senha">
+          </div>
+          <p class="protectedActionHint">A informação digitada permanecerá oculta.</p>
+          <p class="protectedActionError" id="protectedActionError" role="alert" hidden>Senha incorreta. Tente novamente.</p>
+        </div>
+        <div class="modalFooter">
+          <button class="ghostButton" id="cancelProtectedAction" type="button">Cancelar</button>
+          <button class="dangerButton" id="confirmProtectedAction" type="submit">Confirmar limpeza</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="printTerm" style="display:none"></div>
   <div class="toastStack" id="toastStack" aria-live="polite"></div>
 
@@ -3684,6 +3754,20 @@
       clearCollaboratorPhotoUrl(photoKey);
     }
 
+    async function clearAllCollaboratorPhotos() {
+      if (!("indexedDB" in window)) return;
+      const database = await openPhotoDatabase();
+      await new Promise((resolve, reject) => {
+        const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+        transaction.objectStore(PHOTO_STORE_NAME).clear();
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error || new Error("Não foi possível limpar as fotos"));
+      });
+      database.close();
+      collaboratorPhotoUrls.forEach(url => URL.revokeObjectURL(url));
+      collaboratorPhotoUrls.clear();
+    }
+
     function clearCollaboratorPhotoUrl(photoKey) {
       const key = String(photoKey || "");
       const url = collaboratorPhotoUrls.get(key);
@@ -3817,6 +3901,34 @@
 
     function cloneSeed() {
       return JSON.parse(JSON.stringify(seedData));
+    }
+
+    function createEmptyState() {
+      return {
+        settings: {
+          unit: "",
+          address: "",
+          responsible: ""
+        },
+        materials: [],
+        collaborators: [],
+        history: [],
+        withdrawals: [],
+        nextMaterialSequence: 1,
+        demonstration: {
+          collaborators: 0,
+          materials: 0,
+          withdrawals: 0,
+          returns: 0
+        }
+      };
+    }
+
+    function dailySecurityPassword(date = new Date()) {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day}${month}${year}`;
     }
 
     function loadState() {
@@ -4103,6 +4215,16 @@
       document.getElementById("statExpiring").textContent = expiring;
       document.getElementById("statWithdrawals").textContent = monthly;
       document.getElementById("statConsumption").textContent = monthlyConsumption.toLocaleString("pt-BR");
+      const compliantMaterials = state.materials.filter(material => {
+        return daysUntil(material.caValidity) >= 0
+          && daysUntil(material.lotValidity) >= 0
+          && !isCriticalStock(material);
+      }).length;
+      const compliance = state.materials.length
+        ? Math.round(compliantMaterials / state.materials.length * 100)
+        : 0;
+      document.getElementById("complianceScore").textContent = `${compliance}%`;
+      document.querySelector(".heroPanel .progress span").style.width = `${compliance}%`;
 
       const days = Array.from({ length: 7 }, (_, index) => {
         const date = new Date();
@@ -5138,6 +5260,92 @@
       renderWithdrawalSelection();
     }
 
+    let pendingProtectedAction = "";
+
+    const protectedActionConfigurations = {
+      materials: {
+        title: "Limpar todos os materiais",
+        description: "Todos os materiais, saldos e dados do catálogo serão removidos. O histórico de movimentações já registrado será preservado.",
+        confirmation: "Limpar materiais"
+      },
+      collaborators: {
+        title: "Limpar todos os colaboradores",
+        description: "Todos os cadastros de colaboradores e suas fotos serão removidos. O histórico de entregas e assinaturas já registrado será preservado.",
+        confirmation: "Limpar colaboradores"
+      },
+      factory: {
+        title: "Restauração de fábrica",
+        description: "Esta ação apaga cadastros, materiais, saldos, movimentações, assinaturas, fotos e configurações. Todos os indicadores ficarão zerados.",
+        confirmation: "Apagar tudo"
+      }
+    };
+
+    function openProtectedAction(action) {
+      const configuration = protectedActionConfigurations[action];
+      if (!configuration) return;
+      pendingProtectedAction = action;
+      document.getElementById("protectedActionTitle").textContent = configuration.title;
+      document.getElementById("protectedActionDescription").textContent = configuration.description;
+      document.getElementById("confirmProtectedAction").textContent = configuration.confirmation;
+      document.getElementById("protectedActionPassword").value = "";
+      document.getElementById("protectedActionError").hidden = true;
+      document.getElementById("protectedActionModal").classList.add("open");
+      setTimeout(() => document.getElementById("protectedActionPassword").focus(), 80);
+    }
+
+    function closeProtectedAction() {
+      pendingProtectedAction = "";
+      document.getElementById("protectedActionModal").classList.remove("open");
+      document.getElementById("protectedActionForm").reset();
+      document.getElementById("protectedActionError").hidden = true;
+    }
+
+    async function executeProtectedAction(action) {
+      if (action === "materials") {
+        state.materials = [];
+        state.nextMaterialSequence = 1;
+        withdrawalSelection = [];
+        inventoryActive = false;
+        clearMaterialFilters();
+        saveState();
+        renderAll();
+        resetWithdrawal();
+        navigate("materials");
+        showToast("Todos os materiais e saldos foram removidos. O histórico foi preservado.");
+        return;
+      }
+
+      if (action === "collaborators") {
+        await clearAllCollaboratorPhotos();
+        state.collaborators = [];
+        saveState();
+        renderAll();
+        resetWithdrawal();
+        navigate("collaborators");
+        showToast("Todos os colaboradores e fotos foram removidos. O histórico foi preservado.");
+        return;
+      }
+
+      if (action === "factory") {
+        await clearAllCollaboratorPhotos();
+        state = createEmptyState();
+        withdrawalSelection = [];
+        inventoryActive = false;
+        activeAlertCard = "";
+        editingMaterialId = null;
+        editingCollaboratorId = null;
+        saveState();
+        clearMaterialFilters();
+        clearHistoryFilterFields();
+        clearAlertFilterFields();
+        document.getElementById("printTerm").innerHTML = "";
+        renderAll();
+        resetWithdrawal();
+        navigate("dashboard");
+        showToast("Restauração de fábrica concluída. Todos os dados foram zerados.");
+      }
+    }
+
     function downloadFile(filename, content, type) {
       const blob = new Blob([content], { type });
       const url = URL.createObjectURL(blob);
@@ -5876,6 +6084,38 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
     document.getElementById("newCollaboratorButton").addEventListener("click", () => openCollaboratorModal());
+    document.getElementById("clearAllMaterials").addEventListener("click", () => openProtectedAction("materials"));
+    document.getElementById("clearAllCollaborators").addEventListener("click", () => openProtectedAction("collaborators"));
+    document.getElementById("factoryResetDashboard").addEventListener("click", () => openProtectedAction("factory"));
+    document.getElementById("closeProtectedAction").addEventListener("click", closeProtectedAction);
+    document.getElementById("cancelProtectedAction").addEventListener("click", closeProtectedAction);
+    document.getElementById("protectedActionModal").addEventListener("click", event => {
+      if (event.target.id === "protectedActionModal") closeProtectedAction();
+    });
+    document.getElementById("protectedActionPassword").addEventListener("input", event => {
+      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 6);
+      document.getElementById("protectedActionError").hidden = true;
+    });
+    document.getElementById("protectedActionForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const password = document.getElementById("protectedActionPassword").value;
+      if (password !== dailySecurityPassword()) {
+        document.getElementById("protectedActionError").hidden = false;
+        document.getElementById("protectedActionPassword").select();
+        return;
+      }
+      const action = pendingProtectedAction;
+      const confirmButton = document.getElementById("confirmProtectedAction");
+      confirmButton.disabled = true;
+      try {
+        await executeProtectedAction(action);
+        closeProtectedAction();
+      } catch {
+        showToast("Não foi possível concluir a limpeza. Nenhum cadastro foi alterado.", true);
+      } finally {
+        confirmButton.disabled = false;
+      }
+    });
     document.getElementById("chooseCollaboratorPhoto").addEventListener("click", () => {
       document.getElementById("collaboratorPhotoFile").click();
     });
@@ -6272,6 +6512,7 @@
       if (event.key === "Escape") {
         closeMaterialModal();
         closeCollaboratorModal();
+        closeProtectedAction();
         document.getElementById("unitModal").classList.remove("open");
         closeMobileMenu();
       }
