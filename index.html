@@ -2183,6 +2183,343 @@
       display: none;
     }
 
+    .employeeHistoryControls {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.7fr) repeat(3, minmax(150px, 1fr)) auto;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(0, 15, 42, .05);
+    }
+
+    .employeeHistorySearchField {
+      min-width: 0;
+    }
+
+    .employeeHistoryClear {
+      min-height: 42px;
+      white-space: nowrap;
+    }
+
+    .employeeHistoryEmpty {
+      display: grid;
+      min-height: 320px;
+      place-items: center;
+      align-content: center;
+      gap: 8px;
+      padding: 40px;
+      border: 1px dashed #9eb4ce;
+      border-radius: 22px;
+      color: var(--muted);
+      text-align: center;
+      background: linear-gradient(145deg, var(--surface), var(--surface-soft));
+    }
+
+    .employeeHistoryEmpty span {
+      display: grid;
+      width: 64px;
+      height: 64px;
+      place-items: center;
+      border-radius: 20px;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 14px 30px rgba(0, 89, 247, .22);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .employeeHistoryEmpty strong {
+      margin-top: 6px;
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    .employeeHistoryEmpty p {
+      max-width: 460px;
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .employeeHistorySheet {
+      overflow: hidden;
+      border: 1px solid #99a6b5;
+      border-radius: 4px;
+      color: #111827;
+      background: #fff;
+      box-shadow: 0 18px 46px rgba(0, 15, 42, .12);
+    }
+
+    .employeeHistoryDocumentHeader {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr) 170px;
+      min-height: 96px;
+      border-bottom: 1px solid #687482;
+    }
+
+    .employeeHistoryLogo,
+    .employeeHistoryQuality,
+    .employeeHistoryDocumentTitle {
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .employeeHistoryLogo,
+    .employeeHistoryDocumentTitle {
+      border-right: 1px solid #687482;
+    }
+
+    .employeeHistoryLogo img {
+      display: block;
+      width: min(135px, 100%);
+      height: auto;
+    }
+
+    .employeeHistoryDocumentTitle {
+      align-content: center;
+      gap: 3px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .employeeHistoryDocumentTitle span {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .employeeHistoryQuality {
+      align-content: center;
+      gap: 6px;
+      font-size: 9px;
+    }
+
+    .employeeHistoryQuality strong {
+      font-size: 14px;
+    }
+
+    .employeeHistoryIdentity {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 132px;
+      border-bottom: 1px solid #687482;
+    }
+
+    .employeeHistoryIdentityFields {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .employeeHistoryIdentityFields > div {
+      min-height: 58px;
+      padding: 8px 10px;
+      border-right: 1px solid #aeb7c1;
+      border-bottom: 1px solid #aeb7c1;
+    }
+
+    .employeeHistoryIdentityFields > div:nth-child(4n) {
+      border-right: 0;
+    }
+
+    .employeeHistoryIdentityFields > div:nth-last-child(-n + 4) {
+      border-bottom: 0;
+    }
+
+    .employeeHistoryIdentityFields span,
+    .employeeHistoryPhoto span {
+      display: block;
+      margin-bottom: 5px;
+      color: #526174;
+      font-size: 8px;
+      font-weight: 750;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .employeeHistoryIdentityFields strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .employeeHistoryPhoto {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 5px;
+      padding: 9px;
+      border-left: 1px solid #687482;
+      text-align: center;
+    }
+
+    .employeeHistoryPhoto > div,
+    .employeeHistoryPhoto img {
+      display: grid;
+      width: 78px;
+      height: 78px;
+      place-items: center;
+      border: 1px solid #9da8b4;
+      border-radius: 6px;
+      color: var(--blue);
+      background: #eaf4ff;
+      object-fit: cover;
+      font-size: 21px;
+      font-weight: 850;
+    }
+
+    .employeeHistoryResponsibility {
+      padding: 12px 14px;
+      border-bottom: 1px solid #687482;
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .employeeHistoryResponsibility strong,
+    .employeeHistoryMer > strong {
+      display: block;
+      margin-bottom: 5px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .employeeHistoryResponsibility p {
+      margin: 0;
+    }
+
+    .employeeHistoryMer {
+      padding: 8px 12px;
+      border-bottom: 1px solid #687482;
+      background: #f3f5f7;
+    }
+
+    .employeeHistoryMer > div {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      font-size: 8px;
+    }
+
+    .employeeHistoryMer span {
+      padding: 5px 6px;
+      border: 1px solid #c4cbd3;
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .employeeHistoryStats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: 1px solid #687482;
+      background: #f8fafc;
+    }
+
+    .employeeHistoryStats > div {
+      padding: 10px 12px;
+      border-right: 1px solid #c4cbd3;
+    }
+
+    .employeeHistoryStats > div:last-child {
+      border-right: 0;
+    }
+
+    .employeeHistoryStats span {
+      display: block;
+      margin-bottom: 3px;
+      color: #526174;
+      font-size: 8px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .employeeHistoryStats strong {
+      color: #003d91;
+      font-size: 18px;
+    }
+
+    .employeeHistoryTableWrap {
+      overflow: auto;
+    }
+
+    .employeeHistoryTable {
+      min-width: 1050px;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      font-size: 9px;
+    }
+
+    .employeeHistoryTable th {
+      padding: 8px;
+      border-right: 1px solid #687482;
+      border-bottom: 1px solid #687482;
+      color: #111827;
+      background: #e5e9ee;
+      font-size: 8px;
+    }
+
+    .employeeHistoryTable td {
+      padding: 8px;
+      border-right: 1px solid #aeb7c1;
+      border-bottom: 1px solid #aeb7c1;
+      color: #111827;
+      vertical-align: middle;
+      background: #fff;
+    }
+
+    .employeeHistoryTable th:last-child,
+    .employeeHistoryTable td:last-child {
+      border-right: 0;
+    }
+
+    .employeeHistoryTable tr:hover td {
+      background: #f8fbff;
+    }
+
+    .employeeHistoryMovementBadge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #064779;
+      background: #e7f4ff;
+      font-size: 8px;
+      font-weight: 850;
+    }
+
+    .employeeHistoryMovementBadge.return {
+      color: #075a39;
+      background: #e9f8f1;
+    }
+
+    .employeeHistorySignature {
+      display: block;
+      width: 92px;
+      height: 36px;
+      margin: auto;
+      object-fit: contain;
+    }
+
+    .employeeHistoryNoSignature {
+      color: #687482;
+      font-size: 8px;
+    }
+
+    .employeeHistoryDocumentFooter {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 9px 12px;
+      color: #526174;
+      background: #f3f5f7;
+      font-size: 8px;
+    }
+
     html.darkTheme body {
       background: var(--canvas);
     }
@@ -2344,6 +2681,20 @@
         repeating-linear-gradient(45deg, #f8fbff 0, #f8fbff 8px, #eef3f8 8px, #eef3f8 16px);
     }
 
+    html.darkTheme .employeeHistoryControls {
+      background: var(--surface);
+      border-color: var(--line);
+    }
+
+    html.darkTheme .employeeHistoryEmpty {
+      border-color: #315f91;
+      background: linear-gradient(145deg, var(--surface), #101d2d);
+    }
+
+    html.darkTheme .employeeHistoryEmpty strong {
+      color: var(--ink);
+    }
+
     html.darkTheme .signatureHint {
       color: #66768a;
     }
@@ -2451,6 +2802,42 @@
 
       .collaboratorTable .pill {
         justify-self: start;
+      }
+
+      .employeeHistoryControls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .employeeHistorySearchField {
+        grid-column: 1 / -1;
+      }
+
+      .employeeHistoryDocumentHeader {
+        grid-template-columns: 150px minmax(0, 1fr) 140px;
+      }
+
+      .employeeHistoryIdentityFields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .employeeHistoryIdentityFields > div:nth-child(4n) {
+        border-right: 1px solid #aeb7c1;
+      }
+
+      .employeeHistoryIdentityFields > div:nth-child(2n) {
+        border-right: 0;
+      }
+
+      .employeeHistoryIdentityFields > div:nth-last-child(-n + 4) {
+        border-bottom: 1px solid #aeb7c1;
+      }
+
+      .employeeHistoryIdentityFields > div:nth-last-child(-n + 2) {
+        border-bottom: 0;
+      }
+
+      .employeeHistoryMer > div {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
@@ -2641,6 +3028,60 @@
       .collaboratorTable tbody {
         grid-template-columns: 1fr;
       }
+
+      .employeeHistoryControls {
+        grid-template-columns: 1fr;
+      }
+
+      .employeeHistorySearchField {
+        grid-column: auto;
+      }
+
+      .employeeHistoryClear {
+        width: 100%;
+      }
+
+      .employeeHistoryDocumentHeader {
+        grid-template-columns: 110px minmax(0, 1fr);
+      }
+
+      .employeeHistoryQuality {
+        grid-column: 1 / -1;
+        min-height: 48px;
+        border-top: 1px solid #687482;
+      }
+
+      .employeeHistoryIdentity {
+        grid-template-columns: 1fr;
+      }
+
+      .employeeHistoryPhoto {
+        grid-template-columns: 78px minmax(0, 1fr);
+        justify-items: start;
+        border-top: 1px solid #687482;
+        border-left: 0;
+        text-align: left;
+      }
+
+      .employeeHistoryPhoto span {
+        margin: 0;
+      }
+
+      .employeeHistoryStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .employeeHistoryStats > div:nth-child(2) {
+        border-right: 0;
+      }
+
+      .employeeHistoryStats > div:nth-child(-n + 2) {
+        border-bottom: 1px solid #c4cbd3;
+      }
+
+      .employeeHistoryMer > div {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 440px) {
@@ -2716,6 +3157,119 @@
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
       }
+
+      #printTerm .employeeHistorySheet {
+        overflow: visible;
+        border: 1px solid #5d6875;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      #printTerm .employeeHistoryDocumentHeader {
+        grid-template-columns: 125px minmax(0, 1fr) 115px;
+        min-height: 72px;
+      }
+
+      #printTerm .employeeHistoryLogo,
+      #printTerm .employeeHistoryQuality,
+      #printTerm .employeeHistoryDocumentTitle {
+        padding: 8px;
+      }
+
+      #printTerm .employeeHistoryIdentity {
+        grid-template-columns: minmax(0, 1fr) 100px;
+      }
+
+      #printTerm .employeeHistoryIdentityFields {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      #printTerm .employeeHistoryIdentityFields > div {
+        min-height: 42px;
+        padding: 5px 6px;
+        border-right: 1px solid #aeb7c1;
+        border-bottom: 1px solid #aeb7c1;
+      }
+
+      #printTerm .employeeHistoryIdentityFields > div:nth-child(4n) {
+        border-right: 0;
+      }
+
+      #printTerm .employeeHistoryIdentityFields > div:nth-last-child(-n + 4) {
+        border-bottom: 0;
+      }
+
+      #printTerm .employeeHistoryPhoto {
+        display: grid;
+        grid-template-columns: 1fr;
+        border-top: 0;
+        border-left: 1px solid #687482;
+        text-align: center;
+      }
+
+      #printTerm .employeeHistoryPhoto > div,
+      #printTerm .employeeHistoryPhoto img {
+        width: 58px;
+        height: 58px;
+      }
+
+      #printTerm .employeeHistoryResponsibility {
+        padding: 7px 9px;
+        font-size: 7px;
+      }
+
+      #printTerm .employeeHistoryMer {
+        padding: 5px 7px;
+      }
+
+      #printTerm .employeeHistoryMer > div {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        font-size: 6px;
+      }
+
+      #printTerm .employeeHistoryStats > div {
+        padding: 6px 8px;
+      }
+
+      #printTerm .employeeHistoryStats strong {
+        font-size: 13px;
+      }
+
+      #printTerm .employeeHistoryTableWrap {
+        overflow: visible;
+      }
+
+      #printTerm .employeeHistoryTable {
+        width: 100%;
+        min-width: 0;
+        table-layout: fixed;
+        font-size: 6px;
+      }
+
+      #printTerm .employeeHistoryTable th,
+      #printTerm .employeeHistoryTable td {
+        padding: 4px;
+        overflow-wrap: anywhere;
+      }
+
+      #printTerm .employeeHistoryTable thead {
+        display: table-header-group;
+      }
+
+      #printTerm .employeeHistoryTable tr {
+        page-break-inside: avoid;
+      }
+
+      #printTerm .employeeHistoryMovementBadge {
+        min-height: 0;
+        padding: 2px 4px;
+        font-size: 6px;
+      }
+
+      #printTerm .employeeHistorySignature {
+        width: 58px;
+        height: 24px;
+      }
     }
   </style>
 </head>
@@ -2742,7 +3296,8 @@
         <button class="navButton" data-page="inventory"><span class="navIcon">05</span>Inventário</button>
         <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">06</span>Alertas</button>
         <button class="navButton" data-page="history"><span class="navIcon">07</span>Histórico</button>
-        <button class="navButton" data-page="settings"><span class="navIcon">08</span>Configurações</button>
+        <button class="navButton" data-page="employeeHistory"><span class="navIcon">08</span>Histórico do colaborador</button>
+        <button class="navButton" data-page="settings"><span class="navIcon">09</span>Configurações</button>
       </nav>
 
       <div class="userCard">
@@ -3352,6 +3907,123 @@
         </article>
       </section>
 
+      <section class="page" id="page-employeeHistory">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Ficha individual completa</p>
+            <h2>Histórico do colaborador</h2>
+            <p>Consulte todas as retiradas, devoluções, trocas e assinaturas de cada colaborador.</p>
+          </div>
+          <div class="pageHeaderActions">
+            <button class="ghostButton" id="exportEmployeeHistory" type="button" disabled>Exportar CSV</button>
+            <button class="primaryButton" id="printEmployeeHistory" type="button" disabled>Imprimir histórico</button>
+          </div>
+        </div>
+
+        <div class="employeeHistoryControls">
+          <div class="field employeeHistorySearchField">
+            <label for="employeeHistorySearch">Colaborador</label>
+            <input class="input" id="employeeHistorySearch" type="search" list="employeeHistoryOptions" placeholder="Digite nome, chapa ou matrícula" autocomplete="off">
+            <datalist id="employeeHistoryOptions"></datalist>
+          </div>
+          <div class="field">
+            <label for="employeeHistoryMovement">Movimentação</label>
+            <select class="select" id="employeeHistoryMovement">
+              <option value="">Todas as movimentações</option>
+              <option value="Retirada">Retiradas</option>
+              <option value="Devolução">Devoluções</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="employeeHistoryStart">Data inicial</label>
+            <input class="input" id="employeeHistoryStart" type="date">
+          </div>
+          <div class="field">
+            <label for="employeeHistoryEnd">Data final</label>
+            <input class="input" id="employeeHistoryEnd" type="date">
+          </div>
+          <button class="ghostButton employeeHistoryClear" id="clearEmployeeHistory" type="button">Limpar consulta</button>
+        </div>
+
+        <div class="employeeHistoryEmpty" id="employeeHistoryEmpty">
+          <span>08</span>
+          <strong>Selecione um colaborador</strong>
+          <p>Digite as primeiras letras do nome ou informe a chapa para abrir a ficha completa.</p>
+        </div>
+
+        <article class="employeeHistorySheet" id="employeeHistorySheet" hidden>
+          <header class="employeeHistoryDocumentHeader">
+            <div class="employeeHistoryLogo"><img id="employeeHistoryLogo" alt="Logo SESÉ"></div>
+            <div class="employeeHistoryDocumentTitle">
+              <strong>Formulário de Controle de Equipamento de Proteção Individual</strong>
+              <span>EPI</span>
+            </div>
+            <div class="employeeHistoryQuality">
+              <span>Controle da Qualidade</span>
+              <strong>N/A</strong>
+            </div>
+          </header>
+
+          <div class="employeeHistoryIdentity">
+            <div class="employeeHistoryIdentityFields">
+              <div><span>Nome do colaborador</span><strong id="employeeHistoryName"></strong></div>
+              <div><span>Unidade e local de trabalho</span><strong id="employeeHistoryUnit"></strong></div>
+              <div><span>Função</span><strong id="employeeHistoryRole"></strong></div>
+              <div><span>Data da admissão</span><strong id="employeeHistoryAdmission"></strong></div>
+              <div><span>Chapa Volkswagen</span><strong id="employeeHistoryVwId"></strong></div>
+              <div><span>Matrícula SESÉ</span><strong id="employeeHistoryCompanyId"></strong></div>
+              <div><span>Turno</span><strong id="employeeHistoryShift"></strong></div>
+              <div><span>Posto de trabalho</span><strong id="employeeHistoryWorkstation"></strong></div>
+            </div>
+            <div class="employeeHistoryPhoto">
+              <div id="employeeHistoryPhotoInitials"></div>
+              <img id="employeeHistoryPhotoImage" alt="Foto do colaborador" hidden>
+              <span>Identificação visual</span>
+            </div>
+          </div>
+
+          <section class="employeeHistoryResponsibility">
+            <strong>Termo de Responsabilidade</strong>
+            <p>Declaro ter recebido os Equipamentos de Proteção Individual relacionados neste documento em perfeito estado. Declaro que recebi orientação sobre uso, conservação e guarda, comprometendo me a utilizá los somente para as finalidades às quais se destinam e a comunicar qualquer modificação que os torne impróprios para uso.</p>
+          </section>
+
+          <section class="employeeHistoryMer">
+            <strong>Legenda M.E.R. Motivos para Entrega e Recebimento</strong>
+            <div><span>1 Primeira entrega ou admissão</span><span>2 Substituição periódica</span><span>3 Dano no equipamento</span><span>4 Perda justificada</span><span>5 Devolução</span></div>
+          </section>
+
+          <div class="employeeHistoryStats">
+            <div><span>EPIs retirados</span><strong id="employeeHistoryWithdrawn">0</strong></div>
+            <div><span>EPIs devolvidos</span><strong id="employeeHistoryReturned">0</strong></div>
+            <div><span>Saldo com colaborador</span><strong id="employeeHistoryBalance">0</strong></div>
+            <div><span>Movimentações</span><strong id="employeeHistoryTotal">0</strong></div>
+          </div>
+
+          <div class="employeeHistoryTableWrap">
+            <table class="employeeHistoryTable">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Movimentação</th>
+                  <th>Número do CA</th>
+                  <th>EPI</th>
+                  <th>Quantidade</th>
+                  <th>M.E.R.</th>
+                  <th>Assinatura do colaborador</th>
+                  <th>Responsável</th>
+                  <th>Próxima troca</th>
+                </tr>
+              </thead>
+              <tbody id="employeeHistoryTable"></tbody>
+            </table>
+          </div>
+          <footer class="employeeHistoryDocumentFooter">
+            <span id="employeeHistoryUpdated"></span>
+            <strong>Controle individual de EPI</strong>
+          </footer>
+        </article>
+      </section>
+
       <section class="page" id="page-settings">
         <div class="pageHeader">
           <div>
@@ -3954,6 +4626,8 @@
     let stagedCollaboratorPhotoUrl = "";
     let removeCollaboratorPhotoRequested = false;
     let withdrawalPhotoRequestId = 0;
+    let employeeHistorySelectedId = null;
+    let employeeHistoryPhotoRequestId = 0;
     const collaboratorPhotoUrls = new Map();
 
     function openPhotoDatabase() {
@@ -4342,6 +5016,7 @@
         inventory: "Inventário",
         alerts: "Alertas",
         history: "Histórico",
+        employeeHistory: "Histórico do colaborador",
         settings: "Configurações"
       };
       document.getElementById("pageTitle").textContent = titles[page];
@@ -4942,6 +5617,7 @@
             <td data-label="Responsável">${escapeHtml(item.manager || "Não informado")}</td>
             <td data-label="Condição">${escapeHtml(conditions)}</td>
             <td data-label="Ações"><div class="actionsCell">
+              <button class="miniButton" type="button" title="Histórico do colaborador" onclick="openEmployeeHistory(${item.id})">▤</button>
               <button class="miniButton" type="button" title="Editar" onclick="editCollaborator(${item.id})">✎</button>
               <button class="miniButton" type="button" title="Excluir" onclick="deleteCollaborator(${item.id})">×</button>
             </div></td>
@@ -5650,6 +6326,275 @@
       }).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhuma assinatura encontrada</strong>As retiradas assinadas aparecerão nesta tabela.</div></td></tr>`;
     }
 
+    function employeeHistoryMatchesCollaborator(item, collaborator) {
+      if (!item || !collaborator) return false;
+      const identity = resolveHistoryIdentity(item);
+      const sameVwId = collaborator.vwId
+        && normalizeColumnName(identity.vwId) === normalizeColumnName(collaborator.vwId);
+      const sameCompanyId = collaborator.companyId
+        && normalizeColumnName(identity.companyId) === normalizeColumnName(collaborator.companyId);
+      const sameName = normalizeColumnName(item.employee) === normalizeColumnName(collaborator.name);
+      return Boolean(sameVwId || sameCompanyId || sameName);
+    }
+
+    function withdrawalMatchesCollaborator(withdrawal, collaborator) {
+      if (!withdrawal || !collaborator) return false;
+      const identity = resolveWithdrawalIdentity(withdrawal);
+      const sameVwId = collaborator.vwId
+        && normalizeColumnName(identity.vwId) === normalizeColumnName(collaborator.vwId);
+      const sameCompanyId = collaborator.companyId
+        && normalizeColumnName(identity.companyId) === normalizeColumnName(collaborator.companyId);
+      const sameName = normalizeColumnName(withdrawal.employee) === normalizeColumnName(collaborator.name);
+      return Boolean(sameVwId || sameCompanyId || sameName);
+    }
+
+    function findMaterialFromHistoryLabel(label) {
+      const normalizedLabel = normalizeColumnName(label);
+      return (state.materials || []).find(material => {
+        const completeLabel = normalizeColumnName(materialLabel(material));
+        const description = normalizeColumnName(material.description);
+        return completeLabel === normalizedLabel
+          || normalizedLabel.includes(completeLabel)
+          || (description && normalizedLabel.includes(description));
+      }) || null;
+    }
+
+    function getEmployeeHistoryRows(collaborator) {
+      if (!collaborator) return [];
+      const documentedHistoryIds = new Set();
+      const withdrawalRows = (state.withdrawals || [])
+        .filter(withdrawal => withdrawalMatchesCollaborator(withdrawal, collaborator))
+        .flatMap(withdrawal => {
+          documentedHistoryIds.add(withdrawal.historyId);
+          return (withdrawal.items || []).map((item, itemIndex) => ({
+            key: `${withdrawal.historyId}_${itemIndex}`,
+            date: withdrawal.date,
+            type: "Retirada",
+            ca: item.ca || "",
+            material: materialLabel(item),
+            qty: Number(item.qty || 0),
+            mer: merLabel(item.reason),
+            signature: withdrawal.signature || "",
+            responsible: withdrawal.responsible || "",
+            nextChange: item.nextChange || calculateNextChange(item.lifetime, withdrawal.date)
+          }));
+        });
+
+      const remainingRows = (state.history || [])
+        .filter(item => employeeHistoryMatchesCollaborator(item, collaborator))
+        .filter(item => item.type !== "Retirada" || !documentedHistoryIds.has(item.id))
+        .map(item => {
+          const material = findMaterialFromHistoryLabel(item.material);
+          return {
+            key: `history_${item.id}`,
+            date: item.date,
+            type: item.type || "Movimentação",
+            ca: material?.ca || "",
+            material: item.material || materialLabel(material),
+            qty: Math.abs(Number(item.qty || 0)),
+            mer: item.type === "Devolução" ? "5 · Devolução" : item.type || "Não informado",
+            signature: "",
+            responsible: item.responsible || "",
+            nextChange: ""
+          };
+        });
+
+      return withdrawalRows.concat(remainingRows)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function resolveEmployeeHistoryCollaborator(query) {
+      const normalizedQuery = normalizeColumnName(query);
+      if (!normalizedQuery) return null;
+      const collaborators = state.collaborators || [];
+      const exact = collaborators.find(collaborator => {
+        return [
+          collaborator.name,
+          collaborator.vwId,
+          collaborator.companyId
+        ].some(value => normalizeColumnName(value) === normalizedQuery);
+      });
+      if (exact) return exact;
+      const partial = collaborators.filter(collaborator => {
+        return [
+          collaborator.name,
+          collaborator.vwId,
+          collaborator.companyId
+        ].some(value => normalizeColumnName(value).includes(normalizedQuery));
+      });
+      return partial.length === 1 ? partial[0] : null;
+    }
+
+    function filteredEmployeeHistoryRows(collaborator) {
+      const movement = document.getElementById("employeeHistoryMovement").value;
+      const start = document.getElementById("employeeHistoryStart").value;
+      const end = document.getElementById("employeeHistoryEnd").value;
+      return getEmployeeHistoryRows(collaborator).filter(row => {
+        const date = String(row.date || "").slice(0, 10);
+        return (!movement || row.type === movement)
+          && (!start || date >= start)
+          && (!end || date <= end);
+      });
+    }
+
+    async function hydrateEmployeeHistoryPhoto(collaborator) {
+      const requestId = ++employeeHistoryPhotoRequestId;
+      const image = document.getElementById("employeeHistoryPhotoImage");
+      const initials = document.getElementById("employeeHistoryPhotoInitials");
+      image.hidden = true;
+      image.removeAttribute("src");
+      initials.hidden = false;
+      initials.textContent = collaboratorInitials(collaborator?.name);
+      if (!collaborator?.photoKey) return;
+      const dataUrl = await getCollaboratorPhotoDataUrl(collaborator.photoKey);
+      if (requestId !== employeeHistoryPhotoRequestId || !dataUrl) return;
+      image.src = dataUrl;
+      image.hidden = false;
+      initials.hidden = true;
+    }
+
+    function renderEmployeeHistory() {
+      const search = document.getElementById("employeeHistorySearch");
+      const options = document.getElementById("employeeHistoryOptions");
+      const collaborators = (state.collaborators || []).slice()
+        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+      options.innerHTML = collaborators.map(collaborator => {
+        const details = [
+          collaborator.vwId ? `Chapa ${collaborator.vwId}` : "",
+          collaborator.companyId ? `Matrícula ${collaborator.companyId}` : ""
+        ].filter(Boolean).join(" · ");
+        return `<option value="${escapeHtml(collaborator.name)}">${escapeHtml(details)}</option>`;
+      }).join("");
+
+      let collaborator = collaborators.find(item => String(item.id) === String(employeeHistorySelectedId));
+      if (!collaborator && search.value.trim()) {
+        collaborator = resolveEmployeeHistoryCollaborator(search.value);
+        employeeHistorySelectedId = collaborator?.id || null;
+      }
+
+      const sheet = document.getElementById("employeeHistorySheet");
+      const empty = document.getElementById("employeeHistoryEmpty");
+      const exportButton = document.getElementById("exportEmployeeHistory");
+      const printButton = document.getElementById("printEmployeeHistory");
+      if (!collaborator) {
+        sheet.hidden = true;
+        empty.hidden = false;
+        exportButton.disabled = true;
+        printButton.disabled = true;
+        return;
+      }
+
+      search.value = collaborator.name;
+      sheet.hidden = false;
+      empty.hidden = true;
+      exportButton.disabled = false;
+      printButton.disabled = false;
+      document.getElementById("employeeHistoryLogo").src = document.querySelector(".brandMark img").src;
+      document.getElementById("employeeHistoryName").textContent = collaborator.name || "Não informado";
+      document.getElementById("employeeHistoryUnit").textContent = [state.settings.unit, state.settings.address]
+        .filter(Boolean).join(" · ") || "Não informada";
+      document.getElementById("employeeHistoryRole").textContent = collaborator.role || "Não informada";
+      document.getElementById("employeeHistoryAdmission").textContent = formatDate(collaborator.admission);
+      document.getElementById("employeeHistoryVwId").textContent = collaborator.vwId || "Não informada";
+      document.getElementById("employeeHistoryCompanyId").textContent = collaborator.companyId || "Não informada";
+      document.getElementById("employeeHistoryShift").textContent = collaborator.shift || "Não informado";
+      document.getElementById("employeeHistoryWorkstation").textContent = collaborator.workstation || "Não informado";
+      hydrateEmployeeHistoryPhoto(collaborator);
+
+      const allRows = getEmployeeHistoryRows(collaborator);
+      const movementSelect = document.getElementById("employeeHistoryMovement");
+      const selectedMovement = movementSelect.value;
+      const movementTypes = Array.from(new Set(allRows.map(row => row.type).filter(Boolean)))
+        .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+      movementSelect.innerHTML = `<option value="">Todas as movimentações</option>` + movementTypes
+        .map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`)
+        .join("");
+      if (movementTypes.includes(selectedMovement)) movementSelect.value = selectedMovement;
+      const rows = filteredEmployeeHistoryRows(collaborator);
+      const withdrawn = allRows.filter(row => row.type === "Retirada")
+        .reduce((total, row) => total + Number(row.qty || 0), 0);
+      const returned = allRows.filter(row => row.type === "Devolução")
+        .reduce((total, row) => total + Number(row.qty || 0), 0);
+      document.getElementById("employeeHistoryWithdrawn").textContent = withdrawn.toLocaleString("pt-BR");
+      document.getElementById("employeeHistoryReturned").textContent = returned.toLocaleString("pt-BR");
+      document.getElementById("employeeHistoryBalance").textContent = Math.max(0, withdrawn - returned).toLocaleString("pt-BR");
+      document.getElementById("employeeHistoryTotal").textContent = allRows.length.toLocaleString("pt-BR");
+      document.getElementById("employeeHistoryUpdated").textContent = `Ficha atualizada em ${formatDate(new Date().toISOString(), true)}`;
+
+      document.getElementById("employeeHistoryTable").innerHTML = rows.length ? rows.map(row => `
+        <tr>
+          <td data-label="Data">${formatDate(row.date, true)}</td>
+          <td data-label="Movimentação"><span class="employeeHistoryMovementBadge ${row.type === "Devolução" ? "return" : ""}">${escapeHtml(row.type)}</span></td>
+          <td data-label="Número do CA"><strong>${escapeHtml(row.ca || "Não informado")}</strong></td>
+          <td data-label="EPI">${escapeHtml(row.material || "Não informado")}</td>
+          <td data-label="Quantidade">${Number(row.qty || 0)}</td>
+          <td data-label="M.E.R.">${escapeHtml(row.mer || "Não informado")}</td>
+          <td data-label="Assinatura">${row.signature ? `<img class="employeeHistorySignature" src="${row.signature}" alt="Assinatura eletrônica">` : `<span class="employeeHistoryNoSignature">Não aplicável</span>`}</td>
+          <td data-label="Responsável">${escapeHtml(row.responsible || "Não informado")}</td>
+          <td data-label="Próxima troca">${row.nextChange ? formatDate(row.nextChange) : "Não aplicável"}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhuma movimentação encontrada</strong>Ajuste o período ou o tipo de movimentação.</div></td></tr>`;
+    }
+
+    window.openEmployeeHistory = function(collaboratorId) {
+      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(collaboratorId));
+      if (!collaborator) return;
+      employeeHistorySelectedId = collaborator.id;
+      document.getElementById("employeeHistorySearch").value = collaborator.name;
+      renderEmployeeHistory();
+      navigate("employeeHistory");
+    };
+
+    async function printSelectedEmployeeHistory() {
+      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(employeeHistorySelectedId));
+      if (!collaborator) {
+        showToast("Selecione um colaborador para imprimir o histórico.", true);
+        return;
+      }
+      await hydrateEmployeeHistoryPhoto(collaborator);
+      const clone = document.getElementById("employeeHistorySheet").cloneNode(true);
+      clone.hidden = false;
+      clone.removeAttribute("id");
+      clone.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
+      document.getElementById("printTerm").innerHTML = "";
+      document.getElementById("printTerm").appendChild(clone);
+      window.print();
+    }
+
+    function exportSelectedEmployeeHistory() {
+      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(employeeHistorySelectedId));
+      if (!collaborator) {
+        showToast("Selecione um colaborador para exportar o histórico.", true);
+        return;
+      }
+      const rows = [
+        ["Colaborador", collaborator.name],
+        ["Chapa Volkswagen", collaborator.vwId || ""],
+        ["Matrícula SESÉ", collaborator.companyId || ""],
+        ["Função", collaborator.role || ""],
+        [],
+        ["Data e hora", "Movimentação", "Número do CA", "EPI", "Quantidade", "M.E.R.", "Responsável", "Próxima troca"]
+      ];
+      filteredEmployeeHistoryRows(collaborator).forEach(row => {
+        rows.push([
+          formatDate(row.date, true),
+          row.type,
+          row.ca || "",
+          row.material,
+          row.qty,
+          row.mer,
+          row.responsible,
+          row.nextChange ? formatDate(row.nextChange) : ""
+        ]);
+      });
+      downloadFile(
+        `historico_colaborador_${normalizeColumnName(collaborator.name).replace(/\s+/g, "_")}.csv`,
+        toCsv(rows),
+        "text/csv;charset=utf-8"
+      );
+      showToast("Histórico individual exportado com sucesso.");
+    }
+
     function renderSettings() {
       document.getElementById("unitName").value = state.settings.unit;
       document.getElementById("unitAddress").value = state.settings.address;
@@ -5663,6 +6608,7 @@
       renderInventory();
       renderAlerts();
       renderHistory();
+      renderEmployeeHistory();
       renderSettings();
       renderWithdrawalSelection();
     }
@@ -6738,6 +7684,35 @@
       clearHistoryFilterFields();
       renderHistory();
     });
+
+    document.getElementById("employeeHistorySearch").addEventListener("input", event => {
+      const collaborator = resolveEmployeeHistoryCollaborator(event.target.value);
+      employeeHistorySelectedId = collaborator?.id || null;
+      renderEmployeeHistory();
+    });
+
+    document.getElementById("employeeHistorySearch").addEventListener("change", event => {
+      const collaborator = resolveEmployeeHistoryCollaborator(event.target.value);
+      employeeHistorySelectedId = collaborator?.id || null;
+      renderEmployeeHistory();
+    });
+
+    ["employeeHistoryMovement", "employeeHistoryStart", "employeeHistoryEnd"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderEmployeeHistory);
+    });
+
+    document.getElementById("clearEmployeeHistory").addEventListener("click", () => {
+      employeeHistorySelectedId = null;
+      document.getElementById("employeeHistorySearch").value = "";
+      document.getElementById("employeeHistoryMovement").value = "";
+      document.getElementById("employeeHistoryStart").value = "";
+      document.getElementById("employeeHistoryEnd").value = "";
+      renderEmployeeHistory();
+      document.getElementById("employeeHistorySearch").focus();
+    });
+
+    document.getElementById("printEmployeeHistory").addEventListener("click", printSelectedEmployeeHistory);
+    document.getElementById("exportEmployeeHistory").addEventListener("click", exportSelectedEmployeeHistory);
 
     alertFilterIds.forEach(id => {
       document.getElementById(id).addEventListener("change", renderAlerts);
