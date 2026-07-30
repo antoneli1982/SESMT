@@ -3380,8 +3380,8 @@
               <input class="input" id="collaboratorVwId">
             </div>
             <div class="field">
-              <label for="collaboratorCompanyId">Matrícula SESÉ <span class="required">*</span></label>
-              <input class="input" id="collaboratorCompanyId" required>
+              <label for="collaboratorCompanyId">Matrícula SESÉ (opcional)</label>
+              <input class="input" id="collaboratorCompanyId" placeholder="Informe somente quando existir">
             </div>
             <div class="field">
               <label for="collaboratorAdmission">Admissão</label>
@@ -5984,7 +5984,7 @@
         const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
         const source = findCollaboratorSheet(workbook);
         if (!source) {
-          showToast("Não encontrei uma aba com nome, matrícula, cargo e turno.", true);
+          showToast("Não encontrei uma aba com nome, identificação, cargo e turno.", true);
           return;
         }
         const headers = source.rows[source.headerIndex].map(normalizeColumnName);
