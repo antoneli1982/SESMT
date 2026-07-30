@@ -1452,6 +1452,22 @@
       background: #fff0f2;
     }
 
+    .dismissedStatus {
+      color: var(--danger) !important;
+      font-weight: 800;
+    }
+
+    .dismissedStatusField label {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    #toggleCollaboratorDismissed[aria-pressed="true"] {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 10%, transparent);
+    }
+
     .actionsCell {
       display: flex;
       gap: 6px;
@@ -3567,8 +3583,13 @@
                 </div>
                 <div class="field">
                   <label for="employeeShift">Turno <span class="required">*</span></label>
-                  <input class="input" id="employeeShift" list="employeeShiftOptions" required placeholder="Turno cadastrado">
-                  <datalist id="employeeShiftOptions"></datalist>
+                  <select class="select" id="employeeShift" required>
+                    <option value="">Selecione o turno</option>
+                    <option value="ADM">ADM</option>
+                    <option value="1º">1º</option>
+                    <option value="2º">2º</option>
+                    <option value="3º">3º</option>
+                  </select>
                 </div>
               </div>
               <aside class="withdrawalCollaboratorPhotoCard" aria-live="polite">
@@ -4165,7 +4186,13 @@
             </div>
             <div class="field">
               <label for="collaboratorShift">Turno <span class="required">*</span></label>
-              <input class="input" id="collaboratorShift" required>
+              <select class="select" id="collaboratorShift" required>
+                <option value="">Selecione o turno</option>
+                <option value="ADM">ADM</option>
+                <option value="1º">1º</option>
+                <option value="2º">2º</option>
+                <option value="3º">3º</option>
+              </select>
             </div>
             <div class="field full">
               <label for="collaboratorVersatility">Carta de versatilidade</label>
@@ -4195,7 +4222,7 @@
               <label>Situação do colaborador</label>
               <button class="ghostButton" id="toggleCollaboratorDismissed" type="button" aria-pressed="false">Marcar como demitido</button>
             </div>
-            <div class="field full" id="collaboratorDismissalField" hidden>
+            <div class="field full dismissedStatusField" id="collaboratorDismissalField" hidden>
               <label for="collaboratorDismissalDate">DEMITIDO · Data de demissão <span class="required">*</span></label>
               <input class="input" id="collaboratorDismissalDate" type="date">
             </div>
@@ -4416,7 +4443,7 @@
         "Separador de Materiais", "Assistente de Qualidade", "Técnico de Manutenção", "Líder de Operação",
         "Motorista de Pátio", "Analista Administrativo"
       ];
-      const shifts = ["1º turno · 06:00 às 15:00", "2º turno · 15:00 às 23:45", "3º turno · 21:50 às 06:00", "Administrativo · 08:00 às 17:00"];
+      const shifts = ["1º", "2º", "3º", "ADM"];
       const workstations = ["Recebimento", "Armazenagem", "Separação", "Abastecimento de Linha", "Expedição", "Qualidade", "Inventário", "Manutenção", "Pátio", "Administrativo"];
       const managers = ["Aline Rocha", "Carlos Mendes", "Fernanda Lopes", "Marcelo Ribeiro", "Patrícia Nunes"];
       const collaborators = Array.from({ length: 250 }, (_, index) => {
@@ -5594,7 +5621,7 @@
             <td data-label="Turno"><button class="pill clickableTag" type="button" data-page-target="collaborators" data-filter-target="collaboratorShiftFilter" data-filter-value="${escapeHtml(item.shift || "Não informado")}">${escapeHtml(item.shift || "Não informado")}</button></td>
             <td data-label="Posto de trabalho">${escapeHtml(item.workstation || "Não informado")}</td>
             <td data-label="Responsável">${escapeHtml(item.manager || "Não informado")}</td>
-            <td data-label="Condição">${escapeHtml(conditions)}</td>
+            <td data-label="Condição" class="${item.status === "Demitido" ? "dismissedStatus" : ""}">${escapeHtml(conditions)}</td>
             <td data-label="Ações"><div class="actionsCell">
               <button class="miniButton" type="button" title="Histórico do colaborador" onclick="openEmployeeHistory(${item.id})">▤</button>
               <button class="miniButton" type="button" title="Editar" onclick="editCollaborator(${item.id})">✎</button>
@@ -5648,9 +5675,6 @@
       document.getElementById("employeeCompanyIdOptions").innerHTML = collaborators
         .filter(item => item.companyId)
         .map(item => `<option value="${escapeHtml(item.companyId)}">${escapeHtml(item.name)}</option>`)
-        .join("");
-      document.getElementById("employeeShiftOptions").innerHTML = uniqueSorted(collaborators.map(item => item.shift))
-        .map(value => `<option value="${escapeHtml(value)}"></option>`)
         .join("");
       document.getElementById("employeeCategoryOptions").innerHTML = uniqueSorted([
         ...collaborators.map(item => item.role),
@@ -5735,7 +5759,7 @@
       document.getElementById("employeeVwId").value = collaborator.vwId || "";
       document.getElementById("employeeCompanyId").value = collaborator.companyId || "";
       document.getElementById("employeeCategory").value = collaborator.role || "";
-      document.getElementById("employeeShift").value = collaborator.shift || "";
+      document.getElementById("employeeShift").value = normalizeShift(collaborator.shift);
       updateWithdrawalSummary();
       renderWithdrawalCollaboratorPhoto(collaborator);
     }
@@ -5822,7 +5846,6 @@
         collaboratorProbation45: "probation45",
         collaboratorProbation90: "probation90",
         collaboratorRole: "role",
-        collaboratorShift: "shift",
         collaboratorVersatility: "versatility",
         collaboratorWorkstation: "workstation",
         collaboratorManager: "manager",
@@ -5837,6 +5860,7 @@
         Object.entries(fields).forEach(([id, field]) => {
           document.getElementById(id).value = collaborator[field] || "";
         });
+        document.getElementById("collaboratorShift").value = normalizeShift(collaborator.shift);
       }
       setCollaboratorDismissedState(collaborator?.status === "Demitido");
       document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(collaborator?.name);
@@ -6536,12 +6560,14 @@
       document.getElementById("employeeHistoryName").textContent = collaborator.name || "Não informado";
       document.getElementById("employeeHistoryUnit").textContent = [state.settings.unit, state.settings.address]
         .filter(Boolean).join(" · ") || "Não informada";
-      document.getElementById("employeeHistoryRole").textContent = [
+      const employeeHistoryRole = document.getElementById("employeeHistoryRole");
+      employeeHistoryRole.textContent = [
         collaborator.role || "Não informada",
         collaborator.status === "Demitido"
           ? `DEMITIDO${collaborator.dismissalDate ? ` em ${formatDate(collaborator.dismissalDate)}` : ""}`
           : "Ativo"
       ].join(" · ");
+      employeeHistoryRole.classList.toggle("dismissedStatus", collaborator.status === "Demitido");
       document.getElementById("employeeHistoryAdmission").textContent = formatDate(collaborator.admission);
       document.getElementById("employeeHistoryVwId").textContent = collaborator.vwId || "Não informada";
       document.getElementById("employeeHistoryCompanyId").textContent = collaborator.companyId || "Não informada";
@@ -6873,6 +6899,15 @@
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, " ")
         .trim();
+    }
+
+    function normalizeShift(value) {
+      const normalized = normalizeColumnName(value);
+      if (normalized === "adm" || normalized.startsWith("administrativo")) return "ADM";
+      if (normalized.startsWith("1")) return "1º";
+      if (normalized.startsWith("2")) return "2º";
+      if (normalized.startsWith("3")) return "3º";
+      return "";
     }
 
     function normalizedRow(row) {
