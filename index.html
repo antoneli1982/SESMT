@@ -1537,6 +1537,83 @@
       gap: 15px;
     }
 
+    .withdrawalIdentityLayout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 176px;
+      align-items: stretch;
+      gap: 18px;
+    }
+
+    .withdrawalCollaboratorPhotoCard {
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      gap: 10px;
+      min-height: 100%;
+      padding: 14px;
+      border: 1px solid #bcd5f1;
+      border-radius: 17px;
+      background: linear-gradient(145deg, #f6faff, #edf6ff);
+      text-align: center;
+    }
+
+    .withdrawalCollaboratorPhotoHeading strong,
+    .withdrawalCollaboratorPhotoHeading small {
+      display: block;
+    }
+
+    .withdrawalCollaboratorPhotoHeading strong {
+      color: var(--ink);
+      font-size: 11px;
+    }
+
+    .withdrawalCollaboratorPhotoHeading small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 8px;
+    }
+
+    .withdrawalCollaboratorPhotoFrame {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 138px;
+      height: 138px;
+      overflow: hidden;
+      border: 3px solid white;
+      border-radius: 20px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      box-shadow: 0 9px 24px rgba(0, 89, 247, .16);
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .withdrawalCollaboratorPhotoFrame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .withdrawalCollaboratorPhotoFrame.hasPhoto span {
+      display: none;
+    }
+
+    .withdrawalCollaboratorPhotoStatus {
+      margin: 0;
+      color: var(--muted);
+      font-size: 8px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .withdrawalCollaboratorPhotoStatus.hasPhoto {
+      color: var(--success);
+      font-weight: 800;
+    }
+
     .field.full {
       grid-column: 1 / -1;
     }
@@ -2149,6 +2226,17 @@
       border-color: var(--line);
     }
 
+    html.darkTheme .withdrawalCollaboratorPhotoCard {
+      border-color: #315f91;
+      background: linear-gradient(145deg, #10253d, #101d2d);
+    }
+
+    html.darkTheme .withdrawalCollaboratorPhotoFrame {
+      border-color: #234b73;
+      background: #142f4d;
+      box-shadow: 0 9px 24px rgba(0, 0, 0, .24);
+    }
+
     html.darkTheme .photoUploadContent strong {
       color: var(--ink);
     }
@@ -2458,6 +2546,35 @@
       .formGrid,
       .settingsGrid {
         grid-template-columns: 1fr;
+      }
+
+      .withdrawalIdentityLayout {
+        grid-template-columns: 1fr;
+      }
+
+      .withdrawalCollaboratorPhotoCard {
+        grid-template-columns: 104px minmax(0, 1fr);
+        grid-template-areas:
+          "photo heading"
+          "photo status";
+        align-items: center;
+        justify-items: start;
+        min-height: auto;
+        text-align: left;
+      }
+
+      .withdrawalCollaboratorPhotoHeading {
+        grid-area: heading;
+      }
+
+      .withdrawalCollaboratorPhotoFrame {
+        grid-area: photo;
+        width: 104px;
+        height: 104px;
+      }
+
+      .withdrawalCollaboratorPhotoStatus {
+        grid-area: status;
       }
 
       .consumptionRow {
@@ -2896,39 +3013,52 @@
         <div class="contentGrid">
           <form class="panel" id="withdrawalForm">
             <h3 class="sectionTitle"><span>1</span> Identificação do colaborador</h3>
-            <div class="formGrid">
-              <div class="field">
-                <label for="employeeName">Nome completo <span class="required">*</span></label>
-                <input class="input" id="employeeName" list="employeeNameOptions" required autocomplete="name" placeholder="Selecione um colaborador cadastrado">
-                <datalist id="employeeNameOptions"></datalist>
+            <div class="withdrawalIdentityLayout">
+              <div class="formGrid">
+                <div class="field">
+                  <label for="employeeName">Nome completo <span class="required">*</span></label>
+                  <input class="input" id="employeeName" list="employeeNameOptions" required autocomplete="name" placeholder="Selecione um colaborador cadastrado">
+                  <datalist id="employeeNameOptions"></datalist>
+                </div>
+                <div class="field">
+                  <label for="employeeVwId">Chapa Volkswagen <span class="required">*</span></label>
+                  <input class="input" id="employeeVwId" list="employeeVwIdOptions" required placeholder="Chapa Volkswagen">
+                  <datalist id="employeeVwIdOptions"></datalist>
+                </div>
+                <div class="field">
+                  <label for="employeeCompanyId">Matrícula SESÉ</label>
+                  <input class="input" id="employeeCompanyId" list="employeeCompanyIdOptions" placeholder="Matrícula SESÉ">
+                  <datalist id="employeeCompanyIdOptions"></datalist>
+                </div>
+                <div class="field">
+                  <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
+                  <input class="input" id="employeeCategory" list="employeeCategoryOptions" placeholder="Informe ou selecione" required>
+                  <datalist id="employeeCategoryOptions">
+                    <option value="Operacional">
+                    <option value="Administrativo">
+                    <option value="Liderança">
+                    <option value="Manutenção">
+                    <option value="Motorista">
+                    <option value="Terceirizado">
+                  </datalist>
+                </div>
+                <div class="field">
+                  <label for="employeeShift">Turno <span class="required">*</span></label>
+                  <input class="input" id="employeeShift" list="employeeShiftOptions" required placeholder="Turno cadastrado">
+                  <datalist id="employeeShiftOptions"></datalist>
+                </div>
               </div>
-              <div class="field">
-                <label for="employeeVwId">Chapa Volkswagen <span class="required">*</span></label>
-                <input class="input" id="employeeVwId" list="employeeVwIdOptions" required placeholder="Chapa Volkswagen">
-                <datalist id="employeeVwIdOptions"></datalist>
-              </div>
-              <div class="field">
-                <label for="employeeCompanyId">Matrícula SESÉ</label>
-                <input class="input" id="employeeCompanyId" list="employeeCompanyIdOptions" placeholder="Matrícula SESÉ">
-                <datalist id="employeeCompanyIdOptions"></datalist>
-              </div>
-              <div class="field">
-                <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
-                <input class="input" id="employeeCategory" list="employeeCategoryOptions" placeholder="Informe ou selecione" required>
-                <datalist id="employeeCategoryOptions">
-                  <option value="Operacional">
-                  <option value="Administrativo">
-                  <option value="Liderança">
-                  <option value="Manutenção">
-                  <option value="Motorista">
-                  <option value="Terceirizado">
-                </datalist>
-              </div>
-              <div class="field">
-                <label for="employeeShift">Turno <span class="required">*</span></label>
-                <input class="input" id="employeeShift" list="employeeShiftOptions" required placeholder="Turno cadastrado">
-                <datalist id="employeeShiftOptions"></datalist>
-              </div>
+              <aside class="withdrawalCollaboratorPhotoCard" aria-live="polite">
+                <div class="withdrawalCollaboratorPhotoHeading">
+                  <strong id="withdrawalCollaboratorPhotoName">Foto do colaborador</strong>
+                  <small>Identificação visual</small>
+                </div>
+                <div class="withdrawalCollaboratorPhotoFrame" id="withdrawalCollaboratorPhotoFrame">
+                  <span id="withdrawalCollaboratorPhotoInitials">?</span>
+                  <img id="withdrawalCollaboratorPhotoImage" alt="Foto do colaborador selecionado" hidden>
+                </div>
+                <p class="withdrawalCollaboratorPhotoStatus" id="withdrawalCollaboratorPhotoStatus">Selecione um colaborador cadastrado</p>
+              </aside>
             </div>
 
             <div class="formSection">
@@ -3823,6 +3953,7 @@
     let stagedCollaboratorPhoto = null;
     let stagedCollaboratorPhotoUrl = "";
     let removeCollaboratorPhotoRequested = false;
+    let withdrawalPhotoRequestId = 0;
     const collaboratorPhotoUrls = new Map();
 
     function openPhotoDatabase() {
@@ -4872,6 +5003,57 @@
       ]).map(value => `<option value="${escapeHtml(value)}"></option>`).join("");
     }
 
+    async function renderWithdrawalCollaboratorPhoto(collaborator = null) {
+      const requestId = ++withdrawalPhotoRequestId;
+      const frame = document.getElementById("withdrawalCollaboratorPhotoFrame");
+      const image = document.getElementById("withdrawalCollaboratorPhotoImage");
+      const initials = document.getElementById("withdrawalCollaboratorPhotoInitials");
+      const name = document.getElementById("withdrawalCollaboratorPhotoName");
+      const status = document.getElementById("withdrawalCollaboratorPhotoStatus");
+      if (!frame || !image || !initials || !name || !status) return;
+
+      frame.classList.remove("hasPhoto");
+      image.hidden = true;
+      image.removeAttribute("src");
+      status.classList.remove("hasPhoto");
+      initials.textContent = collaboratorInitials(collaborator?.name || document.getElementById("employeeName").value) || "?";
+      name.textContent = collaborator?.name || "Foto do colaborador";
+
+      if (!collaborator) {
+        status.textContent = "Selecione um colaborador cadastrado";
+        return;
+      }
+      if (!collaborator.photoKey) {
+        status.textContent = "Sem foto cadastrada";
+        return;
+      }
+
+      status.textContent = "Carregando foto otimizada";
+      try {
+        const photoKey = String(collaborator.photoKey);
+        let url = collaboratorPhotoUrls.get(photoKey);
+        if (!url) {
+          const record = await getCollaboratorPhoto(photoKey);
+          if (requestId !== withdrawalPhotoRequestId) return;
+          if (!record?.blob) {
+            status.textContent = "Foto não encontrada no aparelho";
+            return;
+          }
+          url = URL.createObjectURL(record.blob);
+          collaboratorPhotoUrls.set(photoKey, url);
+        }
+        if (requestId !== withdrawalPhotoRequestId) return;
+        image.src = url;
+        image.hidden = false;
+        frame.classList.add("hasPhoto");
+        status.textContent = "Foto otimizada cadastrada";
+        status.classList.add("hasPhoto");
+      } catch {
+        if (requestId !== withdrawalPhotoRequestId) return;
+        status.textContent = "Não foi possível carregar a foto";
+      }
+    }
+
     function fillWithdrawalFromCollaborator(value) {
       const normalized = normalizeColumnName(value);
       const collaborator = state.collaborators.find(item => {
@@ -4879,13 +5061,17 @@
           || normalizeColumnName(item.companyId) === normalized
           || normalizeColumnName(item.vwId) === normalized;
       });
-      if (!collaborator) return;
+      if (!collaborator) {
+        renderWithdrawalCollaboratorPhoto();
+        return;
+      }
       document.getElementById("employeeName").value = collaborator.name || "";
       document.getElementById("employeeVwId").value = collaborator.vwId || "";
       document.getElementById("employeeCompanyId").value = collaborator.companyId || "";
       document.getElementById("employeeCategory").value = collaborator.role || "";
       document.getElementById("employeeShift").value = collaborator.shift || "";
       updateWithdrawalSummary();
+      renderWithdrawalCollaboratorPhoto(collaborator);
     }
 
     function resetCollaboratorPhotoStage() {
@@ -5149,6 +5335,7 @@
       updateWithdrawalMaterialInfo();
       renderWithdrawalSelection();
       updateWithdrawalSummary();
+      renderWithdrawalCollaboratorPhoto();
     }
 
     function updateWithdrawalSummary() {
