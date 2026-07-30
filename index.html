@@ -613,6 +613,10 @@
       margin: 18px 0;
     }
 
+    .dashboardStats {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
     .statCard {
       position: relative;
       min-height: 128px;
@@ -623,6 +627,57 @@
       border-radius: var(--radius);
       background: white;
       box-shadow: 0 5px 19px rgba(14, 42, 76, .04);
+    }
+
+    .alertStatCard,
+    .dashboardStatCard {
+      width: 100%;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .alertStatCard:hover,
+    .dashboardStatCard:hover {
+      transform: translateY(-3px);
+      border-color: var(--blue);
+      box-shadow: 0 12px 28px rgba(0, 89, 247, .16);
+    }
+
+    .alertStatCard:focus-visible,
+    .dashboardStatCard:focus-visible {
+      outline: 3px solid rgba(0, 89, 247, .35);
+      outline-offset: 3px;
+    }
+
+    .alertStatCard.active {
+      border-color: var(--blue);
+      background: linear-gradient(145deg, var(--blue-soft), white);
+      box-shadow: 0 12px 30px rgba(0, 89, 247, .2);
+    }
+
+    .alertStatCard small::after,
+    .dashboardStatCard small::after {
+      content: " · Clique para acessar";
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .dataTargetHighlight {
+      animation: dataTargetHighlight 1.4s ease;
+    }
+
+    @keyframes dataTargetHighlight {
+      0%,
+      100% {
+        box-shadow: 0 5px 19px rgba(14, 42, 76, .04);
+      }
+      45% {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 5px rgba(0, 89, 247, .16), 0 16px 34px rgba(0, 89, 247, .18);
+      }
     }
 
     .statCard::after {
@@ -861,6 +916,29 @@
       font-weight: 800;
     }
 
+    .alertMeta button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 9px;
+      font-weight: 800;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .alertMeta button:hover,
+    .alertMeta button:focus-visible,
+    .clickableTag:hover,
+    .clickableTag:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 13px rgba(0, 89, 247, .17);
+      outline: none;
+    }
+
     .pageHeader {
       display: flex;
       align-items: flex-end;
@@ -959,8 +1037,81 @@
 
     .tableWrap {
       overflow-x: auto;
+      max-width: 100%;
       border: 1px solid var(--line);
       border-radius: 16px;
+      scrollbar-color: var(--blue) var(--blue-soft);
+      scrollbar-width: thin;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tableWrap::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .tableWrap::-webkit-scrollbar-track {
+      border-radius: 999px;
+      background: var(--blue-soft);
+    }
+
+    .tableWrap::-webkit-scrollbar-thumb {
+      border: 2px solid var(--blue-soft);
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .collaboratorTable {
+      table-layout: fixed;
+    }
+
+    .collaboratorTable th {
+      padding-inline: 9px;
+      white-space: normal;
+      line-height: 1.35;
+    }
+
+    .collaboratorTable td {
+      padding: 13px 9px;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .collaboratorTable .materialCell {
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .collaboratorTable .materialCell > div:last-child {
+      min-width: 0;
+    }
+
+    .collaboratorTable .materialCell strong,
+    .collaboratorTable .materialCell small {
+      overflow-wrap: anywhere;
+    }
+
+    .collaboratorTable .pill {
+      max-width: 100%;
+      white-space: normal;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .collaboratorTable .actionsCell {
+      justify-content: center;
+    }
+
+    .materialsCatalogTable {
+      min-width: 1480px;
+    }
+
+    .materialNotesCell {
+      min-width: 190px;
+      max-width: 280px;
+      color: var(--muted);
+      line-height: 1.45;
+      white-space: normal;
     }
 
     table {
@@ -1012,6 +1163,116 @@
       font-weight: 900;
     }
 
+    .collaboratorAvatar {
+      position: relative;
+      display: grid;
+      place-items: center;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      overflow: hidden;
+      border: 2px solid #d9e8fb;
+      border-radius: 13px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .collaboratorAvatar img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .collaboratorAvatar.photoReady span {
+      display: none;
+    }
+
+    .photoUploader {
+      display: grid;
+      grid-template-columns: 116px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #f8fbff;
+    }
+
+    .photoPreview {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 116px;
+      height: 116px;
+      overflow: hidden;
+      border: 2px solid #cfe2fa;
+      border-radius: 18px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .photoPreview img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photoPreview.hasPhoto span {
+      display: none;
+    }
+
+    .photoUploadContent strong,
+    .photoUploadContent small {
+      display: block;
+    }
+
+    .photoUploadContent strong {
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .photoUploadContent small {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .photoUploadActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .photoOptimizationStatus {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: #31506f;
+      background: #eaf4ff;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .photoOptimizationStatus.success {
+      color: #176447;
+      background: #e8f7f0;
+    }
+
+    .photoOptimizationStatus.error {
+      color: var(--danger);
+      background: #fff0f2;
+    }
+
     .materialCell strong,
     .materialCell small {
       display: block;
@@ -1036,6 +1297,14 @@
       white-space: nowrap;
     }
 
+    button.pill {
+      border: 0;
+    }
+
+    .clickableTag {
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
     .pill::before {
       content: "";
       width: 6px;
@@ -1058,6 +1327,67 @@
       display: flex;
       gap: 6px;
     }
+
+    .consumptionHeaderActions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .consumptionHeaderActions .select {
+      min-width: 180px;
+      min-height: 38px;
+    }
+
+    .consumptionList {
+      display: grid;
+      gap: 11px;
+    }
+
+    .consumptionRow {
+      display: grid;
+      grid-template-columns: minmax(190px, 1.1fr) minmax(160px, 2fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .consumptionTrack {
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--blue-soft);
+    }
+
+    .consumptionFill {
+      display: block;
+      height: 100%;
+      min-width: 4px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .consumptionValue {
+      min-width: 54px;
+      color: var(--ink);
+      text-align: right;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .signatureThumbnail {
+      display: block;
+      width: 108px;
+      height: 42px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .signatureHistoryPanel {
+      margin-top: 18px;
+    }
+
 
     .miniButton {
       display: grid;
@@ -1205,6 +1535,29 @@
       margin-top: 9px;
       color: var(--muted);
       font-size: 9px;
+    }
+
+    .lgpdNotice {
+      margin-bottom: 14px;
+      padding: 14px 15px;
+      border: 1px solid #8bb9ec;
+      border-radius: 14px;
+      color: #243e5e;
+      background: linear-gradient(135deg, var(--blue-soft), #f7fbff);
+      box-shadow: inset 4px 0 0 var(--blue);
+    }
+
+    .lgpdNotice strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--blue-strong);
+      font-size: 11px;
+    }
+
+    .lgpdNotice p {
+      margin: 0;
+      font-size: 9px;
+      line-height: 1.65;
     }
 
     .checkRow {
@@ -1450,6 +1803,95 @@
       border-top: 1px solid var(--line);
     }
 
+    .duplicateDecisionModal {
+      width: min(590px, 100%);
+    }
+
+    .duplicateDecisionContent {
+      display: grid;
+      gap: 16px;
+    }
+
+    .duplicateDecisionLead {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .duplicateDecisionIcon {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      place-items: center;
+      border-radius: 16px;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 12px 24px rgba(0, 89, 247, .24);
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .duplicateDecisionLead strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .duplicateDecisionLead p,
+    .duplicateDecisionHelp {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .duplicateDecisionList {
+      display: grid;
+      gap: 8px;
+      max-height: 210px;
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--surface-soft);
+    }
+
+    .duplicateDecisionItem {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 11px;
+      border-radius: 11px;
+      background: var(--surface);
+      font-size: 10px;
+    }
+
+    .duplicateDecisionItem strong {
+      color: var(--ink);
+      font-size: 11px;
+    }
+
+    .duplicateDecisionItem span {
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .duplicateDecisionMore {
+      padding: 5px 8px;
+      color: var(--blue);
+      text-align: center;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    html.darkTheme .duplicateDecisionList,
+    html.darkTheme .duplicateDecisionItem {
+      background: var(--surface);
+    }
+
     .toastStack {
       position: fixed;
       right: 22px;
@@ -1522,11 +1964,36 @@
       border-color: var(--line);
     }
 
+    html.darkTheme .alertStatCard.active {
+      border-color: var(--blue);
+      background: linear-gradient(145deg, #102d52, var(--surface));
+    }
+
     html.darkTheme .selectedEpi,
     html.darkTheme .alertItem,
-    html.darkTheme .activityItem {
+    html.darkTheme .activityItem,
+    html.darkTheme .photoUploader {
       background: #101d2d;
       border-color: var(--line);
+    }
+
+    html.darkTheme .photoUploadContent strong {
+      color: var(--ink);
+    }
+
+    html.darkTheme .photoOptimizationStatus {
+      color: #bdd6ef;
+      background: #142f4d;
+    }
+
+    html.darkTheme .photoOptimizationStatus.success {
+      color: #8ff0c7;
+      background: #13352c;
+    }
+
+    html.darkTheme .photoOptimizationStatus.error {
+      color: #ffc0c8;
+      background: #43202a;
     }
 
     html.darkTheme .epiDatabaseItem {
@@ -1567,6 +2034,16 @@
       background: #142f4d;
     }
 
+    html.darkTheme .lgpdNotice {
+      color: #c0cde0;
+      background: #142f4d;
+      border-color: #315f91;
+    }
+
+    html.darkTheme .lgpdNotice strong {
+      color: #79bfff;
+    }
+
     html.darkTheme .barChart {
       background: repeating-linear-gradient(to bottom, transparent 0, transparent 44px, #21344b 45px);
     }
@@ -1587,6 +2064,12 @@
 
     html.darkTheme .pill {
       background: #173c32;
+    }
+
+    html.darkTheme .alertMeta button,
+    html.darkTheme .consumptionTrack {
+      border-color: var(--line);
+      background: #102a52;
     }
 
     html.darkTheme .toast {
@@ -1629,6 +2112,85 @@
 
       .summaryCard {
         position: static;
+      }
+
+      .collaboratorTable,
+      .collaboratorTable tbody,
+      .collaboratorTable tr,
+      .collaboratorTable td {
+        display: block;
+        width: 100%;
+      }
+
+      .collaboratorTable {
+        padding: 12px;
+        background: transparent;
+      }
+
+      .collaboratorTable colgroup,
+      .collaboratorTable thead {
+        display: none;
+      }
+
+      .collaboratorTable tbody {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .collaboratorTable tr {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--surface);
+        box-shadow: 0 7px 20px rgba(0, 15, 42, .06);
+      }
+
+      .collaboratorTable tr:hover td {
+        background: transparent;
+      }
+
+      .collaboratorTable td {
+        display: grid;
+        grid-template-columns: minmax(112px, .8fr) minmax(0, 1.2fr);
+        align-items: center;
+        gap: 12px;
+        padding: 9px 12px;
+        border-top: 1px solid var(--line);
+        overflow-wrap: anywhere;
+      }
+
+      .collaboratorTable td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 8px;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+
+      .collaboratorTable td:first-child {
+        display: block;
+        padding: 14px 12px;
+        border-top: 0;
+        background: var(--blue-soft);
+      }
+
+      .collaboratorTable td:first-child::before {
+        display: none;
+      }
+
+      .collaboratorTable td:last-child {
+        grid-template-columns: minmax(112px, .8fr) minmax(0, 1.2fr);
+        padding-block: 11px;
+      }
+
+      .collaboratorTable .actionsCell {
+        justify-content: flex-start;
+      }
+
+      .collaboratorTable .pill {
+        justify-self: start;
       }
     }
 
@@ -1726,6 +2288,23 @@
         grid-template-columns: 1fr;
       }
 
+      .consumptionRow {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .consumptionValue {
+        text-align: left;
+      }
+
+      .consumptionHeaderActions {
+        width: 100%;
+      }
+
+      .consumptionHeaderActions .select {
+        width: 100%;
+      }
+
       .historyFilters .filterClear {
         width: 100%;
         justify-self: stretch;
@@ -1769,6 +2348,10 @@
       .inventoryHero {
         grid-template-columns: 1fr;
       }
+
+      .collaboratorTable tbody {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 440px) {
@@ -1808,9 +2391,23 @@
       .epiDatabaseInfo {
         grid-template-columns: 1fr;
       }
+
+      .photoUploader {
+        grid-template-columns: 1fr;
+      }
+
+      .photoPreview {
+        width: 104px;
+        height: 104px;
+      }
     }
 
     @media print {
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+
       body * {
         visibility: hidden;
       }
@@ -1824,9 +2421,11 @@
         position: absolute;
         inset: 0;
         display: block !important;
-        padding: 36px;
+        padding: 0;
         color: #111;
         background: white;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
       }
     }
   </style>
@@ -1908,27 +2507,32 @@
           </div>
         </div>
 
-        <div class="stats">
-          <article class="statCard">
+        <div class="stats dashboardStats">
+          <button class="statCard dashboardStatCard" type="button" data-dashboard-card="stock" aria-label="Abrir catálogo e saldo dos materiais">
             <div class="statTop"><span>Itens em estoque</span><span class="statBadge">E</span></div>
             <strong id="statStock">0</strong>
             <small>Unidades disponíveis</small>
-          </article>
-          <article class="statCard danger">
+          </button>
+          <button class="statCard dashboardStatCard danger" type="button" data-dashboard-card="critical" aria-label="Abrir materiais com estoque crítico">
             <div class="statTop"><span>Estoque crítico</span><span class="statBadge">!</span></div>
             <strong id="statCritical">0</strong>
             <small>Materiais para reposição</small>
-          </article>
-          <article class="statCard warning">
+          </button>
+          <button class="statCard dashboardStatCard warning" type="button" data-dashboard-card="expiring" aria-label="Abrir vencimentos dos próximos sessenta dias">
             <div class="statTop"><span>Vencimentos</span><span class="statBadge">V</span></div>
             <strong id="statExpiring">0</strong>
             <small>Nos próximos 60 dias</small>
-          </article>
-          <article class="statCard">
+          </button>
+          <button class="statCard dashboardStatCard" type="button" data-dashboard-card="withdrawals" aria-label="Abrir retiradas registradas no mês">
             <div class="statTop"><span>Retiradas no mês</span><span class="statBadge">R</span></div>
             <strong id="statWithdrawals">0</strong>
             <small>Entregas registradas</small>
-          </article>
+          </button>
+          <button class="statCard dashboardStatCard" type="button" data-dashboard-card="consumption" aria-label="Abrir consumo de EPI no mês">
+            <div class="statTop"><span>Consumo no mês</span><span class="statBadge">C</span></div>
+            <strong id="statConsumption">0</strong>
+            <small>Unidades de EPI entregues</small>
+          </button>
         </div>
 
         <div class="contentGrid">
@@ -1953,6 +2557,24 @@
             <div class="alertList" id="dashboardAlerts"></div>
           </article>
         </div>
+
+        <article class="panel" id="consumptionPanel" style="margin-top:18px">
+          <div class="panelHeader">
+            <div>
+              <h3>Consumo de EPI</h3>
+              <p>Quantidade entregue por material no período selecionado</p>
+            </div>
+            <div class="consumptionHeaderActions">
+              <select class="select" id="consumptionPeriod" aria-label="Período do consumo">
+                <option value="month">Mês atual</option>
+                <option value="30">Últimos trinta dias</option>
+                <option value="90">Últimos noventa dias</option>
+                <option value="all">Todo o histórico</option>
+              </select>
+            </div>
+          </div>
+          <div class="consumptionList" id="consumptionRanking"></div>
+        </article>
 
         <article class="panel" style="margin-top:18px">
           <div class="panelHeader">
@@ -1981,7 +2603,7 @@
           </div>
         </div>
         <div class="filters">
-          <input class="input" id="materialSearch" type="search" placeholder="Pesquisar descrição, código, lote ou CA">
+          <input class="input" id="materialSearch" type="search" placeholder="Pesquisar por nome ou tamanho" aria-label="Pesquisar materiais por nome ou tamanho">
           <select class="select" id="categoryFilter" aria-label="Filtrar categoria">
             <option value="">Todas as categorias</option>
             <option>Proteção da cabeça</option>
@@ -1999,15 +2621,19 @@
           </select>
         </div>
         <div class="tableWrap">
-          <table>
+          <table class="materialsCatalogTable">
             <thead>
               <tr>
                 <th>Material</th>
                 <th>CA</th>
+                <th>Validade do CA</th>
                 <th>Lote</th>
-                <th>Validade CA</th>
+                <th>Validade do lote</th>
                 <th>Saldo</th>
-                <th>Local</th>
+                <th>Estoque mínimo</th>
+                <th>Vida útil</th>
+                <th>Localização</th>
+                <th>Observações</th>
                 <th>Situação</th>
                 <th>Ações</th>
               </tr>
@@ -2046,8 +2672,20 @@
           <select class="select" id="collaboratorManagerFilter" aria-label="Filtrar por responsável"><option value="">Todos os responsáveis</option></select>
           <button class="ghostButton filterClear" id="clearCollaboratorFilters" type="button">Limpar filtros</button>
         </div>
-        <div class="tableWrap">
-          <table>
+        <div class="tableWrap" role="region" aria-label="Tabela completa de colaboradores" tabindex="0">
+          <table class="collaboratorTable">
+            <colgroup>
+              <col style="width:19%">
+              <col style="width:7%">
+              <col style="width:8%">
+              <col style="width:8%">
+              <col style="width:10%">
+              <col style="width:14%">
+              <col style="width:9%">
+              <col style="width:8%">
+              <col style="width:9%">
+              <col style="width:8%">
+            </colgroup>
             <thead>
               <tr>
                 <th>Colaborador</th>
@@ -2085,9 +2723,14 @@
                 <datalist id="employeeNameOptions"></datalist>
               </div>
               <div class="field">
-                <label for="employeeId">Chapa <span class="required">*</span></label>
-                <input class="input" id="employeeId" list="employeeIdOptions" required>
-                <datalist id="employeeIdOptions"></datalist>
+                <label for="employeeVwId">Chapa Volkswagen <span class="required">*</span></label>
+                <input class="input" id="employeeVwId" list="employeeVwIdOptions" required placeholder="Chapa Volkswagen">
+                <datalist id="employeeVwIdOptions"></datalist>
+              </div>
+              <div class="field">
+                <label for="employeeCompanyId">Matrícula SESÉ</label>
+                <input class="input" id="employeeCompanyId" list="employeeCompanyIdOptions" placeholder="Matrícula SESÉ">
+                <datalist id="employeeCompanyIdOptions"></datalist>
               </div>
               <div class="field">
                 <label for="employeeCategory">Categoria do colaborador <span class="required">*</span></label>
@@ -2100,11 +2743,6 @@
                   <option value="Motorista">
                   <option value="Terceirizado">
                 </datalist>
-              </div>
-              <div class="field">
-                <label for="employeeArea">Área <span class="required">*</span></label>
-                <input class="input" id="employeeArea" list="employeeAreaOptions" required placeholder="Posto de trabalho">
-                <datalist id="employeeAreaOptions"></datalist>
               </div>
               <div class="field">
                 <label for="employeeShift">Turno <span class="required">*</span></label>
@@ -2154,6 +2792,14 @@
 
             <div class="formSection">
               <h3 class="sectionTitle"><span>3</span> Declaração e assinatura</h3>
+              <div class="lgpdNotice">
+                <strong>Proteção de dados pessoais</strong>
+                <p>Nos termos da Lei nº 13.709 de 2018, os dados pessoais informados, incluindo identificação funcional e assinatura eletrônica, serão tratados exclusivamente para registrar e comprovar a entrega, o uso, a troca e a devolução de EPI, cumprir obrigações legais e regulatórias de segurança do trabalho, realizar auditorias e exercer direitos. O acesso será restrito a pessoas autorizadas, com armazenamento pelo período necessário às finalidades e aos prazos legais. O titular poderá solicitar confirmação, acesso, correção e os demais direitos aplicáveis pelo canal disponibilizado pelo controlador. A assinatura não autoriza o uso dos dados para finalidade incompatível.</p>
+              </div>
+              <label class="checkRow">
+                <input type="checkbox" id="lgpdAcknowledgement" required>
+                <span>Declaro que li a informação sobre proteção de dados pessoais e estou ciente do tratamento descrito.</span>
+              </label>
               <div class="signatureBox" id="signatureBox">
                 <canvas id="signatureCanvas" width="900" height="260" aria-label="Campo para assinatura eletrônica"></canvas>
                 <div class="signatureHint">Assine neste espaço usando o mouse ou o dedo</div>
@@ -2183,7 +2829,8 @@
             </div>
             <div class="summaryList">
               <div class="summaryLine"><span>Colaborador</span><strong id="summaryEmployee">Não informado</strong></div>
-              <div class="summaryLine"><span>Chapa</span><strong id="summaryId">Não informada</strong></div>
+              <div class="summaryLine"><span>Chapa Volkswagen</span><strong id="summaryVwId">Não informada</strong></div>
+              <div class="summaryLine"><span>Matrícula SESÉ</span><strong id="summaryCompanyId">Não informada</strong></div>
               <div class="summaryLine"><span>Categoria</span><strong id="summaryCategory">Não informada</strong></div>
               <div class="summaryLine"><span>Itens selecionados</span><strong id="summaryItems">0</strong></div>
               <div class="summaryLine"><span>Número do CA</span><strong id="summaryCa">Sem item</strong></div>
@@ -2260,10 +2907,11 @@
           </div>
         </div>
         <div class="stats">
-          <article class="statCard danger"><div class="statTop"><span>CA vencido</span><span class="statBadge">!</span></div><strong id="alertExpired">0</strong><small>Bloqueados para retirada</small></article>
-          <article class="statCard warning"><div class="statTop"><span>CA a vencer</span><span class="statBadge">V</span></div><strong id="alertSoon">0</strong><small>Próximos 60 dias</small></article>
-          <article class="statCard danger"><div class="statTop"><span>Estoque mínimo</span><span class="statBadge">E</span></div><strong id="alertCritical">0</strong><small>Reposição necessária</small></article>
-          <article class="statCard"><div class="statTop"><span>Trocas previstas</span><span class="statBadge">T</span></div><strong id="alertReplacements">0</strong><small>Próximos sete dias</small></article>
+          <button class="statCard alertStatCard danger" type="button" data-alert-card="caExpired" aria-pressed="false"><div class="statTop"><span>CA vencido</span><span class="statBadge">!</span></div><strong id="alertExpired">0</strong><small>Bloqueados para retirada</small></button>
+          <button class="statCard alertStatCard warning" type="button" data-alert-card="caSoon" aria-pressed="false"><div class="statTop"><span>CA a vencer</span><span class="statBadge">V</span></div><strong id="alertSoon">0</strong><small>Próximos 60 dias</small></button>
+          <button class="statCard alertStatCard danger" type="button" data-alert-card="critical" aria-pressed="false"><div class="statTop"><span>Estoque mínimo</span><span class="statBadge">E</span></div><strong id="alertCritical">0</strong><small>Reposição necessária</small></button>
+          <button class="statCard alertStatCard danger" type="button" data-alert-card="epiExpired" aria-pressed="false"><div class="statTop"><span>EPI vencido</span><span class="statBadge">X</span></div><strong id="alertEpiExpired">0</strong><small>Materiais e trocas vencidas</small></button>
+          <button class="statCard alertStatCard" type="button" data-alert-card="replacements" aria-pressed="false"><div class="statTop"><span>Trocas previstas</span><span class="statBadge">T</span></div><strong id="alertReplacements">0</strong><small>Próximos sete dias</small></button>
         </div>
         <div class="filters alertFilters">
           <select class="select" id="alertOrigin" aria-label="Filtrar origem do alerta">
@@ -2274,8 +2922,11 @@
           <select class="select" id="alertEmployee" aria-label="Filtrar por colaborador">
             <option value="">Todos os colaboradores</option>
           </select>
-          <select class="select" id="alertEmployeeId" aria-label="Filtrar por chapa">
-            <option value="">Todas as chapas</option>
+          <select class="select" id="alertEmployeeVwId" aria-label="Filtrar por chapa Volkswagen">
+            <option value="">Todas as chapas Volkswagen</option>
+          </select>
+          <select class="select" id="alertEmployeeCompanyId" aria-label="Filtrar por matrícula SESÉ">
+            <option value="">Todas as matrículas SESÉ</option>
           </select>
           <select class="select" id="alertEmployeeCategory" aria-label="Filtrar categoria do colaborador">
             <option value="">Todas as categorias</option>
@@ -2289,10 +2940,13 @@
           <select class="select" id="alertEpi" aria-label="Filtrar por EPI">
             <option value="">Todos os EPIs</option>
           </select>
+          <select class="select" id="alertStatus" aria-label="Filtrar por situação do alerta">
+            <option value="">Todas as situações</option>
+          </select>
           <button class="ghostButton filterClear" id="clearAlertFilters" type="button">Limpar filtros</button>
         </div>
         <article class="panel">
-          <div class="panelHeader"><div><h3>Fila de tratativas</h3><p>Resolva primeiro os itens de maior risco</p></div></div>
+          <div class="panelHeader"><div><h3>Fila de tratativas</h3><p id="alertQueueContext">Todos os alertas · resolva primeiro os itens de maior risco</p></div></div>
           <div class="alertList" id="allAlerts"></div>
         </article>
       </section>
@@ -2319,11 +2973,21 @@
           <select class="select" id="historyEmployee" aria-label="Filtrar histórico por colaborador">
             <option value="">Todos os colaboradores</option>
           </select>
+          <select class="select" id="historyEmployeeVwId" aria-label="Filtrar histórico por chapa Volkswagen">
+            <option value="">Todas as chapas Volkswagen</option>
+          </select>
+          <select class="select" id="historyEmployeeCompanyId" aria-label="Filtrar histórico por matrícula SESÉ">
+            <option value="">Todas as matrículas SESÉ</option>
+          </select>
           <select class="select" id="historyEmployeeCategory" aria-label="Filtrar histórico por categoria do colaborador">
             <option value="">Todas as categorias</option>
           </select>
           <select class="select" id="historyResponsible" aria-label="Filtrar histórico por responsável">
             <option value="">Todos os responsáveis</option>
+          </select>
+          <select class="select" id="historyPeriod" aria-label="Filtrar histórico por período">
+            <option value="">Todos os períodos</option>
+            <option value="currentMonth">Mês atual</option>
           </select>
           <select class="select" id="historyDate" aria-label="Filtrar histórico por data">
             <option value="">Todas as datas</option>
@@ -2339,6 +3003,8 @@
                 <th>Material</th>
                 <th>Quantidade</th>
                 <th>Colaborador</th>
+                <th>Chapa Volkswagen</th>
+                <th>Matrícula SESÉ</th>
                 <th>Categoria</th>
                 <th>Responsável</th>
                 <th>Comprovante</th>
@@ -2347,6 +3013,33 @@
             <tbody id="historyTable"></tbody>
           </table>
         </div>
+
+        <article class="panel signatureHistoryPanel">
+          <div class="panelHeader">
+            <div>
+              <h3>Histórico de assinaturas e entregas</h3>
+              <p>Tabela documental com uma linha para cada EPI entregue</p>
+            </div>
+          </div>
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data da entrega</th>
+                  <th>Número do CA</th>
+                  <th>EPI</th>
+                  <th>Quantidade</th>
+                  <th>M.E.R.</th>
+                  <th>Assinatura do colaborador</th>
+                  <th>Entregue por</th>
+                  <th>Vencimento do EPI</th>
+                  <th>Documento</th>
+                </tr>
+              </thead>
+              <tbody id="signatureHistoryTable"></tbody>
+            </table>
+          </div>
+        </article>
       </section>
 
       <section class="page" id="page-settings">
@@ -2370,8 +3063,8 @@
           </article>
           <article class="settingCard">
             <h3>Dados demonstrativos</h3>
-            <p>Restaure os exemplos originais para treinamento da equipe.</p>
-            <button class="dangerButton" id="resetData">Restaurar exemplos</button>
+            <p>Restaure a base completa com 250 colaboradores, 36 materiais, 375 retiradas assinadas e 120 devoluções.</p>
+            <button class="dangerButton" id="resetData">Restaurar demonstração completa</button>
           </article>
         </div>
         <article class="panel" style="margin-top:18px">
@@ -2401,8 +3094,8 @@
               <input class="input" id="materialDescription" required>
             </div>
             <div class="field">
-              <label for="materialCode">Código interno <span class="required">*</span></label>
-              <input class="input" id="materialCode" required>
+              <label for="materialCode">Código do EPI</label>
+              <input class="input" id="materialCode" readonly aria-readonly="true" title="Gerado automaticamente a cada novo cadastro">
             </div>
             <div class="field">
               <label for="materialCategory">Categoria <span class="required">*</span></label>
@@ -2415,6 +3108,14 @@
                 <option>Proteção respiratória</option>
                 <option>Proteção visual</option>
               </select>
+            </div>
+            <div class="field">
+              <label for="materialSize">Tamanho <span class="required">*</span></label>
+              <input class="input" id="materialSize" required placeholder="Único, P, M, G, 40">
+            </div>
+            <div class="field">
+              <label for="materialManufacturer">Fabricante <span class="required">*</span></label>
+              <input class="input" id="materialManufacturer" required>
             </div>
             <div class="field">
               <label for="materialCa">Número do CA <span class="required">*</span></label>
@@ -2433,24 +3134,24 @@
               <input class="input" id="materialLotValidity" type="date" required>
             </div>
             <div class="field">
-              <label for="materialStock">Saldo inicial <span class="required">*</span></label>
-              <input class="input" id="materialStock" type="number" min="0" required>
+              <label for="materialStock">Saldo inicial</label>
+              <input class="input" id="materialStock" type="number" min="0" placeholder="Opcional">
             </div>
             <div class="field">
-              <label for="materialMinimum">Estoque mínimo <span class="required">*</span></label>
-              <input class="input" id="materialMinimum" type="number" min="0" required>
+              <label for="materialMinimum">Estoque mínimo</label>
+              <input class="input" id="materialMinimum" type="number" min="0" placeholder="Opcional">
             </div>
             <div class="field">
               <label for="materialLifetime">Vida útil em dias <span class="required">*</span></label>
               <input class="input" id="materialLifetime" type="number" min="1" required>
             </div>
             <div class="field">
-              <label for="materialLocation">Localização <span class="required">*</span></label>
-              <input class="input" id="materialLocation" required placeholder="Corredor A · Prateleira 01">
+              <label for="materialLocation">Localização</label>
+              <input class="input" id="materialLocation" placeholder="Opcional">
             </div>
             <div class="field full">
               <label for="materialNotes">Observações de uso</label>
-              <textarea class="textarea" id="materialNotes" placeholder="Tamanho, fabricante, condições de conservação ou orientação específica"></textarea>
+              <textarea class="textarea" id="materialNotes" placeholder="Condições de conservação ou orientação específica"></textarea>
             </div>
           </div>
         </div>
@@ -2471,6 +3172,25 @@
       <form id="collaboratorForm">
         <div class="modalBody">
           <div class="formGrid">
+            <div class="field full">
+              <label>Foto do colaborador</label>
+              <div class="photoUploader">
+                <div class="photoPreview" id="collaboratorPhotoPreview">
+                  <span id="collaboratorPhotoInitials">F</span>
+                  <img id="collaboratorPhotoImage" alt="Prévia da foto do colaborador" hidden>
+                </div>
+                <div class="photoUploadContent">
+                  <strong>Envie a foto original</strong>
+                  <small>A ferramenta recorta, redimensiona para no máximo 400 por 400 pixels e comprime automaticamente, preservando a nitidez do rosto.</small>
+                  <input id="collaboratorPhotoFile" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden>
+                  <div class="photoUploadActions">
+                    <button class="ghostButton" id="chooseCollaboratorPhoto" type="button">Selecionar foto</button>
+                    <button class="textButton" id="removeCollaboratorPhoto" type="button">Remover foto</button>
+                  </div>
+                  <div class="photoOptimizationStatus" id="collaboratorPhotoStatus">Nenhuma foto selecionada. Tamanho final pretendido: até 60 KB.</div>
+                </div>
+              </div>
+            </div>
             <div class="field full">
               <label for="collaboratorName">Nome completo <span class="required">*</span></label>
               <input class="input" id="collaboratorName" required>
@@ -2545,6 +3265,29 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="duplicateImportModal" role="dialog" aria-modal="true" aria-labelledby="duplicateImportTitle">
+    <div class="modal duplicateDecisionModal">
+      <div class="modalHeader">
+        <h3 id="duplicateImportTitle">Colaboradores duplicados encontrados</h3>
+      </div>
+      <div class="modalBody duplicateDecisionContent">
+        <div class="duplicateDecisionLead">
+          <div class="duplicateDecisionIcon" aria-hidden="true">!</div>
+          <div>
+            <strong id="duplicateImportSummary">Existem colaboradores já cadastrados.</strong>
+            <p id="duplicateImportDetails"></p>
+          </div>
+        </div>
+        <div class="duplicateDecisionList" id="duplicateImportList"></div>
+        <p class="duplicateDecisionHelp">Escolha se os dados da planilha devem substituir os cadastros existentes. Os colaboradores novos serão importados nas duas opções.</p>
+      </div>
+      <div class="modalFooter">
+        <button class="ghostButton" id="keepDuplicateCollaborators" type="button">Manter dados atuais</button>
+        <button class="primaryButton" id="updateDuplicateCollaborators" type="button">Atualizar duplicados</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modalBackdrop" id="unitModal" role="dialog" aria-modal="true" aria-labelledby="unitModalTitle">
     <div class="modal">
       <div class="modalHeader">
@@ -2581,40 +3324,496 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-    const STORAGE_KEY = "sese_epi_manager_v1";
+    const STORAGE_KEY = "sese_epi_manager_demo_250_v1";
     const THEME_KEY = "sese_epi_theme";
+    const PHOTO_DB_NAME = "sese_epi_collaborator_photos_v1";
+    const PHOTO_STORE_NAME = "photos";
+    const PHOTO_MAX_DIMENSION = 400;
+    const PHOTO_TARGET_BYTES = 60 * 1024;
 
-    const seedData = {
-      settings: {
-        unit: "Unidade Operacional SESÉ",
-        address: "Centro Logístico",
-        responsible: "Responsável SESMT"
-      },
-      materials: [
-        { id: 1, code: "EPI001", description: "Capacete de segurança azul", category: "Proteção da cabeça", ca: "498", caValidity: "2027-10-30", lot: "CAP2607A", lotValidity: "2030-07-01", stock: 48, minimum: 15, lifetime: 365, location: "A01 · P02", notes: "Classe B com jugular" },
-        { id: 2, code: "EPI002", description: "Luva nitrílica anticorte", category: "Proteção das mãos", ca: "44512", caValidity: "2027-03-15", lot: "LUV2606C", lotValidity: "2029-06-10", stock: 12, minimum: 20, lifetime: 90, location: "B03 · P01", notes: "Tamanhos M e G" },
-        { id: 3, code: "EPI003", description: "Protetor auricular tipo plug", category: "Proteção auditiva", ca: "5745", caValidity: "2026-09-18", lot: "AUR2604B", lotValidity: "2028-04-12", stock: 86, minimum: 30, lifetime: 180, location: "A02 · P04", notes: "Cordão em PVC" },
-        { id: 4, code: "EPI004", description: "Óculos de proteção incolor", category: "Proteção visual", ca: "10344", caValidity: "2026-07-10", lot: "OCU2512D", lotValidity: "2028-12-09", stock: 21, minimum: 18, lifetime: 180, location: "A02 · P02", notes: "Lente antirrisco" },
-        { id: 5, code: "EPI005", description: "Botina de segurança com biqueira", category: "Proteção dos pés", ca: "28498", caValidity: "2028-02-08", lot: "BOT2607A", lotValidity: "2031-01-12", stock: 9, minimum: 12, lifetime: 365, location: "C01 · P03", notes: "Numeração 35 a 45" },
-        { id: 6, code: "EPI006", description: "Respirador semifacial PFF2", category: "Proteção respiratória", ca: "39210", caValidity: "2027-05-20", lot: "RES2606F", lotValidity: "2028-06-01", stock: 64, minimum: 25, lifetime: 7, location: "B01 · P05", notes: "Uso individual" }
-      ],
-      collaborators: [],
-      history: [
-        { id: 101, date: "2026-07-28T10:42:00", type: "Retirada", material: "Capacete de segurança azul", qty: 1, employee: "Carlos Henrique", responsible: "Responsável SESMT", signed: true },
-        { id: 102, date: "2026-07-28T09:18:00", type: "Retirada", material: "Luva nitrílica anticorte", qty: 2, employee: "Mariana Alves", responsible: "Responsável SESMT", signed: true },
-        { id: 103, date: "2026-07-27T16:05:00", type: "Entrada", material: "Respirador semifacial PFF2", qty: 50, employee: "Fornecedor homologado", responsible: "Almoxarifado", signed: false },
-        { id: 104, date: "2026-07-26T14:32:00", type: "Inventário", material: "Contagem geral", qty: 6, employee: "Unidade Operacional", responsible: "Responsável SESMT", signed: false },
-        { id: 105, date: "2026-07-24T11:10:00", type: "Ajuste", material: "Botina de segurança com biqueira", qty: -1, employee: "Divergência de contagem", responsible: "Almoxarifado", signed: false }
-      ],
-      withdrawals: []
-    };
+    function createDemonstrationData() {
+      const dateOnly = date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+      const dateAt = (daysFromToday, hour = 10, minute = 0) => {
+        const date = new Date();
+        date.setHours(hour, minute, 0, 0);
+        date.setDate(date.getDate() + daysFromToday);
+        return date;
+      };
+      const dateTime = (daysFromToday, hour = 10, minute = 0) => dateAt(daysFromToday, hour, minute).toISOString();
+      const futureDate = daysFromToday => dateOnly(dateAt(daysFromToday, 12, 0));
+      const addDays = (value, days) => {
+        const date = new Date(value);
+        date.setDate(date.getDate() + Number(days || 0));
+        return dateOnly(date);
+      };
+      const signatureImage = name => {
+        const parts = String(name).split(/\s+/).filter(Boolean);
+        const rubric = `${parts[0] || "C"} ${parts.at(-1) || ""}`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="70" viewBox="0 0 240 70"><rect width="240" height="70" fill="white"/><path d="M12 49 C35 9 38 61 65 28 S89 54 110 30 S139 58 164 26 S195 49 226 24" fill="none" stroke="#102d52" stroke-width="2.3" stroke-linecap="round"/><text x="120" y="62" text-anchor="middle" font-family="cursive" font-size="12" fill="#344d6b">${rubric}</text></svg>`;
+        return `data:image/svg+xml;charset=utf8,${encodeURIComponent(svg)}`;
+      };
+
+      const materialTemplates = [
+        ["Capacete de segurança classe B azul", "Único", "MSA", "Proteção da cabeça", 365, "Classe B com jugular"],
+        ["Capacete de segurança classe B branco", "Único", "3M", "Proteção da cabeça", 365, "Uso destinado à liderança"],
+        ["Capacete de segurança classe A amarelo", "Único", "Camper", "Proteção da cabeça", 365, "Casco com suspensão ajustável"],
+        ["Jugular para capacete com três pontos", "Único", "Ledan", "Proteção da cabeça", 180, "Acessório de retenção"],
+        ["Capuz de proteção antichama", "Único", "Hércules", "Proteção da cabeça", 180, "Uso em atividade térmica"],
+        ["Touca de proteção descartável", "Único", "Volk", "Proteção da cabeça", 1, "Uso único"],
+        ["Abafador auditivo tipo concha", "Único", "3M", "Proteção auditiva", 365, "Atenuação de 21 dB"],
+        ["Protetor auricular de silicone com cordão", "Único", "Danny", "Proteção auditiva", 180, "Higienização individual"],
+        ["Protetor auricular de espuma moldável", "Único", "Moldex", "Proteção auditiva", 7, "Uso individual"],
+        ["Abafador auditivo acoplável ao capacete", "Único", "MSA", "Proteção auditiva", 365, "Encaixe lateral"],
+        ["Protetor auditivo com haste", "Único", "Delta Plus", "Proteção auditiva", 180, "Haste ajustável"],
+        ["Plug auditivo reutilizável", "Único", "Kalipso", "Proteção auditiva", 90, "Três flanges"],
+        ["Luva nitrílica anticorte", "M", "Volk", "Proteção das mãos", 90, "Resistência ao corte"],
+        ["Luva nitrílica anticorte", "G", "Volk", "Proteção das mãos", 90, "Resistência ao corte"],
+        ["Luva de vaqueta", "Único", "Zanel", "Proteção das mãos", 120, "Punho de sete centímetros"],
+        ["Luva de raspa cano longo", "Único", "Zanel", "Proteção das mãos", 90, "Proteção mecânica"],
+        ["Luva de PVC forrada", "G", "Danny", "Proteção das mãos", 60, "Cano de quarenta e cinco centímetros"],
+        ["Luva de malha pigmentada", "M", "Kalipso", "Proteção das mãos", 30, "Palma antiderrapante"],
+        ["Botina de segurança com biqueira", "38", "Marluvas", "Proteção dos pés", 365, "Biqueira de composite"],
+        ["Botina de segurança com biqueira", "40", "Marluvas", "Proteção dos pés", 365, "Biqueira de composite"],
+        ["Botina de segurança com biqueira", "42", "Bracol", "Proteção dos pés", 365, "Solado bidensidade"],
+        ["Sapato de segurança sem cadarço", "39", "Estival", "Proteção dos pés", 365, "Modelo ocupacional"],
+        ["Sapato de segurança sem cadarço", "41", "Estival", "Proteção dos pés", 365, "Modelo ocupacional"],
+        ["Bota impermeável cano longo", "42", "Kadesh", "Proteção dos pés", 240, "PVC impermeável"],
+        ["Respirador descartável PFF2", "Único", "3M", "Proteção respiratória", 7, "Sem válvula"],
+        ["Respirador descartável PFF2 com válvula", "Único", "Delta Plus", "Proteção respiratória", 7, "Com válvula de exalação"],
+        ["Respirador semifacial reutilizável", "M", "3M", "Proteção respiratória", 365, "Peça facial de silicone"],
+        ["Filtro químico para vapores orgânicos", "Único", "3M", "Proteção respiratória", 30, "Par de cartuchos"],
+        ["Máscara facial inteira", "M", "MSA", "Proteção respiratória", 365, "Visor panorâmico"],
+        ["Filtro mecânico para particulados", "Único", "Air Safety", "Proteção respiratória", 30, "Classe P2"],
+        ["Óculos de proteção incolor", "Único", "Kalipso", "Proteção visual", 180, "Lente antirrisco"],
+        ["Óculos de proteção cinza", "Único", "Danny", "Proteção visual", 180, "Proteção contra luminosidade"],
+        ["Óculos de ampla visão", "Único", "3M", "Proteção visual", 180, "Ventilação indireta"],
+        ["Protetor facial incolor", "Único", "Ledan", "Proteção visual", 180, "Visor de policarbonato"],
+        ["Óculos de segurança sobrepor", "Único", "Delta Plus", "Proteção visual", 180, "Compatível com óculos graduado"],
+        ["Máscara de solda com escurecimento", "Único", "Vonder", "Proteção visual", 365, "Filtro automático"]
+      ];
+      const categoryPrefixes = {
+        "Proteção da cabeça": "CAB",
+        "Proteção auditiva": "AUD",
+        "Proteção das mãos": "MAO",
+        "Proteção dos pés": "PES",
+        "Proteção respiratória": "RES",
+        "Proteção visual": "VIS"
+      };
+      const materials = materialTemplates.map((template, index) => {
+        const [description, size, manufacturer, category, lifetime, notes] = template;
+        const minimum = 12 + index % 5 * 6;
+        const stock = index % 9 === 0 ? Math.max(2, minimum - 4) : 42 + index % 8 * 17;
+        const caOffset = index < 2 ? -90 + index * 65 : index < 5 ? 12 + index * 13 : 240 + index * 19;
+        const lotOffset = index === 5 ? -18 : index === 6 ? 28 : index === 7 ? 72 : 420 + index * 17;
+        return {
+          id: index + 1,
+          code: `EPI${String(index + 1).padStart(3, "0")}`,
+          description,
+          size,
+          manufacturer,
+          category,
+          ca: String(41000 + index * 137),
+          caValidity: futureDate(caOffset),
+          lot: `${categoryPrefixes[category]}${String(index + 1).padStart(2, "0")}D26`,
+          lotValidity: futureDate(lotOffset),
+          stock,
+          minimum,
+          lifetime,
+          location: `${String.fromCharCode(65 + index % 4)}${String(Math.floor(index / 4) + 1).padStart(2, "0")} · P${String(index % 6 + 1).padStart(2, "0")}`,
+          notes
+        };
+      });
+
+      const firstNames = [
+        "Ana", "Bruno", "Camila", "Daniel", "Eduarda", "Felipe", "Gabriela", "Henrique", "Isabela", "João",
+        "Karina", "Lucas", "Mariana", "Nicolas", "Olívia", "Paulo", "Queila", "Rafael", "Sabrina", "Thiago",
+        "Úrsula", "Vinícius", "Wesley", "Yasmin", "Zélia"
+      ];
+      const lastNames = ["Almeida", "Barbosa", "Cardoso", "Dias", "Ferreira", "Gomes", "Lima", "Martins", "Oliveira", "Souza"];
+      const roles = [
+        "Auxiliar de Logística", "Operador de Empilhadeira", "Conferente", "Alimentador de Linha",
+        "Separador de Materiais", "Assistente de Qualidade", "Técnico de Manutenção", "Líder de Operação",
+        "Motorista de Pátio", "Analista Administrativo"
+      ];
+      const shifts = ["1º turno · 06:00 às 15:00", "2º turno · 15:00 às 23:45", "3º turno · 21:50 às 06:00", "Administrativo · 08:00 às 17:00"];
+      const workstations = ["Recebimento", "Armazenagem", "Separação", "Abastecimento de Linha", "Expedição", "Qualidade", "Inventário", "Manutenção", "Pátio", "Administrativo"];
+      const managers = ["Aline Rocha", "Carlos Mendes", "Fernanda Lopes", "Marcelo Ribeiro", "Patrícia Nunes"];
+      const collaborators = Array.from({ length: 250 }, (_, index) => {
+        const admission = dateAt(-(120 + index * 7), 12, 0);
+        return {
+          id: 10001 + index,
+          vwId: `VW${String(730001 + index)}`,
+          companyId: `SE${String(26001 + index)}`,
+          name: `${firstNames[index % firstNames.length]} ${lastNames[Math.floor(index / firstNames.length)]}`,
+          admission: dateOnly(admission),
+          probation45: dateOnly(new Date(admission.getFullYear(), admission.getMonth(), admission.getDate() + 45)),
+          probation90: dateOnly(new Date(admission.getFullYear(), admission.getMonth(), admission.getDate() + 90)),
+          role: roles[index % roles.length],
+          shift: shifts[index % shifts.length],
+          versatility: `Carta nível ${index % 4 + 1}`,
+          workstation: workstations[index % workstations.length],
+          manager: managers[index % managers.length],
+          operationNotes: "Cadastro fictício preparado para demonstração do sistema",
+          hrNotes: index % 17 === 0 ? "Acompanhamento periódico registrado" : "",
+          returnDate: "",
+          pcd: index % 23 === 0 ? "Sim" : "Não",
+          committee: index % 29 === 0 ? "Brigadista" : index % 31 === 0 ? "Cipeiro" : "",
+          photoKey: "",
+          status: "Ativo"
+        };
+      });
+
+      const validMaterials = materials.filter(material => {
+        return new Date(`${material.caValidity}T23:59:59`) >= new Date()
+          && new Date(`${material.lotValidity}T23:59:59`) >= new Date();
+      });
+      const reasons = ["Primeira entrega", "Substituição periódica", "Dano no equipamento", "Perda justificada"];
+      const responsibles = ["Aline Rocha", "Carlos Mendes", "Fernanda Lopes", "Marcelo Ribeiro", "Patrícia Nunes"];
+      const withdrawals = Array.from({ length: 375 }, (_, index) => {
+        const collaborator = collaborators[index % collaborators.length];
+        const deliveryDate = dateTime(-(index % 118), 7 + index % 10, index % 6 * 10);
+        const itemCount = 1 + index % 3;
+        const items = Array.from({ length: itemCount }, (_, itemIndex) => {
+          const material = validMaterials[(index * 7 + itemIndex * 11) % validMaterials.length];
+          const qty = material.category === "Proteção das mãos" || material.category === "Proteção respiratória" ? 2 : 1;
+          return {
+            id: material.id,
+            code: material.code,
+            description: material.description,
+            size: material.size,
+            manufacturer: material.manufacturer,
+            category: material.category,
+            ca: material.ca,
+            lot: material.lot,
+            lifetime: material.lifetime,
+            qty,
+            nextChange: addDays(deliveryDate, material.lifetime),
+            reason: reasons[(index + itemIndex) % reasons.length]
+          };
+        });
+        return {
+          id: `RETDEMO${String(index + 1).padStart(4, "0")}`,
+          historyId: 200001 + index,
+          date: deliveryDate,
+          employee: collaborator.name,
+          employeeVwId: collaborator.vwId,
+          employeeCompanyId: collaborator.companyId,
+          employeeId: collaborator.companyId,
+          employeeCategory: collaborator.role,
+          area: collaborator.workstation,
+          shift: collaborator.shift,
+          responsible: responsibles[index % responsibles.length],
+          items,
+          signature: signatureImage(collaborator.name),
+          lgpdAcknowledgedAt: deliveryDate
+        };
+      });
+
+      const withdrawalHistory = withdrawals.map(withdrawal => ({
+        id: withdrawal.historyId,
+        date: withdrawal.date,
+        type: "Retirada",
+        material: withdrawal.items.map(item => {
+          return `${item.description} · Tamanho ${item.size} · Fabricante ${item.manufacturer}`;
+        }).join(" + "),
+        qty: withdrawal.items.reduce((total, item) => total + item.qty, 0),
+        employee: withdrawal.employee,
+        employeeVwId: withdrawal.employeeVwId,
+        employeeCompanyId: withdrawal.employeeCompanyId,
+        employeeCategory: withdrawal.employeeCategory,
+        responsible: withdrawal.responsible,
+        signed: true
+      }));
+      const returnHistory = Array.from({ length: 120 }, (_, index) => {
+        const withdrawal = withdrawals[120 + index * 2 % 250];
+        const item = withdrawal.items[index % withdrawal.items.length];
+        const collaborator = collaborators.find(person => person.companyId === withdrawal.employeeCompanyId);
+        return {
+          id: 300001 + index,
+          date: dateTime(-(index % 84), 8 + index % 8, index % 4 * 15),
+          type: "Devolução",
+          material: `${item.description} · Tamanho ${item.size} · Fabricante ${item.manufacturer}`,
+          qty: 1,
+          employee: withdrawal.employee,
+          employeeVwId: withdrawal.employeeVwId,
+          employeeCompanyId: withdrawal.employeeCompanyId,
+          employeeCategory: collaborator?.role || withdrawal.employeeCategory,
+          responsible: responsibles[(index + 2) % responsibles.length],
+          signed: false
+        };
+      });
+      const receiptHistory = materials.map((material, index) => ({
+        id: 400001 + index,
+        date: dateTime(-(135 - index * 3), 9 + index % 7, index % 4 * 15),
+        type: "Entrada",
+        material: `${material.description} · Tamanho ${material.size} · Fabricante ${material.manufacturer}`,
+        qty: 80 + index % 6 * 25,
+        employee: "Fornecedor homologado",
+        responsible: "Almoxarifado",
+        signed: false
+      }));
+      const inventoryHistory = Array.from({ length: 6 }, (_, index) => ({
+        id: 500001 + index,
+        date: dateTime(-(index * 24 + 3), 14, 30),
+        type: "Inventário",
+        material: "Contagem geral de materiais",
+        qty: materials.length,
+        employee: "Unidade Operacional SESÉ",
+        responsible: responsibles[index % responsibles.length],
+        signed: false
+      }));
+      const adjustmentHistory = Array.from({ length: 18 }, (_, index) => {
+        const material = materials[index * 5 % materials.length];
+        return {
+          id: 600001 + index,
+          date: dateTime(-(index * 6 + 2), 11, 20),
+          type: "Ajuste",
+          material: `${material.description} · Tamanho ${material.size} · Fabricante ${material.manufacturer}`,
+          qty: index % 3 === 0 ? 2 : 1,
+          employee: index % 2 === 0 ? "Regularização de contagem" : "Ajuste de saldo",
+          responsible: responsibles[index % responsibles.length],
+          signed: false
+        };
+      });
+
+      return {
+        settings: {
+          unit: "Unidade Operacional SESÉ · Ambiente de Demonstração",
+          address: "Centro Logístico · Base fictícia para apresentação",
+          responsible: "Equipe SESMT"
+        },
+        materials,
+        collaborators,
+        history: [
+          ...withdrawalHistory,
+          ...returnHistory,
+          ...receiptHistory,
+          ...inventoryHistory,
+          ...adjustmentHistory
+        ],
+        withdrawals,
+        nextMaterialSequence: materials.length + 1,
+        demonstration: {
+          collaborators: collaborators.length,
+          materials: materials.length,
+          withdrawals: withdrawals.length,
+          returns: returnHistory.length
+        }
+      };
+    }
+
+    const seedData = createDemonstrationData();
 
     let state = loadState();
     let editingMaterialId = null;
     let editingCollaboratorId = null;
     let withdrawalSelection = [];
     let inventoryActive = false;
+    let activeAlertCard = "";
     let signatureStarted = false;
+    let stagedCollaboratorPhoto = null;
+    let stagedCollaboratorPhotoUrl = "";
+    let removeCollaboratorPhotoRequested = false;
+    const collaboratorPhotoUrls = new Map();
+
+    function openPhotoDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) {
+          reject(new Error("Armazenamento de imagens indisponível"));
+          return;
+        }
+        const request = indexedDB.open(PHOTO_DB_NAME, 1);
+        request.onupgradeneeded = () => {
+          const database = request.result;
+          if (!database.objectStoreNames.contains(PHOTO_STORE_NAME)) {
+            database.createObjectStore(PHOTO_STORE_NAME, { keyPath: "key" });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Não foi possível abrir o armazenamento de imagens"));
+      });
+    }
+
+    async function saveCollaboratorPhoto(photoKey, blob) {
+      const database = await openPhotoDatabase();
+      await new Promise((resolve, reject) => {
+        const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+        transaction.objectStore(PHOTO_STORE_NAME).put({
+          key: String(photoKey),
+          blob,
+          size: blob.size,
+          type: blob.type,
+          updatedAt: new Date().toISOString()
+        });
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error || new Error("Não foi possível salvar a foto"));
+      });
+      database.close();
+      clearCollaboratorPhotoUrl(photoKey);
+    }
+
+    async function getCollaboratorPhoto(photoKey) {
+      if (!photoKey) return null;
+      const database = await openPhotoDatabase();
+      const record = await new Promise((resolve, reject) => {
+        const request = database.transaction(PHOTO_STORE_NAME, "readonly")
+          .objectStore(PHOTO_STORE_NAME)
+          .get(String(photoKey));
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error || new Error("Não foi possível ler a foto"));
+      });
+      database.close();
+      return record;
+    }
+
+    async function deleteCollaboratorPhoto(photoKey) {
+      if (!photoKey) return;
+      const database = await openPhotoDatabase();
+      await new Promise((resolve, reject) => {
+        const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+        transaction.objectStore(PHOTO_STORE_NAME).delete(String(photoKey));
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error || new Error("Não foi possível remover a foto"));
+      });
+      database.close();
+      clearCollaboratorPhotoUrl(photoKey);
+    }
+
+    function clearCollaboratorPhotoUrl(photoKey) {
+      const key = String(photoKey || "");
+      const url = collaboratorPhotoUrls.get(key);
+      if (url) URL.revokeObjectURL(url);
+      collaboratorPhotoUrls.delete(key);
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("Não foi possível preparar a foto"));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function getCollaboratorPhotoDataUrl(photoKey) {
+      try {
+        const record = await getCollaboratorPhoto(photoKey);
+        return record?.blob ? await blobToDataUrl(record.blob) : "";
+      } catch {
+        return "";
+      }
+    }
+
+    function imageFileToElement(file) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        const url = URL.createObjectURL(file);
+        image.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(image);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Formato de imagem não reconhecido neste navegador"));
+        };
+        image.src = url;
+      });
+    }
+
+    function canvasToCompressedBlob(canvas, type, quality) {
+      return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+    }
+
+    async function optimizeCollaboratorPhoto(file) {
+      if (!file || !String(file.type || "").startsWith("image/")) {
+        throw new Error("Selecione um arquivo de imagem válido");
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        throw new Error("A imagem original deve ter no máximo 20 MB");
+      }
+      const image = await imageFileToElement(file);
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
+      const cropSize = Math.min(sourceWidth, sourceHeight);
+      const sourceX = Math.max(0, (sourceWidth - cropSize) / 2);
+      const sourceY = Math.max(0, (sourceHeight - cropSize) / 2);
+      const canvas = document.createElement("canvas");
+      let outputDimension = PHOTO_MAX_DIMENSION;
+      canvas.width = outputDimension;
+      canvas.height = outputDimension;
+      const photoContext = canvas.getContext("2d", { alpha: false });
+      const drawOptimizedPhoto = () => {
+        canvas.width = outputDimension;
+        canvas.height = outputDimension;
+        photoContext.imageSmoothingEnabled = true;
+        photoContext.imageSmoothingQuality = "high";
+        photoContext.fillStyle = "#ffffff";
+        photoContext.fillRect(0, 0, canvas.width, canvas.height);
+        photoContext.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          cropSize,
+          cropSize,
+          0,
+          0,
+          outputDimension,
+          outputDimension
+        );
+      };
+      drawOptimizedPhoto();
+
+      let quality = .84;
+      let mimeType = "image/webp";
+      let blob = await canvasToCompressedBlob(canvas, mimeType, quality);
+      if (!blob || blob.type !== mimeType) {
+        mimeType = "image/jpeg";
+        blob = await canvasToCompressedBlob(canvas, mimeType, quality);
+      }
+      while (blob && blob.size > PHOTO_TARGET_BYTES && quality > .5) {
+        quality = Math.max(.5, quality - .06);
+        blob = await canvasToCompressedBlob(canvas, mimeType, quality);
+      }
+      while (blob && blob.size > PHOTO_TARGET_BYTES && outputDimension > 320) {
+        outputDimension -= 40;
+        quality = .72;
+        drawOptimizedPhoto();
+        blob = await canvasToCompressedBlob(canvas, mimeType, quality);
+        while (blob && blob.size > PHOTO_TARGET_BYTES && quality > .46) {
+          quality = Math.max(.46, quality - .06);
+          blob = await canvasToCompressedBlob(canvas, mimeType, quality);
+        }
+      }
+      if (!blob) throw new Error("Não foi possível otimizar a imagem");
+      return {
+        blob,
+        width: outputDimension,
+        height: outputDimension,
+        originalBytes: file.size,
+        finalBytes: blob.size,
+        mimeType
+      };
+    }
+
+    function formatFileSize(bytes) {
+      if (!Number.isFinite(Number(bytes))) return "0 KB";
+      return `${Math.max(1, Math.round(Number(bytes) / 1024))} KB`;
+    }
+
+    function collaboratorInitials(name) {
+      return String(name || "F")
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join("")
+        .toUpperCase() || "F";
+    }
 
     function cloneSeed() {
       return JSON.parse(JSON.stringify(seedData));
@@ -2628,6 +3827,19 @@
         if (!Array.isArray(loaded.materials)) loaded.materials = [];
         if (!Array.isArray(loaded.history)) loaded.history = [];
         if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
+        loaded.materials = loaded.materials.map(material => ({
+          ...material,
+          size: material.size || "",
+          manufacturer: material.manufacturer || ""
+        }));
+        const greatestMaterialSequence = loaded.materials.reduce((greatest, material) => {
+          const match = String(material.code || "").match(/(\d+)$/);
+          return match ? Math.max(greatest, Number(match[1])) : greatest;
+        }, 0);
+        loaded.nextMaterialSequence = Math.max(
+          Number(loaded.nextMaterialSequence) || 1,
+          greatestMaterialSequence + 1
+        );
         return loaded;
       } catch {
         return cloneSeed();
@@ -2684,9 +3896,39 @@
       return `${year}-${month}-${day}`;
     }
 
+    function nextMaterialCode() {
+      const usedCodes = new Set(state.materials.map(material => String(material.code || "").toUpperCase()));
+      let sequence = Math.max(1, Number(state.nextMaterialSequence) || 1);
+      let code = "";
+      do {
+        code = `EPI${String(sequence).padStart(3, "0")}`;
+        sequence += 1;
+      } while (usedCodes.has(code));
+      return code;
+    }
+
+    function materialLabel(material) {
+      const parts = [material?.description || "EPI não informado"];
+      if (material?.size) parts.push(`Tamanho ${material.size}`);
+      if (material?.manufacturer) parts.push(`Fabricante ${material.manufacturer}`);
+      return parts.join(" · ");
+    }
+
+    function hasConfiguredMinimum(material) {
+      return material?.minimum !== null
+        && material?.minimum !== undefined
+        && material?.minimum !== ""
+        && Number.isFinite(Number(material.minimum));
+    }
+
+    function isCriticalStock(material) {
+      return hasConfiguredMinimum(material)
+        && Number(material.stock || 0) <= Number(material.minimum);
+    }
+
     function materialStatus(material) {
       if (daysUntil(material.caValidity) < 0) return { key: "expired", label: "CA vencido", className: "danger" };
-      if (material.stock <= material.minimum) return { key: "critical", label: "Estoque crítico", className: "danger" };
+      if (isCriticalStock(material)) return { key: "critical", label: "Estoque crítico", className: "danger" };
       if (daysUntil(material.caValidity) <= 60) return { key: "soon", label: "CA a vencer", className: "warning" };
       return { key: "normal", label: "Regular", className: "" };
     }
@@ -2731,29 +3973,178 @@
       if (page === "withdrawal") resizeCanvas();
     }
 
+    function highlightDataTarget(element) {
+      if (!element) return;
+      element.classList.remove("dataTargetHighlight");
+      void element.offsetWidth;
+      element.classList.add("dataTargetHighlight");
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => element.classList.remove("dataTargetHighlight"), 1500);
+    }
+
+    function clearHistoryFilterFields() {
+      [
+        "historyType",
+        "historyMaterial",
+        "historyEmployee",
+        "historyEmployeeVwId",
+        "historyEmployeeCompanyId",
+        "historyEmployeeCategory",
+        "historyResponsible",
+        "historyPeriod",
+        "historyDate"
+      ].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    function openDashboardCard(kind) {
+      if (kind === "stock") {
+        clearMaterialFilters();
+        renderMaterials();
+        navigate("materials");
+        requestAnimationFrame(() => highlightDataTarget(document.querySelector("#page-materials .tableWrap")));
+        return;
+      }
+      if (kind === "critical") {
+        navigate("alerts");
+        openAlertCard("critical");
+        return;
+      }
+      if (kind === "expiring") {
+        navigate("alerts");
+        openAlertCard("caSoon");
+        return;
+      }
+      if (kind === "withdrawals") {
+        clearHistoryFilterFields();
+        document.getElementById("historyType").value = "Retirada";
+        document.getElementById("historyPeriod").value = "currentMonth";
+        renderHistory();
+        navigate("history");
+        requestAnimationFrame(() => highlightDataTarget(document.querySelector("#page-history .tableWrap")));
+        return;
+      }
+      if (kind === "consumption") {
+        document.getElementById("consumptionPeriod").value = "month";
+        renderDashboard();
+        navigate("dashboard");
+        requestAnimationFrame(() => highlightDataTarget(document.getElementById("consumptionPanel")));
+      }
+    }
+
+    function getConsumptionEntries() {
+      const entries = [];
+      const detailedHistoryIds = new Set();
+      (state.withdrawals || []).forEach(withdrawal => {
+        detailedHistoryIds.add(withdrawal.historyId);
+        (withdrawal.items || []).forEach(item => {
+          entries.push({
+            date: withdrawal.date,
+            material: materialLabel(item),
+            qty: Number(item.qty || 0),
+            historyId: withdrawal.historyId
+          });
+        });
+      });
+      (state.history || []).forEach(item => {
+        if (item.type !== "Retirada" || detailedHistoryIds.has(item.id)) return;
+        entries.push({
+          date: item.date,
+          material: item.material || "EPI não informado",
+          qty: Number(item.qty || 0),
+          historyId: item.id
+        });
+      });
+      return entries;
+    }
+
+    function matchesConsumptionPeriod(entry, period) {
+      const entryDate = new Date(entry.date);
+      const now = new Date();
+      if (period === "all") return true;
+      if (period === "month") {
+        return entryDate.getFullYear() === now.getFullYear()
+          && entryDate.getMonth() === now.getMonth();
+      }
+      const limit = new Date(now);
+      limit.setDate(limit.getDate() - Number(period || 30));
+      return entryDate >= limit;
+    }
+
+    function localDateKey(value) {
+      const date = new Date(value);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
     function renderDashboard() {
       const totalStock = state.materials.reduce((sum, material) => sum + Number(material.stock), 0);
-      const critical = state.materials.filter(material => material.stock <= material.minimum).length;
+      const critical = state.materials.filter(isCriticalStock).length;
       const expiring = state.materials.filter(material => {
         const days = daysUntil(material.caValidity);
         return days >= 0 && days <= 60;
       }).length;
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      const monthly = state.history.filter(item => item.type === "Retirada" && item.date.slice(0, 7) === currentMonth).length;
+      const now = new Date();
+      const monthly = state.history.filter(item => {
+        const date = new Date(item.date);
+        return item.type === "Retirada"
+          && date.getFullYear() === now.getFullYear()
+          && date.getMonth() === now.getMonth();
+      }).length;
+      const consumptionEntries = getConsumptionEntries();
+      const monthlyConsumption = consumptionEntries
+        .filter(entry => matchesConsumptionPeriod(entry, "month"))
+        .reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
       document.getElementById("statStock").textContent = totalStock.toLocaleString("pt-BR");
       document.getElementById("statCritical").textContent = critical;
       document.getElementById("statExpiring").textContent = expiring;
       document.getElementById("statWithdrawals").textContent = monthly;
+      document.getElementById("statConsumption").textContent = monthlyConsumption.toLocaleString("pt-BR");
 
-      const chartValues = [13, 18, 11, 25, 31, 16, 22];
-      const chartLabels = ["Qua", "Qui", "Sex", "Sáb", "Dom", "Seg", "Hoje"];
-      const max = Math.max(...chartValues);
+      const days = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - (6 - index));
+        return date;
+      });
+      const chartValues = days.map(day => {
+        const key = localDateKey(day);
+        return consumptionEntries
+          .filter(entry => localDateKey(entry.date) === key)
+          .reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
+      });
+      const chartLabels = days.map((day, index) => index === 6
+        ? "Hoje"
+        : new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(day).replace(".", ""));
+      const max = Math.max(1, ...chartValues);
       document.getElementById("barChart").innerHTML = chartValues.map((value, index) => `
         <div class="barItem" title="${value} entregas">
           <div class="bar" style="height:${Math.max(12, value / max * 145)}px"></div>
           <span>${chartLabels[index]}</span>
         </div>
       `).join("");
+
+      const period = document.getElementById("consumptionPeriod").value;
+      const consumptionByMaterial = consumptionEntries
+        .filter(entry => matchesConsumptionPeriod(entry, period))
+        .reduce((map, entry) => {
+          map.set(entry.material, (map.get(entry.material) || 0) + Number(entry.qty || 0));
+          return map;
+        }, new Map());
+      const ranking = Array.from(consumptionByMaterial.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8);
+      const rankingMax = Math.max(1, ...ranking.map(item => item[1]));
+      document.getElementById("consumptionRanking").innerHTML = ranking.length ? ranking.map(([material, qty]) => `
+        <div class="consumptionRow">
+          <button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(material)}">${escapeHtml(material)}</button>
+          <div class="consumptionTrack" aria-label="${qty} unidades consumidas"><span class="consumptionFill" style="width:${Math.max(3, qty / rankingMax * 100)}%"></span></div>
+          <span class="consumptionValue">${qty.toLocaleString("pt-BR")} un.</span>
+        </div>
+      `).join("") : `<div class="emptyState"><strong>Sem consumo no período</strong>As retiradas registradas aparecerão aqui automaticamente.</div>`;
 
       const alerts = buildAlerts().slice(0, 3);
       document.getElementById("dashboardAlerts").innerHTML = alerts.length ? alerts.map(alertTemplate).join("") : `
@@ -2771,7 +4162,7 @@
               <strong>${escapeHtml(item.type)} · ${escapeHtml(item.material)}</strong>
               <p>${escapeHtml(item.employee)} · ${formatDate(item.date, true)}</p>
             </div>
-            <span class="pill">${item.qty > 0 ? "+" : ""}${item.qty}</span>
+            <button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(historyMaterialsForItem(item)[0] || item.material)}">${item.qty > 0 ? "+" : ""}${item.qty}</button>
           </div>
         `).join("");
     }
@@ -2786,53 +4177,94 @@
             type: "danger",
             icon: "CA",
             origin: "material",
-            epi: material.description,
-            title: `${material.description}: CA vencido`,
+            epi: materialLabel(material),
+            status: "CA vencido",
+            title: `${materialLabel(material)}: CA vencido`,
             text: `Certificado ${material.ca} venceu em ${formatDate(material.caValidity)}. Item bloqueado para entrega.`,
-            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+            meta: [`Categoria do EPI: ${material.category}`, `Tamanho: ${material.size || "Não informado"}`, `Fabricante: ${material.manufacturer || "Não informado"}`, `Código: ${material.code}`, `Vencimento do CA: ${formatDate(material.caValidity)}`]
           });
         } else if (caDays <= 60) {
           alerts.push({
             type: "warning",
             icon: "CA",
             origin: "material",
-            epi: material.description,
-            title: `${material.description}: CA próximo do vencimento`,
+            epi: materialLabel(material),
+            status: "CA a vencer",
+            title: `${materialLabel(material)}: CA próximo do vencimento`,
             text: `Faltam ${caDays} dias para o vencimento do certificado ${material.ca}.`,
-            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+            meta: [`Categoria do EPI: ${material.category}`, `Tamanho: ${material.size || "Não informado"}`, `Fabricante: ${material.manufacturer || "Não informado"}`, `Código: ${material.code}`, `Vencimento do CA: ${formatDate(material.caValidity)}`]
           });
         }
-        if (material.stock <= material.minimum) {
+        if (isCriticalStock(material)) {
           alerts.push({
             type: "danger",
             icon: "E",
             origin: "material",
-            epi: material.description,
-            title: `${material.description}: estoque crítico`,
+            epi: materialLabel(material),
+            status: "Estoque crítico",
+            title: `${materialLabel(material)}: estoque crítico`,
             text: `Saldo atual de ${material.stock} unidades. Estoque mínimo definido em ${material.minimum}.`,
-            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+            meta: [`Categoria do EPI: ${material.category}`, `Tamanho: ${material.size || "Não informado"}`, `Fabricante: ${material.manufacturer || "Não informado"}`, `Código: ${material.code}`]
           });
         }
-        if (lotDays >= 0 && lotDays <= 90) {
+        if (lotDays < 0) {
+          alerts.push({
+            type: "danger",
+            icon: "X",
+            origin: "material",
+            epi: materialLabel(material),
+            status: "EPI vencido",
+            title: `${materialLabel(material)}: EPI vencido`,
+            text: `O lote ${material.lot} venceu em ${formatDate(material.lotValidity)} e deve ser bloqueado para entrega.`,
+            meta: [`Categoria do EPI: ${material.category}`, `Tamanho: ${material.size || "Não informado"}`, `Fabricante: ${material.manufacturer || "Não informado"}`, `Código: ${material.code}`, `Vencimento do EPI: ${formatDate(material.lotValidity)}`]
+          });
+        } else if (lotDays <= 90) {
           alerts.push({
             type: "warning",
             icon: "L",
             origin: "material",
-            epi: material.description,
-            title: `${material.description}: lote próximo do vencimento`,
+            epi: materialLabel(material),
+            status: "EPI a vencer",
+            title: `${materialLabel(material)}: lote próximo do vencimento`,
             text: `Lote ${material.lot} vence em ${formatDate(material.lotValidity)}.`,
-            meta: [`Categoria do EPI: ${material.category}`, `Código: ${material.code}`]
+            meta: [`Categoria do EPI: ${material.category}`, `Tamanho: ${material.size || "Não informado"}`, `Fabricante: ${material.manufacturer || "Não informado"}`, `Código: ${material.code}`, `Vencimento do EPI: ${formatDate(material.lotValidity)}`]
           });
         }
       });
       return alerts.concat(buildReplacementAlerts());
     }
 
+    function findWithdrawalCollaborator(withdrawal) {
+      const identifiers = [
+        withdrawal.employeeVwId,
+        withdrawal.employeeCompanyId,
+        withdrawal.employeeId
+      ].map(normalizeColumnName).filter(Boolean);
+      const withdrawalName = normalizeColumnName(withdrawal.employee);
+      return (state.collaborators || []).find(person => {
+        const personIdentifiers = [
+          normalizeColumnName(person.vwId),
+          normalizeColumnName(person.companyId)
+        ].filter(Boolean);
+        return identifiers.some(identifier => personIdentifiers.includes(identifier))
+          || (withdrawalName && normalizeColumnName(person.name) === withdrawalName);
+      });
+    }
+
+    function resolveWithdrawalIdentity(withdrawal) {
+      const collaborator = findWithdrawalCollaborator(withdrawal);
+      return {
+        vwId: withdrawal.employeeVwId || collaborator?.vwId || "",
+        companyId: withdrawal.employeeCompanyId || collaborator?.companyId || withdrawal.employeeId || ""
+      };
+    }
+
     function buildReplacementAlerts() {
       const latestDeliveries = new Map();
       (state.withdrawals || []).forEach(withdrawal => {
+        const identity = resolveWithdrawalIdentity(withdrawal);
         (withdrawal.items || []).forEach(item => {
-          const key = `${withdrawal.employeeId || withdrawal.employee}|${item.id || item.description}`;
+          const key = `${identity.vwId || identity.companyId || withdrawal.employee}|${item.id || item.description}`;
           const current = latestDeliveries.get(key);
           if (!current || new Date(withdrawal.date) > new Date(current.withdrawal.date)) {
             latestDeliveries.set(key, { withdrawal, item });
@@ -2842,20 +4274,15 @@
 
       return Array.from(latestDeliveries.values()).reduce((alerts, entry) => {
         const { withdrawal, item } = entry;
-        const collaborator = (state.collaborators || []).find(person => {
-          const withdrawalId = normalizeColumnName(withdrawal.employeeId);
-          const withdrawalName = normalizeColumnName(withdrawal.employee);
-          return (withdrawalId && [
-            normalizeColumnName(person.companyId),
-            normalizeColumnName(person.vwId)
-          ].includes(withdrawalId)) || (withdrawalName && normalizeColumnName(person.name) === withdrawalName);
-        });
+        const collaborator = findWithdrawalCollaborator(withdrawal);
+        const identity = resolveWithdrawalIdentity(withdrawal);
         const nextChange = item.nextChange || calculateNextChange(item.lifetime, withdrawal.date);
         const remainingDays = daysUntil(nextChange);
         if (remainingDays > 7) return alerts;
 
         const employeeName = collaborator?.name || withdrawal.employee || "Não informado";
-        const employeeId = collaborator?.companyId || collaborator?.vwId || withdrawal.employeeId || "Não informada";
+        const employeeVwId = identity.vwId || "Não informada";
+        const employeeCompanyId = identity.companyId || "Não informada";
         const employeeCategory = collaborator?.role || withdrawal.employeeCategory || "Não informada";
         const employeeArea = collaborator?.workstation || withdrawal.area || "Não informada";
         const employeeShift = collaborator?.shift || withdrawal.shift || "Não informado";
@@ -2865,23 +4292,28 @@
 
         alerts.push({
           type: remainingDays < 0 ? "danger" : "warning",
-          icon: "T",
+          icon: remainingDays < 0 ? "X" : "T",
           origin: "collaborator",
           employee: employeeName,
-          employeeId,
+          employeeVwId,
+          employeeCompanyId,
           employeeCategory,
           employeeArea,
           employeeShift,
-          epi: item.description || "Não informado",
+          epi: materialLabel(item),
           remainingDays,
-          title: `${employeeName}: troca de ${item.description}`,
+          expiryDate: nextChange,
+          status: remainingDays < 0 ? "EPI vencido" : remainingDays === 0 ? "Vence hoje" : "EPI a vencer",
+          title: `${employeeName}: troca de ${materialLabel(item)}`,
           text: deadlineText,
           meta: [
+            `Situação: ${remainingDays < 0 ? "EPI vencido" : remainingDays === 0 ? "Vence hoje" : "EPI a vencer"}`,
             `Categoria do colaborador: ${employeeCategory}`,
-            `Chapa: ${employeeId}`,
+            `Chapa Volkswagen: ${employeeVwId}`,
+            `Matrícula SESÉ: ${employeeCompanyId}`,
             `Área: ${employeeArea}`,
             `Turno: ${employeeShift}`,
-            `EPI: ${item.description || "Não informado"}`,
+            `EPI: ${materialLabel(item)}`,
             `CA: ${item.ca || "Não informado"}`,
             `Responsável: ${withdrawal.responsible || "Não informado"}`,
             `Entrega: ${formatDate(withdrawal.date, true)}`,
@@ -2893,7 +4325,34 @@
     }
 
     function alertTemplate(alert) {
-      const meta = (alert.meta || []).map(item => `<span>${escapeHtml(item)}</span>`).join("");
+      const meta = (alert.meta || []).map(item => {
+        const label = String(item || "");
+        let target = "alertEpi";
+        let value = alert.epi || "";
+        if (label.startsWith("Categoria do colaborador:")) {
+          target = "alertEmployeeCategory";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("Chapa Volkswagen:")) {
+          target = "alertEmployeeVwId";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("Matrícula SESÉ:")) {
+          target = "alertEmployeeCompanyId";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("Área:")) {
+          target = "alertEmployeeArea";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("Turno:")) {
+          target = "alertEmployeeShift";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("EPI:")) {
+          target = "alertEpi";
+          value = label.split(":").slice(1).join(":").trim();
+        } else if (label.startsWith("Situação:")) {
+          target = "alertStatus";
+          value = label.split(":").slice(1).join(":").trim();
+        }
+        return `<button type="button" data-page-target="alerts" data-filter-target="${target}" data-filter-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
+      }).join("");
       return `
         <div class="alertItem ${alert.type}">
           <div class="alertIcon">${escapeHtml(alert.icon)}</div>
@@ -2907,13 +4366,13 @@
     }
 
     function renderMaterials() {
-      const search = document.getElementById("materialSearch").value.trim().toLowerCase();
+      const searchTerms = normalizeColumnName(document.getElementById("materialSearch").value).split(/\s+/).filter(Boolean);
       const category = document.getElementById("categoryFilter").value;
       const filter = document.getElementById("stockFilter").value;
       const materials = state.materials.filter(material => {
-        const searchable = `${material.description} ${material.code} ${material.lot} ${material.ca}`.toLowerCase();
+        const searchable = normalizeColumnName(`${material.description} ${material.size || ""}`);
         const status = materialStatus(material);
-        return (!search || searchable.includes(search))
+        return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
           && (!category || material.category === category)
           && (!filter || status.key === filter);
       });
@@ -2922,13 +4381,17 @@
         const status = materialStatus(material);
         return `
           <tr>
-            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
+            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
             <td><strong>${escapeHtml(material.ca)}</strong></td>
-            <td>${escapeHtml(material.lot)}</td>
             <td>${formatDate(material.caValidity)}</td>
+            <td>${escapeHtml(material.lot)}</td>
+            <td>${formatDate(material.lotValidity)}</td>
             <td><strong>${material.stock}</strong> un.</td>
-            <td>${escapeHtml(material.location)}</td>
-            <td><span class="pill ${status.className}">${status.label}</span></td>
+            <td>${hasConfiguredMinimum(material) ? `<strong>${Number(material.minimum)}</strong> un.` : "Não informado"}</td>
+            <td><strong>${Number(material.lifetime || 0)}</strong> dias</td>
+            <td>${escapeHtml(material.location || "Não informada")}</td>
+            <td class="materialNotesCell">${escapeHtml(material.notes || "Sem observações")}</td>
+            <td><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
             <td><div class="actionsCell">
               <button class="miniButton" type="button" title="Editar" onclick="editMaterial(${material.id})">✎</button>
               <button class="miniButton" type="button" title="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
@@ -2936,8 +4399,14 @@
             </div></td>
           </tr>
         `;
-      }).join("") : `<tr><td colspan="8"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
+      }).join("") : `<tr><td colspan="12"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
       populateWithdrawalMaterials();
+    }
+
+    function clearMaterialFilters() {
+      document.getElementById("materialSearch").value = "";
+      document.getElementById("categoryFilter").value = "";
+      document.getElementById("stockFilter").value = "";
     }
 
     function uniqueSorted(values) {
@@ -2987,20 +4456,20 @@
       document.getElementById("collaboratorPcdTotal").textContent = collaborators.filter(isPcd).length.toLocaleString("pt-BR");
 
       document.getElementById("collaboratorsTable").innerHTML = filtered.length ? filtered.map(item => {
-        const initials = String(item.name || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+        const initials = collaboratorInitials(item.name);
         const conditions = [isPcd(item) ? "PCD" : "", item.committee || ""].filter(Boolean).join(" · ") || "Regular";
         return `
           <tr>
-            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(initials)}</div><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
-            <td>${escapeHtml(item.vwId || "Não informada")}</td>
-            <td><strong>${escapeHtml(item.companyId || "Não informada")}</strong></td>
-            <td>${formatDate(item.admission)}</td>
-            <td>${escapeHtml(item.role || "Não informado")}</td>
-            <td><span class="pill">${escapeHtml(item.shift || "Não informado")}</span></td>
-            <td>${escapeHtml(item.workstation || "Não informado")}</td>
-            <td>${escapeHtml(item.manager || "Não informado")}</td>
-            <td>${escapeHtml(conditions)}</td>
-            <td><div class="actionsCell">
+            <td data-label="Colaborador"><div class="materialCell"><div class="collaboratorAvatar"><span>${escapeHtml(initials)}</span>${item.photoKey ? `<img data-collaborator-photo="${escapeHtml(item.photoKey)}" alt="Foto de ${escapeHtml(item.name)}" hidden>` : ""}</div><div><strong>${escapeHtml(item.name)}</strong><small>${item.photoKey ? "Foto otimizada cadastrada" : "Sem foto"} · ${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
+            <td data-label="Chapa VW">${escapeHtml(item.vwId || "Não informada")}</td>
+            <td data-label="Matrícula SESÉ"><strong>${escapeHtml(item.companyId || "Não informada")}</strong></td>
+            <td data-label="Admissão">${formatDate(item.admission)}</td>
+            <td data-label="Cargo atual">${escapeHtml(item.role || "Não informado")}</td>
+            <td data-label="Turno"><button class="pill clickableTag" type="button" data-page-target="collaborators" data-filter-target="collaboratorShiftFilter" data-filter-value="${escapeHtml(item.shift || "Não informado")}">${escapeHtml(item.shift || "Não informado")}</button></td>
+            <td data-label="Posto de trabalho">${escapeHtml(item.workstation || "Não informado")}</td>
+            <td data-label="Responsável">${escapeHtml(item.manager || "Não informado")}</td>
+            <td data-label="Condição">${escapeHtml(conditions)}</td>
+            <td data-label="Ações"><div class="actionsCell">
               <button class="miniButton" type="button" title="Editar" onclick="editCollaborator(${item.id})">✎</button>
               <button class="miniButton" type="button" title="Excluir" onclick="deleteCollaborator(${item.id})">×</button>
             </div></td>
@@ -3008,19 +4477,44 @@
         `;
       }).join("") : `<tr><td colspan="10"><div class="emptyState"><strong>Nenhum colaborador encontrado</strong>Importe a planilha ou ajuste os filtros.</div></td></tr>`;
 
+      hydrateCollaboratorPhotos();
       populateWithdrawalCollaborators();
+    }
+
+    async function hydrateCollaboratorPhotos() {
+      const images = Array.from(document.querySelectorAll("img[data-collaborator-photo]"));
+      await Promise.all(images.map(async image => {
+        const photoKey = image.dataset.collaboratorPhoto;
+        try {
+          let url = collaboratorPhotoUrls.get(String(photoKey));
+          if (!url) {
+            const record = await getCollaboratorPhoto(photoKey);
+            if (!record?.blob) return;
+            url = URL.createObjectURL(record.blob);
+            collaboratorPhotoUrls.set(String(photoKey), url);
+          }
+          if (!image.isConnected || image.dataset.collaboratorPhoto !== photoKey) return;
+          image.src = url;
+          image.hidden = false;
+          image.closest(".collaboratorAvatar")?.classList.add("photoReady");
+        } catch {
+          image.hidden = true;
+        }
+      }));
     }
 
     function populateWithdrawalCollaborators() {
       const collaborators = Array.isArray(state.collaborators) ? state.collaborators : [];
       document.getElementById("employeeNameOptions").innerHTML = collaborators
-        .map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.companyId || item.vwId || "")}</option>`)
+        .map(item => `<option value="${escapeHtml(item.name)}">Volkswagen ${escapeHtml(item.vwId || "Não informada")} · SESÉ ${escapeHtml(item.companyId || "Não informada")}</option>`)
         .join("");
-      document.getElementById("employeeIdOptions").innerHTML = collaborators
-        .map(item => `<option value="${escapeHtml(item.companyId || item.vwId || "")}">${escapeHtml(item.name)}</option>`)
+      document.getElementById("employeeVwIdOptions").innerHTML = collaborators
+        .filter(item => item.vwId)
+        .map(item => `<option value="${escapeHtml(item.vwId)}">${escapeHtml(item.name)}</option>`)
         .join("");
-      document.getElementById("employeeAreaOptions").innerHTML = uniqueSorted(collaborators.map(item => item.workstation))
-        .map(value => `<option value="${escapeHtml(value)}"></option>`)
+      document.getElementById("employeeCompanyIdOptions").innerHTML = collaborators
+        .filter(item => item.companyId)
+        .map(item => `<option value="${escapeHtml(item.companyId)}">${escapeHtml(item.name)}</option>`)
         .join("");
       document.getElementById("employeeShiftOptions").innerHTML = uniqueSorted(collaborators.map(item => item.shift))
         .map(value => `<option value="${escapeHtml(value)}"></option>`)
@@ -3045,17 +4539,87 @@
       });
       if (!collaborator) return;
       document.getElementById("employeeName").value = collaborator.name || "";
-      document.getElementById("employeeId").value = collaborator.companyId || collaborator.vwId || "";
+      document.getElementById("employeeVwId").value = collaborator.vwId || "";
+      document.getElementById("employeeCompanyId").value = collaborator.companyId || "";
       document.getElementById("employeeCategory").value = collaborator.role || "";
-      document.getElementById("employeeArea").value = collaborator.workstation || "";
       document.getElementById("employeeShift").value = collaborator.shift || "";
       updateWithdrawalSummary();
     }
 
-    function openCollaboratorModal(collaborator = null) {
+    function resetCollaboratorPhotoStage() {
+      if (stagedCollaboratorPhotoUrl) URL.revokeObjectURL(stagedCollaboratorPhotoUrl);
+      stagedCollaboratorPhoto = null;
+      stagedCollaboratorPhotoUrl = "";
+      removeCollaboratorPhotoRequested = false;
+      const preview = document.getElementById("collaboratorPhotoPreview");
+      const image = document.getElementById("collaboratorPhotoImage");
+      image.removeAttribute("src");
+      image.hidden = true;
+      preview.classList.remove("hasPhoto");
+      document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(document.getElementById("collaboratorName").value);
+      const status = document.getElementById("collaboratorPhotoStatus");
+      status.className = "photoOptimizationStatus";
+      status.textContent = "Nenhuma foto selecionada. Tamanho final pretendido: até 60 KB.";
+      document.getElementById("collaboratorPhotoFile").value = "";
+    }
+
+    function displayCollaboratorPhoto(url, statusText, statusClass = "success") {
+      const preview = document.getElementById("collaboratorPhotoPreview");
+      const image = document.getElementById("collaboratorPhotoImage");
+      image.src = url;
+      image.hidden = false;
+      preview.classList.add("hasPhoto");
+      const status = document.getElementById("collaboratorPhotoStatus");
+      status.className = `photoOptimizationStatus ${statusClass}`;
+      status.textContent = statusText;
+    }
+
+    async function loadCollaboratorPhotoPreview(collaborator) {
+      if (!collaborator?.photoKey) return;
+      try {
+        const record = await getCollaboratorPhoto(collaborator.photoKey);
+        if (!record?.blob || editingCollaboratorId !== collaborator.id) return;
+        stagedCollaboratorPhotoUrl = URL.createObjectURL(record.blob);
+        displayCollaboratorPhoto(
+          stagedCollaboratorPhotoUrl,
+          `Foto otimizada armazenada: ${formatFileSize(record.size || record.blob.size)}.`
+        );
+      } catch {
+        const status = document.getElementById("collaboratorPhotoStatus");
+        status.className = "photoOptimizationStatus error";
+        status.textContent = "A referência da foto existe, mas a imagem não pôde ser carregada neste navegador.";
+      }
+    }
+
+    async function handleCollaboratorPhotoSelection(file) {
+      const status = document.getElementById("collaboratorPhotoStatus");
+      status.className = "photoOptimizationStatus";
+      status.textContent = "Otimizando a foto automaticamente...";
+      try {
+        const result = await optimizeCollaboratorPhoto(file);
+        if (stagedCollaboratorPhotoUrl) URL.revokeObjectURL(stagedCollaboratorPhotoUrl);
+        stagedCollaboratorPhoto = result.blob;
+        stagedCollaboratorPhotoUrl = URL.createObjectURL(result.blob);
+        removeCollaboratorPhotoRequested = false;
+        const reduction = result.originalBytes > 0
+          ? Math.max(0, Math.round((1 - result.finalBytes / result.originalBytes) * 100))
+          : 0;
+        displayCollaboratorPhoto(
+          stagedCollaboratorPhotoUrl,
+          `Foto pronta: ${formatFileSize(result.originalBytes)} virou ${formatFileSize(result.finalBytes)}, economia de ${reduction}%.`
+        );
+      } catch (error) {
+        stagedCollaboratorPhoto = null;
+        status.className = "photoOptimizationStatus error";
+        status.textContent = error.message || "Não foi possível otimizar a foto.";
+      }
+    }
+
+    async function openCollaboratorModal(collaborator = null) {
       editingCollaboratorId = collaborator ? collaborator.id : null;
       document.getElementById("collaboratorModalTitle").textContent = collaborator ? "Editar colaborador" : "Novo colaborador";
       document.getElementById("collaboratorForm").reset();
+      resetCollaboratorPhotoStage();
       const fields = {
         collaboratorName: "name",
         collaboratorVwId: "vwId",
@@ -3079,12 +4643,15 @@
           document.getElementById(id).value = collaborator[field] || "";
         });
       }
+      document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(collaborator?.name);
       document.getElementById("collaboratorModal").classList.add("open");
+      await loadCollaboratorPhotoPreview(collaborator);
       setTimeout(() => document.getElementById("collaboratorName").focus(), 80);
     }
 
     function closeCollaboratorModal() {
       document.getElementById("collaboratorModal").classList.remove("open");
+      resetCollaboratorPhotoStage();
       editingCollaboratorId = null;
     }
 
@@ -3092,11 +4659,22 @@
       openCollaboratorModal(state.collaborators.find(item => item.id === id));
     };
 
-    window.deleteCollaborator = function(id) {
+    window.deleteCollaborator = async function(id) {
       const collaborator = state.collaborators.find(item => item.id === id);
       if (!collaborator) return;
       if (!confirm(`Deseja excluir o cadastro de ${collaborator.name}? As retiradas já registradas serão preservadas.`)) return;
       state.collaborators = state.collaborators.filter(item => item.id !== id);
+      const photoUsedInHistory = (state.withdrawals || []).some(withdrawal => {
+        return withdrawal.collaboratorPhotoKey
+          && String(withdrawal.collaboratorPhotoKey) === String(collaborator.photoKey);
+      });
+      if (collaborator.photoKey && !photoUsedInHistory) {
+        try {
+          await deleteCollaboratorPhoto(collaborator.photoKey);
+        } catch {
+          showToast("O cadastro foi excluído, mas a foto local não pôde ser removida.", true);
+        }
+      }
       saveState();
       renderAll();
       showToast("Colaborador excluído. O histórico foi preservado.");
@@ -3107,7 +4685,7 @@
       const current = select.value;
       const available = state.materials.filter(material => material.stock > 0 && daysUntil(material.caValidity) >= 0);
       select.innerHTML = `<option value="">Selecione um material</option>` + available.map(material => `
-        <option value="${material.id}">${escapeHtml(material.description)} · CA ${escapeHtml(material.ca)} · ${material.stock} un.</option>
+        <option value="${material.id}">${escapeHtml(materialLabel(material))} · CA ${escapeHtml(material.ca)} · ${material.stock} un.</option>
       `).join("");
       if (available.some(material => String(material.id) === current)) select.value = current;
       updateWithdrawalMaterialInfo();
@@ -3130,16 +4708,20 @@
       if (material) {
         document.getElementById("materialDescription").value = material.description;
         document.getElementById("materialCode").value = material.code;
+        document.getElementById("materialSize").value = material.size || "";
+        document.getElementById("materialManufacturer").value = material.manufacturer || "";
         document.getElementById("materialCategory").value = material.category;
         document.getElementById("materialCa").value = material.ca;
         document.getElementById("materialCaValidity").value = material.caValidity;
         document.getElementById("materialLot").value = material.lot;
         document.getElementById("materialLotValidity").value = material.lotValidity;
-        document.getElementById("materialStock").value = material.stock;
-        document.getElementById("materialMinimum").value = material.minimum;
+        document.getElementById("materialStock").value = material.stock ?? "";
+        document.getElementById("materialMinimum").value = material.minimum ?? "";
         document.getElementById("materialLifetime").value = material.lifetime;
-        document.getElementById("materialLocation").value = material.location;
+        document.getElementById("materialLocation").value = material.location || "";
         document.getElementById("materialNotes").value = material.notes || "";
+      } else {
+        document.getElementById("materialCode").value = nextMaterialCode();
       }
       document.getElementById("materialModal").classList.add("open");
       setTimeout(() => document.getElementById("materialDescription").focus(), 80);
@@ -3156,7 +4738,7 @@
 
     window.addStock = function(id) {
       const material = state.materials.find(item => item.id === id);
-      const value = prompt(`Informe a quantidade recebida para ${material.description}:`);
+      const value = prompt(`Informe a quantidade recebida para ${materialLabel(material)}:`);
       const quantity = Number(value);
       if (!Number.isInteger(quantity) || quantity <= 0) return;
       material.stock += quantity;
@@ -3164,7 +4746,7 @@
         id: Date.now(),
         date: new Date().toISOString(),
         type: "Entrada",
-        material: material.description,
+        material: materialLabel(material),
         qty: quantity,
         employee: "Recebimento de estoque",
         responsible: state.settings.responsible,
@@ -3177,7 +4759,7 @@
 
     window.deleteMaterial = function(id) {
       const material = state.materials.find(item => item.id === id);
-      if (!confirm(`Deseja excluir o cadastro de ${material.description}? O histórico será preservado.`)) return;
+      if (!confirm(`Deseja excluir o cadastro de ${materialLabel(material)}? O histórico será preservado.`)) return;
       state.materials = state.materials.filter(item => item.id !== id);
       saveState();
       renderAll();
@@ -3189,7 +4771,7 @@
       container.innerHTML = withdrawalSelection.length ? withdrawalSelection.map((entry, index) => `
         <div class="activityItem">
           <div class="activityIcon">${String(index + 1).padStart(2, "0")}</div>
-          <div style="flex:1"><strong>${escapeHtml(entry.description)}</strong><p>CA ${escapeHtml(entry.ca)} · Lote ${escapeHtml(entry.lot)} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
+          <div style="flex:1"><strong>${escapeHtml(materialLabel(entry))}</strong><p>CA ${escapeHtml(entry.ca)} · Lote ${escapeHtml(entry.lot)} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
           <strong>${entry.qty} un.</strong>
           <button class="miniButton" type="button" onclick="removeWithdrawalItem(${index})">×</button>
         </div>
@@ -3229,7 +4811,8 @@
 
     function updateWithdrawalSummary() {
       document.getElementById("summaryEmployee").textContent = document.getElementById("employeeName").value || "Não informado";
-      document.getElementById("summaryId").textContent = document.getElementById("employeeId").value || "Não informada";
+      document.getElementById("summaryVwId").textContent = document.getElementById("employeeVwId").value || "Não informada";
+      document.getElementById("summaryCompanyId").textContent = document.getElementById("employeeCompanyId").value || "Não informada";
       document.getElementById("summaryCategory").textContent = document.getElementById("employeeCategory").value || "Não informada";
     }
 
@@ -3238,9 +4821,9 @@
       document.getElementById("finishInventory").disabled = !inventoryActive;
       document.getElementById("inventoryTable").innerHTML = state.materials.map(material => `
         <tr>
-          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>${escapeHtml(material.code)} · ${escapeHtml(material.lot)}</small></div></div></td>
+          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.lot)}</small></div></div></td>
           <td><span class="caValue">CA ${escapeHtml(material.ca)}</span></td>
-          <td>${escapeHtml(material.location)}</td>
+          <td>${escapeHtml(material.location || "Não informada")}</td>
           <td><strong>${material.stock}</strong></td>
           <td><input class="input inventoryCount" data-id="${material.id}" type="number" min="0" ${inventoryActive ? "" : "disabled"} placeholder="Contar"></td>
           <td><strong class="inventoryDifference" data-id="${material.id}">—</strong></td>
@@ -3263,6 +4846,70 @@
       });
     }
 
+    const alertFilterIds = [
+      "alertOrigin",
+      "alertEmployee",
+      "alertEmployeeVwId",
+      "alertEmployeeCompanyId",
+      "alertEmployeeCategory",
+      "alertEmployeeArea",
+      "alertEmployeeShift",
+      "alertEpi",
+      "alertStatus"
+    ];
+
+    const alertCardDefinitions = {
+      caExpired: {
+        label: "CA vencido",
+        origin: "material",
+        status: "CA vencido",
+        matches: alert => alert.origin === "material" && alert.status === "CA vencido"
+      },
+      caSoon: {
+        label: "CA a vencer",
+        origin: "material",
+        status: "CA a vencer",
+        matches: alert => alert.origin === "material" && alert.status === "CA a vencer"
+      },
+      critical: {
+        label: "Estoque mínimo",
+        origin: "material",
+        status: "Estoque crítico",
+        matches: alert => alert.origin === "material" && alert.status === "Estoque crítico"
+      },
+      epiExpired: {
+        label: "EPI vencido",
+        origin: "",
+        status: "EPI vencido",
+        matches: alert => alert.status === "EPI vencido"
+      },
+      replacements: {
+        label: "Trocas previstas",
+        origin: "collaborator",
+        status: "",
+        matches: alert => alert.origin === "collaborator"
+          && alert.remainingDays >= 0
+          && alert.remainingDays <= 7
+      }
+    };
+
+    function clearAlertFilterFields() {
+      alertFilterIds.forEach(id => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    function openAlertCard(kind) {
+      const definition = alertCardDefinitions[kind];
+      if (!definition) return;
+      activeAlertCard = kind;
+      clearAlertFilterFields();
+      document.getElementById("alertOrigin").value = definition.origin;
+      document.getElementById("alertStatus").value = definition.status;
+      renderAlerts();
+      document.getElementById("allAlerts").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     function renderAlerts() {
       const alerts = buildAlerts();
       const collaboratorAlerts = alerts.filter(alert => alert.origin === "collaborator");
@@ -3278,38 +4925,97 @@
       };
 
       setAlertOptions("alertEmployee", collaboratorAlerts.map(alert => alert.employee), "Todos os colaboradores");
-      setAlertOptions("alertEmployeeId", collaboratorAlerts.map(alert => alert.employeeId), "Todas as chapas");
+      setAlertOptions("alertEmployeeVwId", collaboratorAlerts.map(alert => alert.employeeVwId), "Todas as chapas Volkswagen");
+      setAlertOptions("alertEmployeeCompanyId", collaboratorAlerts.map(alert => alert.employeeCompanyId), "Todas as matrículas SESÉ");
       setAlertOptions("alertEmployeeCategory", collaboratorAlerts.map(alert => alert.employeeCategory), "Todas as categorias");
       setAlertOptions("alertEmployeeArea", collaboratorAlerts.map(alert => alert.employeeArea), "Todas as áreas");
       setAlertOptions("alertEmployeeShift", collaboratorAlerts.map(alert => alert.employeeShift), "Todos os turnos");
       setAlertOptions("alertEpi", alerts.map(alert => alert.epi), "Todos os EPIs");
+      setAlertOptions("alertStatus", alerts.map(alert => alert.status), "Todas as situações");
 
       const origin = document.getElementById("alertOrigin").value;
       const employee = document.getElementById("alertEmployee").value;
-      const employeeId = document.getElementById("alertEmployeeId").value;
+      const employeeVwId = document.getElementById("alertEmployeeVwId").value;
+      const employeeCompanyId = document.getElementById("alertEmployeeCompanyId").value;
       const employeeCategory = document.getElementById("alertEmployeeCategory").value;
       const employeeArea = document.getElementById("alertEmployeeArea").value;
       const employeeShift = document.getElementById("alertEmployeeShift").value;
       const epi = document.getElementById("alertEpi").value;
+      const status = document.getElementById("alertStatus").value;
+      const activeCardDefinition = alertCardDefinitions[activeAlertCard];
       const filteredAlerts = alerts.filter(alert => {
-        return (!origin || alert.origin === origin)
+        return (!activeCardDefinition || activeCardDefinition.matches(alert))
+          && (!origin || alert.origin === origin)
           && (!employee || alert.employee === employee)
-          && (!employeeId || alert.employeeId === employeeId)
+          && (!employeeVwId || alert.employeeVwId === employeeVwId)
+          && (!employeeCompanyId || alert.employeeCompanyId === employeeCompanyId)
           && (!employeeCategory || alert.employeeCategory === employeeCategory)
           && (!employeeArea || alert.employeeArea === employeeArea)
           && (!employeeShift || alert.employeeShift === employeeShift)
-          && (!epi || alert.epi === epi);
+          && (!epi || alert.epi === epi)
+          && (!status || alert.status === status);
       });
       const expired = state.materials.filter(material => daysUntil(material.caValidity) < 0).length;
       const soon = state.materials.filter(material => daysUntil(material.caValidity) >= 0 && daysUntil(material.caValidity) <= 60).length;
-      const critical = state.materials.filter(material => material.stock <= material.minimum).length;
+      const critical = state.materials.filter(isCriticalStock).length;
+      const epiExpired = alerts.filter(alert => alert.status === "EPI vencido").length;
       const replacements = alerts.filter(alert => alert.origin === "collaborator" && alert.remainingDays >= 0 && alert.remainingDays <= 7).length;
       document.getElementById("alertExpired").textContent = expired;
       document.getElementById("alertSoon").textContent = soon;
       document.getElementById("alertCritical").textContent = critical;
+      document.getElementById("alertEpiExpired").textContent = epiExpired;
       document.getElementById("alertReplacements").textContent = replacements;
+      document.querySelectorAll("[data-alert-card]").forEach(card => {
+        const selected = card.dataset.alertCard === activeAlertCard;
+        card.classList.toggle("active", selected);
+        card.setAttribute("aria-pressed", String(selected));
+      });
+      document.getElementById("alertQueueContext").textContent = activeCardDefinition
+        ? `${activeCardDefinition.label}: ${filteredAlerts.length} ${filteredAlerts.length === 1 ? "registro específico" : "registros específicos"}`
+        : "Todos os alertas · resolva primeiro os itens de maior risco";
       document.getElementById("allAlerts").innerHTML = filteredAlerts.length ? filteredAlerts.map(alertTemplate).join("") : `<div class="emptyState"><strong>Nenhum alerta encontrado</strong>Não há ocorrências para os filtros selecionados.</div>`;
       document.querySelector('.navButton[data-page="alerts"]').dataset.count = alerts.length;
+    }
+
+    function resolveHistoryIdentity(item) {
+      const withdrawal = state.withdrawals.find(entry => entry.historyId === item.id);
+      if (withdrawal) return resolveWithdrawalIdentity(withdrawal);
+      const collaborator = (state.collaborators || []).find(person => {
+        return normalizeColumnName(person.name) === normalizeColumnName(item.employee);
+      });
+      return {
+        vwId: item.employeeVwId || collaborator?.vwId || "",
+        companyId: item.employeeCompanyId || collaborator?.companyId || ""
+      };
+    }
+
+    function historyMaterialsForItem(item) {
+      const withdrawal = state.withdrawals.find(entry => entry.historyId === item.id);
+      if (!withdrawal || !Array.isArray(withdrawal.items) || !withdrawal.items.length) {
+        return [item.material].filter(Boolean);
+      }
+      return withdrawal.items.map(entry => materialLabel(entry)).filter(Boolean);
+    }
+
+    function merLabel(reason) {
+      const labels = {
+        "Primeira entrega": "1 · Primeira entrega",
+        "Substituição periódica": "2 · Substituição periódica",
+        "Dano no equipamento": "3 · Dano no equipamento",
+        "Perda justificada": "4 · Perda justificada"
+      };
+      return labels[reason] || reason || "Não informado";
+    }
+
+    function getSignatureHistoryRows() {
+      return (state.withdrawals || []).flatMap(withdrawal => {
+        return (withdrawal.items || []).map(item => ({
+          withdrawal,
+          item,
+          identity: resolveWithdrawalIdentity(withdrawal),
+          collaborator: findWithdrawalCollaborator(withdrawal)
+        }));
+      }).sort((a, b) => new Date(b.withdrawal.date) - new Date(a.withdrawal.date));
     }
 
     function renderHistory() {
@@ -3329,8 +5035,10 @@
       };
 
       setHistoryOptions("historyType", state.history.map(item => item.type), "Todos os tipos");
-      setHistoryOptions("historyMaterial", state.history.map(item => item.material), "Todos os materiais");
+      setHistoryOptions("historyMaterial", state.history.flatMap(historyMaterialsForItem), "Todos os materiais");
       setHistoryOptions("historyEmployee", state.history.map(item => item.employee), "Todos os colaboradores");
+      setHistoryOptions("historyEmployeeVwId", state.history.map(item => resolveHistoryIdentity(item).vwId), "Todas as chapas Volkswagen");
+      setHistoryOptions("historyEmployeeCompanyId", state.history.map(item => resolveHistoryIdentity(item).companyId), "Todas as matrículas SESÉ");
       setHistoryOptions("historyEmployeeCategory", state.history.map(historyCategory), "Todas as categorias");
       setHistoryOptions("historyResponsible", state.history.map(item => item.responsible), "Todos os responsáveis");
       setHistoryOptions(
@@ -3343,33 +5051,74 @@
       const type = document.getElementById("historyType").value;
       const material = document.getElementById("historyMaterial").value;
       const employee = document.getElementById("historyEmployee").value;
+      const employeeVwId = document.getElementById("historyEmployeeVwId").value;
+      const employeeCompanyId = document.getElementById("historyEmployeeCompanyId").value;
       const employeeCategory = document.getElementById("historyEmployeeCategory").value;
       const responsible = document.getElementById("historyResponsible").value;
+      const period = document.getElementById("historyPeriod").value;
       const date = document.getElementById("historyDate").value;
       const records = state.history
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .filter(item => {
+          const identity = resolveHistoryIdentity(item);
           return (!type || item.type === type)
-            && (!material || item.material === material)
+            && (!material || historyMaterialsForItem(item).includes(material))
             && (!employee || item.employee === employee)
+            && (!employeeVwId || identity.vwId === employeeVwId)
+            && (!employeeCompanyId || identity.companyId === employeeCompanyId)
             && (!employeeCategory || historyCategory(item) === employeeCategory)
             && (!responsible || item.responsible === responsible)
+            && (!period || period !== "currentMonth" || matchesConsumptionPeriod({ date: item.date }, "month"))
             && (!date || item.date.slice(0, 10) === date);
         });
 
       document.getElementById("historyTable").innerHTML = records.length ? records.map(item => `
         <tr>
           <td>${formatDate(item.date, true)}</td>
-          <td><span class="pill">${escapeHtml(item.type)}</span></td>
+          <td><button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyType" data-filter-value="${escapeHtml(item.type)}">${escapeHtml(item.type)}</button></td>
           <td><strong>${escapeHtml(item.material)}</strong></td>
           <td>${item.qty > 0 ? "+" : ""}${item.qty}</td>
           <td>${escapeHtml(item.employee)}</td>
+          <td>${escapeHtml(resolveHistoryIdentity(item).vwId || "Não informada")}</td>
+          <td>${escapeHtml(resolveHistoryIdentity(item).companyId || "Não informada")}</td>
           <td>${escapeHtml(historyCategory(item) || "Não informada")}</td>
           <td>${escapeHtml(item.responsible)}</td>
-          <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Abrir termo</button>` : "Não aplicável"}</td>
+          <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Gerar PDF assinado</button>` : "Não aplicável"}</td>
         </tr>
-      `).join("") : `<tr><td colspan="8"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
+      `).join("") : `<tr><td colspan="10"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
+
+      const signatureRows = getSignatureHistoryRows().filter(entry => {
+        const withdrawal = entry.withdrawal;
+        const category = entry.collaborator?.role || withdrawal.employeeCategory || "";
+        return (!type || type === "Retirada")
+          && (!material || materialLabel(entry.item) === material)
+          && (!employee || withdrawal.employee === employee)
+          && (!employeeVwId || entry.identity.vwId === employeeVwId)
+          && (!employeeCompanyId || entry.identity.companyId === employeeCompanyId)
+          && (!employeeCategory || category === employeeCategory)
+          && (!responsible || withdrawal.responsible === responsible)
+          && (!period || period !== "currentMonth" || matchesConsumptionPeriod({ date: withdrawal.date }, "month"))
+          && (!date || withdrawal.date.slice(0, 10) === date);
+      });
+      document.getElementById("signatureHistoryTable").innerHTML = signatureRows.length ? signatureRows.map(entry => {
+        const withdrawal = entry.withdrawal;
+        const item = entry.item;
+        const expiry = item.nextChange || calculateNextChange(item.lifetime, withdrawal.date);
+        return `
+          <tr>
+            <td>${formatDate(withdrawal.date, true)}</td>
+            <td><strong>${escapeHtml(item.ca || "Não informado")}</strong></td>
+            <td><button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(materialLabel(item))}">${escapeHtml(materialLabel(item))}</button></td>
+            <td>${Number(item.qty || 0)}</td>
+            <td>${escapeHtml(merLabel(item.reason))}</td>
+            <td><button class="miniButton" type="button" title="Abrir documento assinado" onclick="printHistoryTerm(${withdrawal.historyId})" style="width:auto;height:auto;padding:4px"><img class="signatureThumbnail" src="${withdrawal.signature}" alt="Assinatura eletrônica de ${escapeHtml(withdrawal.employee)}"></button></td>
+            <td>${escapeHtml(withdrawal.responsible || "Não informado")}</td>
+            <td>${formatDate(expiry)}</td>
+            <td><button class="textButton" type="button" onclick="printHistoryTerm(${withdrawal.historyId})">Gerar PDF histórico</button></td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhuma assinatura encontrada</strong>As retiradas assinadas aparecerão nesta tabela.</div></td></tr>`;
     }
 
     function renderSettings() {
@@ -3408,19 +5157,21 @@
         showToast("Não foi possível carregar o recurso de Excel.", true);
         return;
       }
-      const rows = [["Código", "Descrição", "Categoria", "Número do CA", "Validade do CA", "Lote", "Validade do lote", "Saldo", "Estoque mínimo", "Vida útil em dias", "Localização", "Observações"]];
+      const rows = [["Código", "Descrição", "Tamanho", "Fabricante", "Categoria", "Número do CA", "Validade do CA", "Lote", "Validade do lote", "Saldo", "Estoque mínimo", "Vida útil em dias", "Localização", "Observações"]];
       state.materials.forEach(item => rows.push([
         item.code,
         item.description,
+        item.size || "",
+        item.manufacturer || "",
         item.category,
         item.ca,
         item.caValidity,
         item.lot,
         item.lotValidity,
         Number(item.stock),
-        Number(item.minimum),
+        hasConfiguredMinimum(item) ? Number(item.minimum) : "",
         Number(item.lifetime),
-        item.location,
+        item.location || "",
         item.notes || ""
       ]));
       const sheet = XLSX.utils.aoa_to_sheet(rows);
@@ -3429,6 +5180,8 @@
       sheet["!cols"] = [
         { wch: 15 },
         { wch: 36 },
+        { wch: 16 },
+        { wch: 26 },
         { wch: 27 },
         { wch: 16 },
         { wch: 18 },
@@ -3451,7 +5204,7 @@
         showToast("Não foi possível carregar o recurso de Excel.", true);
         return;
       }
-      const rows = [["Chapa VW", "Matrícula SESÉ", "Nome", "Admissão", "45 Dias", "90 Dias", "Cargo Atual", "Turno", "Carta de Versatilidade", "Posto de Trabalho", "Responsável", "Observação da Operação", "Observação do RH", "Retorno", "PCD", "Brigadista e Cipeiro"]];
+      const rows = [["Chapa VW", "Matrícula SESÉ", "Nome", "Admissão", "45 Dias", "90 Dias", "Cargo Atual", "Turno", "Carta de Versatilidade", "Posto de Trabalho", "Responsável", "Observação da Operação", "Observação do RH", "Retorno", "PCD", "Brigadista e Cipeiro", "Foto cadastrada"]];
       state.collaborators.forEach(item => rows.push([
         item.vwId || "",
         item.companyId || "",
@@ -3468,7 +5221,8 @@
         item.hrNotes || "",
         item.returnDate || "",
         item.pcd || "",
-        item.committee || ""
+        item.committee || "",
+        item.photoKey ? "Sim" : "Não"
       ]));
       const sheet = XLSX.utils.aoa_to_sheet(rows);
       sheet["!autofilter"] = { ref: sheet["!ref"] };
@@ -3477,7 +5231,8 @@
         { wch: 14 }, { wch: 18 }, { wch: 38 }, { wch: 14 },
         { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 13 },
         { wch: 42 }, { wch: 42 }, { wch: 24 }, { wch: 35 },
-        { wch: 35 }, { wch: 14 }, { wch: 14 }, { wch: 28 }
+        { wch: 35 }, { wch: 14 }, { wch: 14 }, { wch: 28 },
+        { wch: 17 }
       ];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, sheet, "COLABORADORES");
@@ -3488,6 +5243,8 @@
     const materialColumnAliases = {
       code: ["codigo", "codigo interno", "cod", "id material"],
       description: ["descricao", "material", "epi", "nome do material"],
+      size: ["tamanho", "tamanho do epi", "numeracao"],
+      manufacturer: ["fabricante", "marca", "fabricante do epi"],
       category: ["categoria", "tipo", "grupo"],
       ca: ["numero do ca", "ca", "certificado de aprovacao", "certificado"],
       caValidity: ["validade do ca", "validade ca", "vencimento do ca", "vencimento ca"],
@@ -3551,7 +5308,7 @@
       return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
     }
 
-    function prepareImportedMaterial(sourceRow, existing, rowNumber) {
+    function prepareImportedMaterial(sourceRow, existing, rowNumber, generatedCode = "") {
       const row = normalizedRow(sourceRow);
       const valueOrExisting = (field, parser = importedText) => {
         const value = importedValue(row, field);
@@ -3560,8 +5317,10 @@
       };
       const material = {
         id: existing ? existing.id : Date.now() + rowNumber,
-        code: valueOrExisting("code"),
+        code: existing ? existing.code : generatedCode || valueOrExisting("code"),
         description: valueOrExisting("description"),
+        size: valueOrExisting("size"),
+        manufacturer: valueOrExisting("manufacturer"),
         category: valueOrExisting("category"),
         ca: valueOrExisting("ca"),
         caValidity: valueOrExisting("caValidity", importedDate),
@@ -3573,12 +5332,20 @@
         location: valueOrExisting("location"),
         notes: valueOrExisting("notes")
       };
-      const textFields = ["code", "description", "category", "ca", "caValidity", "lot", "lotValidity", "location"];
+      if (!Number.isFinite(material.stock) && importedText(importedValue(row, "stock")) === "") {
+        material.stock = 0;
+      }
+      if (!Number.isFinite(material.minimum) && importedText(importedValue(row, "minimum")) === "") {
+        material.minimum = null;
+      }
+      const textFields = ["code", "description", "category", "ca", "caValidity", "lot", "lotValidity"];
       const textMissing = textFields.some(field => importedText(material[field]) === "");
+      const minimumMissing = material.minimum === null
+        || material.minimum === undefined
+        || material.minimum === "";
       const numbersInvalid = !Number.isFinite(material.stock)
         || material.stock < 0
-        || !Number.isFinite(material.minimum)
-        || material.minimum < 0
+        || (!minimumMissing && (!Number.isFinite(Number(material.minimum)) || Number(material.minimum) < 0))
         || !Number.isFinite(material.lifetime)
         || material.lifetime < 1;
       return {
@@ -3605,6 +5372,8 @@
 
         const existingByCode = new Map(state.materials.map(item => [normalizeColumnName(item.code), item]));
         const seenCodes = new Set();
+        const reservedCodes = new Set(state.materials.map(item => String(item.code || "").toUpperCase()));
+        let nextSequence = Math.max(1, Number(state.nextMaterialSequence) || 1);
         const prepared = [];
         let rejected = 0;
         let added = 0;
@@ -3614,12 +5383,21 @@
           const normalized = normalizedRow(sourceRow);
           const code = normalizeColumnName(importedValue(normalized, "code"));
           const existing = existingByCode.get(code);
-          const result = prepareImportedMaterial(sourceRow, existing, index + 2);
-          if (!code || seenCodes.has(code) || !result.valid) {
+          let generatedCode = "";
+          if (!existing) {
+            do {
+              generatedCode = `EPI${String(nextSequence).padStart(3, "0")}`;
+              nextSequence += 1;
+            } while (reservedCodes.has(generatedCode));
+            reservedCodes.add(generatedCode);
+          }
+          const result = prepareImportedMaterial(sourceRow, existing, index + 2, generatedCode);
+          const rowKey = existing ? code : normalizeColumnName(generatedCode);
+          if (!rowKey || seenCodes.has(rowKey) || !result.valid) {
             rejected += 1;
             return;
           }
-          seenCodes.add(code);
+          seenCodes.add(rowKey);
           prepared.push({ ...result, existing: Boolean(existing) });
           if (existing) updated += 1;
           else added += 1;
@@ -3641,8 +5419,11 @@
             state.materials.push(entry.material);
           }
         });
+        state.nextMaterialSequence = nextSequence;
         saveState();
+        clearMaterialFilters();
         renderAll();
+        navigate("materials");
         showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updated}. Rejeitados: ${rejected}.`);
       } catch {
         showToast("Não foi possível ler a planilha. Verifique o arquivo e tente novamente.", true);
@@ -3704,6 +5485,7 @@
         returnDate: dateOrExisting("returnDate"),
         pcd: textOrExisting("pcd"),
         committee: textOrExisting("committee"),
+        photoKey: existing?.photoKey || "",
         status: "Ativo"
       };
       const valid = Boolean(
@@ -3729,6 +5511,39 @@
         if (headerIndex >= 0) return { sheet, rows, headerIndex, sheetName };
       }
       return null;
+    }
+
+    function requestDuplicateImportDecision(entries, added, repeatedInFile, rejected) {
+      const modal = document.getElementById("duplicateImportModal");
+      const summary = document.getElementById("duplicateImportSummary");
+      const details = document.getElementById("duplicateImportDetails");
+      const list = document.getElementById("duplicateImportList");
+      const keepButton = document.getElementById("keepDuplicateCollaborators");
+      const updateButton = document.getElementById("updateDuplicateCollaborators");
+      const visibleEntries = entries.slice(0, 8);
+
+      summary.textContent = `${entries.length} ${entries.length === 1 ? "colaborador já está cadastrado" : "colaboradores já estão cadastrados"}.`;
+      details.textContent = `Novos: ${added}. Repetidos na própria planilha: ${repeatedInFile}. Linhas não importadas: ${rejected}.`;
+      list.innerHTML = visibleEntries.map(entry => {
+        const person = entry.collaborator;
+        const registration = person.companyId || person.vwId || "Sem matrícula";
+        return `<div class="duplicateDecisionItem"><strong>${escapeHtml(person.name)}</strong><span>Matrícula ${escapeHtml(registration)}</span></div>`;
+      }).join("") + (entries.length > visibleEntries.length
+        ? `<div class="duplicateDecisionMore">Mais ${entries.length - visibleEntries.length} cadastros duplicados</div>`
+        : "");
+
+      modal.classList.add("open");
+
+      return new Promise(resolve => {
+        const finish = shouldUpdate => {
+          modal.classList.remove("open");
+          keepButton.onclick = null;
+          updateButton.onclick = null;
+          resolve(shouldUpdate);
+        };
+        keepButton.onclick = () => finish(false);
+        updateButton.onclick = () => finish(true);
+      });
     }
 
     async function importCollaboratorsFromExcel(file) {
@@ -3758,27 +5573,35 @@
           if (item.vwId) existingByKey.set(`vw:${normalizeColumnName(item.vwId)}`, item);
         });
 
-        const seen = new Set();
+        const seenCompanyIds = new Set();
+        const seenVwIds = new Set();
         const prepared = [];
         let rejected = 0;
         let added = 0;
         let updated = 0;
+        let repeatedInFile = 0;
 
         dataRows.forEach((sourceRow, index) => {
           const row = normalizedRow(sourceRow);
           const companyId = normalizeColumnName(collaboratorImportedValue(row, "companyId"));
           const vwId = normalizeColumnName(collaboratorImportedValue(row, "vwId"));
-          const key = companyId ? `company:${companyId}` : `vw:${vwId}`;
-          const existing = existingByKey.get(key)
-            || (vwId ? existingByKey.get(`vw:${vwId}`) : null)
-            || (companyId ? existingByKey.get(`company:${companyId}`) : null);
-          const result = prepareImportedCollaborator(sourceRow, existing, source.headerIndex + index + 2);
-          if ((!companyId && !vwId) || seen.has(key) || !result.valid) {
+          const repeatedCompanyId = companyId && seenCompanyIds.has(companyId);
+          const repeatedVwId = vwId && seenVwIds.has(vwId);
+          if (repeatedCompanyId || repeatedVwId) {
+            repeatedInFile += 1;
             rejected += 1;
             return;
           }
-          seen.add(key);
-          prepared.push({ ...result, existing: Boolean(existing) });
+          const existing = (companyId ? existingByKey.get(`company:${companyId}`) : null)
+            || (vwId ? existingByKey.get(`vw:${vwId}`) : null);
+          const result = prepareImportedCollaborator(sourceRow, existing, source.headerIndex + index + 2);
+          if ((!companyId && !vwId) || !result.valid) {
+            rejected += 1;
+            return;
+          }
+          if (companyId) seenCompanyIds.add(companyId);
+          if (vwId) seenVwIds.add(vwId);
+          prepared.push({ ...result, existing: Boolean(existing), existingRecord: existing || null });
           if (existing) updated += 1;
           else added += 1;
         });
@@ -3788,10 +5611,27 @@
           return;
         }
 
-        const message = `Prévia da aba ${source.sheetName}\n\nNovos colaboradores: ${added}\nCadastros atualizados: ${updated}\nLinhas não importadas: ${rejected}\n\nDeseja confirmar a importação dos registros válidos?`;
-        if (!confirm(message)) return;
+        const duplicateEntries = prepared.filter(entry => entry.existing);
+        let updateDuplicates = false;
+        if (duplicateEntries.length) {
+          updateDuplicates = await requestDuplicateImportDecision(
+            duplicateEntries,
+            added,
+            repeatedInFile,
+            rejected
+          );
+        } else {
+          const message = `Prévia da aba ${source.sheetName}\n\nNovos colaboradores: ${added}\nRepetidos na própria planilha: ${repeatedInFile}\nLinhas não importadas: ${rejected}\n\nDeseja confirmar a importação dos registros válidos?`;
+          if (!confirm(message)) return;
+        }
 
-        prepared.forEach(entry => {
+        const entriesToApply = prepared.filter(entry => !entry.existing || updateDuplicates);
+        if (!entriesToApply.length) {
+          showToast(`Nenhum cadastro foi alterado. Duplicados mantidos: ${updated}.`);
+          return;
+        }
+
+        entriesToApply.forEach(entry => {
           if (entry.existing) {
             const index = state.collaborators.findIndex(item => item.id === entry.collaborator.id);
             state.collaborators[index] = entry.collaborator;
@@ -3801,7 +5641,9 @@
         });
         saveState();
         renderAll();
-        showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updated}. Não importados: ${rejected}.`);
+        const updatedApplied = updateDuplicates ? updated : 0;
+        const duplicatesKept = updateDuplicates ? 0 : updated;
+        showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updatedApplied}. Duplicados mantidos: ${duplicatesKept}. Não importados: ${rejected}.`);
       } catch (error) {
         console.error(error);
         showToast("Não foi possível ler a planilha de colaboradores.", true);
@@ -3811,15 +5653,18 @@
     }
 
     function exportInventory() {
-      const rows = [["Data do inventário", "Código", "Descrição", "Número do CA", "Validade do CA", "Lote", "Localização", "Saldo esperado"]];
+      const rows = [["Data do inventário", "Código", "Descrição", "Tamanho", "Fabricante", "Número do CA", "Validade do CA", "Lote", "Localização", "Saldo esperado"]];
       const inventoryDate = formatDate(new Date().toISOString(), true);
-      state.materials.forEach(item => rows.push([inventoryDate, item.code, item.description, item.ca, item.caValidity, item.lot, item.location, item.stock]));
+      state.materials.forEach(item => rows.push([inventoryDate, item.code, item.description, item.size || "", item.manufacturer || "", item.ca, item.caValidity, item.lot, item.location || "", item.stock]));
       downloadFile("inventario_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
     }
 
     function exportHistory() {
-      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Categoria do colaborador", "Responsável", "Assinado"]];
-      state.history.forEach(item => rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, item.employeeCategory || "", item.responsible, item.signed ? "Sim" : "Não"]));
+      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Chapa Volkswagen", "Matrícula SESÉ", "Categoria do colaborador", "Responsável", "Assinado"]];
+      state.history.forEach(item => {
+        const identity = resolveHistoryIdentity(item);
+        rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, identity.vwId, identity.companyId, item.employeeCategory || "", item.responsible, item.signed ? "Sim" : "Não"]);
+      });
       downloadFile("historico_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
     }
 
@@ -3828,41 +5673,99 @@
       showToast("Cópia dos dados preparada para download.");
     }
 
-    function buildTerm(withdrawal) {
-      const items = withdrawal.items.map(item => `
-        <tr><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.description)}</td><td style="padding:8px;border:1px solid #ccc">${item.qty}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.ca)}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(item.lot)}</td><td style="padding:8px;border:1px solid #ccc">${item.lifetime} dias</td><td style="padding:8px;border:1px solid #ccc">${formatDate(item.nextChange || calculateNextChange(item.lifetime, withdrawal.date))}</td></tr>
-      `).join("");
+    function buildTerm(withdrawal, collaboratorPhotoDataUrl = "") {
+      const identity = resolveWithdrawalIdentity(withdrawal);
+      const collaborator = findWithdrawalCollaborator(withdrawal);
+      const photoInitials = collaboratorInitials(collaborator?.name || withdrawal.employee);
+      const collaboratorPhoto = collaboratorPhotoDataUrl
+        ? `<img src="${collaboratorPhotoDataUrl}" alt="Foto do colaborador" style="display:block;width:82px;height:82px;object-fit:cover;border:1px solid #9da8b4;border-radius:7px;margin:auto">`
+        : `<div style="display:grid;place-items:center;width:82px;height:82px;border:1px solid #9da8b4;border-radius:7px;margin:auto;color:#0059f7;background:#eaf4ff;font-size:21px;font-weight:800">${escapeHtml(photoInitials)}</div>`;
+      const referenceName = normalizeColumnName(withdrawal.employee);
+      const historicalWithdrawals = (state.withdrawals || []).filter(entry => {
+        const entryIdentity = resolveWithdrawalIdentity(entry);
+        const sameVwId = identity.vwId && entryIdentity.vwId === identity.vwId;
+        const sameCompanyId = identity.companyId && entryIdentity.companyId === identity.companyId;
+        const sameName = referenceName && normalizeColumnName(entry.employee) === referenceName;
+        return sameVwId || sameCompanyId || sameName;
+      }).sort((a, b) => new Date(a.date) - new Date(b.date));
+      if (!historicalWithdrawals.some(entry => entry.historyId === withdrawal.historyId)) {
+        historicalWithdrawals.push(withdrawal);
+        historicalWithdrawals.sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+      const historyRows = historicalWithdrawals.flatMap(entry => {
+        return (entry.items || []).map(item => {
+          const expiry = item.nextChange || calculateNextChange(item.lifetime, entry.date);
+          return `
+            <tr style="page-break-inside:avoid">
+              <td style="padding:5px;border:1px solid #9da8b4">${formatDate(entry.date)}</td>
+              <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(item.ca || "Não informado")}</td>
+              <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(materialLabel(item))}</td>
+              <td style="padding:5px;border:1px solid #9da8b4;text-align:center">${Number(item.qty || 0)}</td>
+              <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(merLabel(item.reason))}</td>
+              <td style="padding:3px;border:1px solid #9da8b4;text-align:center"><img src="${entry.signature}" alt="Assinatura eletrônica" style="display:block;width:88px;height:34px;object-fit:contain;margin:auto"></td>
+              <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(entry.responsible || "Não informado")}</td>
+              <td style="padding:5px;border:1px solid #9da8b4">${formatDate(expiry)}</td>
+            </tr>
+          `;
+        });
+      }).join("");
       return `
-        <div style="font-family:Poppins,Arial,sans-serif;max-width:820px;margin:auto">
-          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:5px solid #063c88;padding-bottom:18px">
-            <div><img src="${document.querySelector(".brandMark img").src}" alt="Logo SESÉ" style="display:block;width:150px;height:auto"><div style="font-size:11px;margin-top:7px">GESTÃO DE ESTOQUE EPI</div></div>
-            <div style="text-align:right"><strong>TERMO DE ENTREGA DE EPI</strong><div style="font-size:11px;margin-top:5px">Registro ${withdrawal.id}</div></div>
+        <div style="font-family:Poppins,Arial,sans-serif;max-width:100%;margin:auto">
+          <div style="display:grid;grid-template-columns:160px 1fr 150px;align-items:center;border:1px solid #5d6875">
+            <div style="padding:12px;border-right:1px solid #5d6875"><img src="${document.querySelector(".brandMark img").src}" alt="Logo SESÉ" style="display:block;width:132px;height:auto"></div>
+            <div style="padding:12px;text-align:center;font-size:14px;font-weight:800">FORMULÁRIO DE CONTROLE DE EQUIPAMENTO DE PROTEÇÃO INDIVIDUAL</div>
+            <div style="padding:12px;border-left:1px solid #5d6875;text-align:center;font-size:10px">Controle documental<br><strong>${escapeHtml(withdrawal.id)}</strong></div>
           </div>
-          <div style="padding:22px 0;font-size:12px;line-height:1.6">
-            <p><strong>Unidade:</strong> ${escapeHtml(state.settings.unit)}<br><strong>Endereço:</strong> ${escapeHtml(state.settings.address)}</p>
-            <p><strong>Colaborador:</strong> ${escapeHtml(withdrawal.employee)}<br><strong>Chapa:</strong> ${escapeHtml(withdrawal.employeeId)}<br><strong>Categoria:</strong> ${escapeHtml(withdrawal.employeeCategory || "Não informada")}<br><strong>Área e turno:</strong> ${escapeHtml(withdrawal.area)} · ${escapeHtml(withdrawal.shift)}</p>
-            <table style="width:100%;border-collapse:collapse;margin:18px 0">
-              <thead><tr><th style="padding:8px;border:1px solid #ccc;text-align:left">EPI</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Quantidade</th><th style="padding:8px;border:1px solid #ccc;text-align:left">CA</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Lote</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Vida útil</th><th style="padding:8px;border:1px solid #ccc;text-align:left">Próxima troca</th></tr></thead>
-              <tbody>${items}</tbody>
+          <div style="padding:12px 0;font-size:10px;line-height:1.5">
+            <table style="width:100%;border-collapse:collapse;margin-bottom:9px">
+              <tr><td style="padding:5px;border:1px solid #9da8b4"><strong>Nome do colaborador:</strong> ${escapeHtml(withdrawal.employee)}</td><td style="padding:5px;border:1px solid #9da8b4"><strong>Categoria:</strong> ${escapeHtml(collaborator?.role || withdrawal.employeeCategory || "Não informada")}</td><td rowspan="3" style="width:96px;padding:6px;border:1px solid #9da8b4;text-align:center">${collaboratorPhoto}<span style="display:block;margin-top:4px;font-size:7px;color:#526174">Identificação visual</span></td></tr>
+              <tr><td style="padding:5px;border:1px solid #9da8b4"><strong>Chapa Volkswagen:</strong> ${escapeHtml(identity.vwId || "Não informada")}</td><td style="padding:5px;border:1px solid #9da8b4"><strong>Matrícula SESÉ:</strong> ${escapeHtml(identity.companyId || "Não informada")}</td></tr>
+              <tr><td style="padding:5px;border:1px solid #9da8b4"><strong>Unidade:</strong> ${escapeHtml(state.settings.unit)}</td><td style="padding:5px;border:1px solid #9da8b4"><strong>Área e turno:</strong> ${escapeHtml(collaborator?.workstation || withdrawal.area || "Não informada")} · ${escapeHtml(collaborator?.shift || withdrawal.shift || "Não informado")}</td></tr>
             </table>
-            <p>Declaro que recebi os equipamentos descritos em perfeitas condições, fui orientado sobre uso, guarda, conservação e substituição e assumo o compromisso de utilizá los durante a atividade.</p>
-            <p><strong>Data e hora:</strong> ${formatDate(withdrawal.date, true)}<br><strong>Responsável pela entrega:</strong> ${escapeHtml(withdrawal.responsible)}</p>
-            <div style="display:flex;gap:40px;margin-top:50px">
-              <div style="flex:1;text-align:center;border-top:1px solid #333;padding-top:8px">Responsável pela entrega</div>
-              <div style="flex:1;text-align:center"><img src="${withdrawal.signature}" alt="Assinatura eletrônica" style="max-width:230px;max-height:85px;display:block;margin:-48px auto 4px"><div style="border-top:1px solid #333;padding-top:8px">Assinatura do colaborador</div></div>
+            <div style="padding:8px 10px;border:1px solid #9da8b4;background:#f7f9fc;page-break-inside:avoid">
+              <strong style="display:block;text-align:center;margin-bottom:4px">TERMO DE RESPONSABILIDADE</strong>
+              Declaro que recebi os equipamentos relacionados neste documento em perfeitas condições, fui orientado sobre uso, guarda, conservação e substituição e assumo o compromisso de utilizá los nas atividades para as quais se destinam.
             </div>
+            <div style="margin-top:9px;padding:9px 11px;border:1px solid #8bb9ec;border-left:5px solid #0059f7;background:#f3f8ff;page-break-inside:avoid">
+              <strong style="display:block;color:#063c88;margin-bottom:5px">Proteção de dados pessoais</strong>
+              <p style="margin:0;font-size:9px;line-height:1.45">Nos termos da Lei nº 13.709 de 2018, os dados pessoais deste formulário, incluindo identificação funcional e assinaturas eletrônicas, serão tratados exclusivamente para comprovar a entrega, o uso, a troca e a devolução de EPI, cumprir obrigações legais e regulatórias de segurança do trabalho, realizar auditorias e exercer direitos. O acesso será restrito a pessoas autorizadas e os dados serão armazenados pelo período necessário às finalidades e aos prazos legais. O titular poderá solicitar confirmação, acesso, correção e os demais direitos aplicáveis pelo canal disponibilizado pelo controlador.</p>
+              <p style="margin:5px 0 0;font-size:9px"><strong>Ciência do titular:</strong> confirmada eletronicamente em cada registro da tabela abaixo.</p>
+            </div>
+            <div style="margin-top:9px;font-weight:800">HISTÓRICO DE ENTREGA, ASSINATURA E VENCIMENTO</div>
+            <table style="width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5px;font-size:8px">
+              <thead>
+                <tr>
+                  <th style="width:10%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">Data</th>
+                  <th style="width:8%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">CA</th>
+                  <th style="width:19%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">EPI</th>
+                  <th style="width:7%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">Qtd.</th>
+                  <th style="width:15%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">M.E.R.</th>
+                  <th style="width:16%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">Assinatura eletrônica do colaborador</th>
+                  <th style="width:15%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">Entregue por</th>
+                  <th style="width:10%;padding:5px;border:1px solid #5d6875;text-align:left;background:#eaf1fb">Vencimento</th>
+                </tr>
+              </thead>
+              <tbody>${historyRows}</tbody>
+            </table>
+            <div style="margin-top:7px;padding:7px;border:1px solid #9da8b4;background:#f7f9fc;font-size:8px">
+              <strong>Legenda M.E.R.:</strong> 1 Primeira entrega · 2 Substituição periódica · 3 Dano no equipamento · 4 Perda justificada.
+            </div>
+            <p style="margin:8px 0 0;color:#526174;font-size:8px">Documento consolidado em ${formatDate(new Date().toISOString(), true)}. Cada assinatura permanece vinculada ao registro eletrônico original.</p>
           </div>
         </div>
       `;
     }
 
-    window.printHistoryTerm = function(historyId) {
+    window.printHistoryTerm = async function(historyId) {
       const withdrawal = state.withdrawals.find(item => item.historyId === historyId);
       if (!withdrawal) {
         showToast("O comprovante completo deste registro demonstrativo não está disponível.", true);
         return;
       }
-      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal);
+      const collaborator = findWithdrawalCollaborator(withdrawal);
+      const photoKey = withdrawal.collaboratorPhotoKey || collaborator?.photoKey || "";
+      const photoDataUrl = await getCollaboratorPhotoDataUrl(photoKey);
+      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal, photoDataUrl);
       window.print();
     };
 
@@ -3937,11 +5840,67 @@
       button.addEventListener("click", () => navigate(button.dataset.page || button.dataset.pageJump));
     });
 
+    document.querySelectorAll("[data-alert-card]").forEach(card => {
+      card.addEventListener("click", () => openAlertCard(card.dataset.alertCard));
+    });
+
+    document.querySelectorAll("[data-dashboard-card]").forEach(card => {
+      card.addEventListener("click", () => openDashboardCard(card.dataset.dashboardCard));
+    });
+
+    document.addEventListener("click", event => {
+      const tag = event.target.closest("[data-filter-target]");
+      if (!tag) return;
+      const page = tag.dataset.pageTarget;
+      const targetId = tag.dataset.filterTarget;
+      const value = tag.dataset.filterValue || "";
+      const alertsWereOpen = document.getElementById("page-alerts").classList.contains("active");
+      if (page === "alerts" && !alertsWereOpen) activeAlertCard = "";
+      if (page) navigate(page);
+      if (page === "alerts") renderAlerts();
+      if (page === "history") renderHistory();
+      if (page === "materials") renderMaterials();
+      if (page === "collaborators") renderCollaborators();
+      const field = document.getElementById(targetId);
+      if (!field) return;
+      const available = Array.from(field.options || []).some(option => option.value === value);
+      if (available || !field.options) field.value = value;
+      if (page === "alerts") renderAlerts();
+      if (page === "history") renderHistory();
+      if (page === "materials") renderMaterials();
+      if (page === "collaborators") renderCollaborators();
+    });
+
     document.getElementById("menuButton").addEventListener("click", openMobileMenu);
     document.getElementById("mobileOverlay").addEventListener("click", closeMobileMenu);
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
     document.getElementById("newCollaboratorButton").addEventListener("click", () => openCollaboratorModal());
+    document.getElementById("chooseCollaboratorPhoto").addEventListener("click", () => {
+      document.getElementById("collaboratorPhotoFile").click();
+    });
+    document.getElementById("collaboratorPhotoFile").addEventListener("change", event => {
+      const file = event.target.files?.[0];
+      if (file) handleCollaboratorPhotoSelection(file);
+    });
+    document.getElementById("removeCollaboratorPhoto").addEventListener("click", () => {
+      if (stagedCollaboratorPhotoUrl) URL.revokeObjectURL(stagedCollaboratorPhotoUrl);
+      stagedCollaboratorPhoto = null;
+      stagedCollaboratorPhotoUrl = "";
+      removeCollaboratorPhotoRequested = true;
+      const preview = document.getElementById("collaboratorPhotoPreview");
+      const image = document.getElementById("collaboratorPhotoImage");
+      image.removeAttribute("src");
+      image.hidden = true;
+      preview.classList.remove("hasPhoto");
+      const status = document.getElementById("collaboratorPhotoStatus");
+      status.className = "photoOptimizationStatus";
+      status.textContent = "A foto será removida quando o cadastro for salvo.";
+      document.getElementById("collaboratorPhotoFile").value = "";
+    });
+    document.getElementById("collaboratorName").addEventListener("input", event => {
+      document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(event.target.value);
+    });
     document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeMaterialModal));
     document.querySelectorAll("[data-close-collaborator]").forEach(button => button.addEventListener("click", closeCollaboratorModal));
     document.getElementById("materialModal").addEventListener("click", event => {
@@ -3954,17 +5913,23 @@
     document.getElementById("materialForm").addEventListener("submit", event => {
       event.preventDefault();
       const wasEditing = Boolean(editingMaterialId);
+      const stockValue = document.getElementById("materialStock").value.trim();
+      const minimumValue = document.getElementById("materialMinimum").value.trim();
       const material = {
         id: editingMaterialId || Date.now(),
         description: document.getElementById("materialDescription").value.trim(),
-        code: document.getElementById("materialCode").value.trim(),
+        code: editingMaterialId
+          ? document.getElementById("materialCode").value.trim()
+          : nextMaterialCode(),
+        size: document.getElementById("materialSize").value.trim(),
+        manufacturer: document.getElementById("materialManufacturer").value.trim(),
         category: document.getElementById("materialCategory").value,
         ca: document.getElementById("materialCa").value.trim(),
         caValidity: document.getElementById("materialCaValidity").value,
         lot: document.getElementById("materialLot").value.trim(),
         lotValidity: document.getElementById("materialLotValidity").value,
-        stock: Number(document.getElementById("materialStock").value),
-        minimum: Number(document.getElementById("materialMinimum").value),
+        stock: stockValue === "" ? 0 : Number(stockValue),
+        minimum: minimumValue === "" ? null : Number(minimumValue),
         lifetime: Number(document.getElementById("materialLifetime").value),
         location: document.getElementById("materialLocation").value.trim(),
         notes: document.getElementById("materialNotes").value.trim()
@@ -3974,18 +5939,28 @@
         state.materials[index] = material;
       } else {
         state.materials.push(material);
+        const sequence = Number(String(material.code).match(/(\d+)$/)?.[1]);
+        state.nextMaterialSequence = Number.isFinite(sequence)
+          ? Math.max(Number(state.nextMaterialSequence) || 1, sequence + 1)
+          : Number(state.nextMaterialSequence) || 1;
       }
       saveState();
       closeMaterialModal();
+      clearMaterialFilters();
       renderAll();
+      navigate("materials");
       showToast(wasEditing ? "Material atualizado com sucesso." : "Material cadastrado com sucesso.");
     });
 
-    document.getElementById("collaboratorForm").addEventListener("submit", event => {
+    document.getElementById("collaboratorForm").addEventListener("submit", async event => {
       event.preventDefault();
       const wasEditing = Boolean(editingCollaboratorId);
+      const collaboratorId = editingCollaboratorId || Date.now();
+      const existingCollaborator = editingCollaboratorId
+        ? state.collaborators.find(item => item.id === editingCollaboratorId)
+        : null;
       const collaborator = {
-        id: editingCollaboratorId || Date.now(),
+        id: collaboratorId,
         name: document.getElementById("collaboratorName").value.trim(),
         vwId: document.getElementById("collaboratorVwId").value.trim(),
         companyId: document.getElementById("collaboratorCompanyId").value.trim(),
@@ -4002,6 +5977,7 @@
         committee: document.getElementById("collaboratorCommittee").value.trim(),
         operationNotes: document.getElementById("collaboratorOperationNotes").value.trim(),
         hrNotes: document.getElementById("collaboratorHrNotes").value.trim(),
+        photoKey: existingCollaborator?.photoKey || "",
         status: "Ativo"
       };
       const duplicate = state.collaborators.find(item => {
@@ -4014,6 +5990,19 @@
       });
       if (duplicate) {
         showToast(`Já existe um cadastro para ${duplicate.name}.`, true);
+        return;
+      }
+      try {
+        if (removeCollaboratorPhotoRequested && collaborator.photoKey) {
+          await deleteCollaboratorPhoto(collaborator.photoKey);
+          collaborator.photoKey = "";
+        }
+        if (stagedCollaboratorPhoto) {
+          collaborator.photoKey = collaborator.photoKey || `colaborador_${collaborator.id}`;
+          await saveCollaboratorPhoto(collaborator.photoKey, stagedCollaboratorPhoto);
+        }
+      } catch {
+        showToast("Não foi possível armazenar a foto otimizada. O cadastro não foi alterado.", true);
         return;
       }
       if (editingCollaboratorId) {
@@ -4043,33 +6032,33 @@
       renderCollaborators();
     });
 
-    ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeCategory", "historyResponsible", "historyDate"].forEach(id => {
+    ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeVwId", "historyEmployeeCompanyId", "historyEmployeeCategory", "historyResponsible", "historyPeriod", "historyDate"].forEach(id => {
       document.getElementById(id).addEventListener("change", renderHistory);
     });
 
     document.getElementById("clearHistoryFilters").addEventListener("click", () => {
-      ["historyType", "historyMaterial", "historyEmployee", "historyEmployeeCategory", "historyResponsible", "historyDate"].forEach(id => {
-        document.getElementById(id).value = "";
-      });
+      clearHistoryFilterFields();
       renderHistory();
     });
 
-    ["alertOrigin", "alertEmployee", "alertEmployeeId", "alertEmployeeCategory", "alertEmployeeArea", "alertEmployeeShift", "alertEpi"].forEach(id => {
+    alertFilterIds.forEach(id => {
       document.getElementById(id).addEventListener("change", renderAlerts);
     });
 
     document.getElementById("clearAlertFilters").addEventListener("click", () => {
-      ["alertOrigin", "alertEmployee", "alertEmployeeId", "alertEmployeeCategory", "alertEmployeeArea", "alertEmployeeShift", "alertEpi"].forEach(id => {
-        document.getElementById(id).value = "";
-      });
+      activeAlertCard = "";
+      clearAlertFilterFields();
       renderAlerts();
     });
 
-    ["employeeName", "employeeId", "employeeCategory"].forEach(id => {
+    document.getElementById("consumptionPeriod").addEventListener("change", renderDashboard);
+
+    ["employeeName", "employeeVwId", "employeeCompanyId", "employeeCategory"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateWithdrawalSummary);
     });
     document.getElementById("employeeName").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
-    document.getElementById("employeeId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
+    document.getElementById("employeeVwId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
+    document.getElementById("employeeCompanyId").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
 
     document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
 
@@ -4089,9 +6078,14 @@
       withdrawalSelection.push({
         id: material.id,
         description: material.description,
+        code: material.code,
+        size: material.size || "",
+        manufacturer: material.manufacturer || "",
         qty,
         ca: material.ca,
+        caValidity: material.caValidity,
         lot: material.lot,
+        lotValidity: material.lotValidity,
         lifetime: material.lifetime,
         nextChange: calculateNextChange(material.lifetime),
         reason: document.getElementById("withdrawalReason").value
@@ -4111,7 +6105,7 @@
     document.getElementById("clearSignature").addEventListener("click", clearCanvas);
     document.getElementById("cancelWithdrawal").addEventListener("click", () => setTimeout(resetWithdrawal));
 
-    document.getElementById("withdrawalForm").addEventListener("submit", event => {
+    document.getElementById("withdrawalForm").addEventListener("submit", async event => {
       event.preventDefault();
       if (!withdrawalSelection.length) {
         showToast("Adicione pelo menos um EPI à retirada.", true);
@@ -4125,21 +6119,37 @@
         showToast("Confirme a declaração de recebimento.", true);
         return;
       }
+      if (!document.getElementById("lgpdAcknowledgement").checked) {
+        showToast("Confirme a ciência sobre a proteção de dados pessoais.", true);
+        return;
+      }
 
       const now = new Date();
       const historyId = Date.now();
+      const employeeVwId = document.getElementById("employeeVwId").value.trim();
+      const employeeCompanyId = document.getElementById("employeeCompanyId").value.trim();
+      const collaborator = findWithdrawalCollaborator({
+        employee: document.getElementById("employeeName").value.trim(),
+        employeeVwId,
+        employeeCompanyId,
+        employeeId: employeeCompanyId || employeeVwId
+      });
       const withdrawal = {
         id: `RET${historyId}`,
         historyId,
         date: now.toISOString(),
         employee: document.getElementById("employeeName").value.trim(),
-        employeeId: document.getElementById("employeeId").value.trim(),
+        employeeVwId,
+        employeeCompanyId,
+        employeeId: employeeCompanyId || employeeVwId,
         employeeCategory: document.getElementById("employeeCategory").value.trim(),
-        area: document.getElementById("employeeArea").value,
+        area: collaborator?.workstation || "",
         shift: document.getElementById("employeeShift").value,
         responsible: state.settings.responsible,
         items: JSON.parse(JSON.stringify(withdrawalSelection)),
-        signature: canvas.toDataURL("image/png")
+        signature: canvas.toDataURL("image/png"),
+        collaboratorPhotoKey: collaborator?.photoKey || "",
+        lgpdAcknowledgedAt: now.toISOString()
       };
 
       withdrawal.items.forEach(entry => {
@@ -4151,15 +6161,18 @@
         id: historyId,
         date: withdrawal.date,
         type: "Retirada",
-        material: withdrawal.items.map(item => item.description).join(" + "),
+        material: withdrawal.items.map(item => materialLabel(item)).join(" + "),
         qty: withdrawal.items.reduce((sum, item) => sum + item.qty, 0),
         employee: withdrawal.employee,
+        employeeVwId: withdrawal.employeeVwId,
+        employeeCompanyId: withdrawal.employeeCompanyId,
         employeeCategory: withdrawal.employeeCategory,
         responsible: withdrawal.responsible,
         signed: true
       });
       saveState();
-      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal);
+      const photoDataUrl = await getCollaboratorPhotoDataUrl(withdrawal.collaboratorPhotoKey);
+      document.getElementById("printTerm").innerHTML = buildTerm(withdrawal, photoDataUrl);
       renderAll();
       resetWithdrawal();
       showToast("Retirada finalizada e termo arquivado com sucesso.");
