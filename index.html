@@ -3344,7 +3344,7 @@
         <button class="navButton active" data-page="dashboard"><span class="navIcon">01</span>Painel geral</button>
         <button class="navButton" data-page="materials"><span class="navIcon">02</span>Materiais</button>
         <button class="navButton" data-page="collaborators"><span class="navIcon">03</span>Colaboradores</button>
-        <button class="navButton" data-page="inactiveCollaborators"><span class="navIcon">04</span>Colaboradores inativos</button>
+        <button class="navButton" data-page="inactiveCollaborators"><span class="navIcon">04</span>Cargos/Colaboradores inativos</button>
         <button class="navButton" data-page="withdrawal"><span class="navIcon">05</span>Nova retirada</button>
         <button class="navButton" data-page="inventory"><span class="navIcon">06</span>Inventário</button>
         <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">07</span>Alertas</button>
@@ -3628,7 +3628,7 @@
         <div class="pageHeader">
           <div>
             <p class="eyebrow" style="color:var(--blue)">Memória funcional</p>
-            <h2>Colaboradores inativos</h2>
+            <h2>Cargos/Colaboradores inativos</h2>
             <p>Consulte os colaboradores retirados da base ativa durante a conciliação de uma nova planilha.</p>
           </div>
         </div>
@@ -3636,9 +3636,9 @@
           <article class="statCard"><div class="statTop"><span>Total inativo</span><span class="statBadge">I</span></div><strong id="inactiveCollaboratorTotal">0</strong><small>Cadastros preservados</small></article>
         </div>
         <div class="filters">
-          <input class="input" id="inactiveCollaboratorSearch" type="search" placeholder="Pesquisar nome, chapa ou matrícula" aria-label="Pesquisar colaboradores inativos">
+          <input class="input" id="inactiveCollaboratorSearch" type="search" placeholder="Pesquisar nome, cargo, chapa ou matrícula" aria-label="Pesquisar cargos e colaboradores inativos">
         </div>
-        <div class="tableWrap" role="region" aria-label="Tabela de colaboradores inativos" tabindex="0">
+        <div class="tableWrap" role="region" aria-label="Tabela de cargos e colaboradores inativos" tabindex="0">
           <table class="collaboratorTable">
             <thead>
               <tr>
@@ -4388,7 +4388,7 @@
           </div>
         </div>
         <div class="duplicateDecisionList" id="missingCollaboratorsList"></div>
-        <p class="duplicateDecisionHelp">Armazenar move os registros para a página Colaboradores inativos. Excluir remove somente os cadastros da base ativa.</p>
+        <p class="duplicateDecisionHelp">Armazenar move os registros para a página Cargos/Colaboradores inativos. Excluir remove somente os cadastros da base ativa.</p>
       </div>
       <div class="modalFooter">
         <button class="ghostButton" id="cancelMissingCollaborators" type="button">Cancelar importação</button>
@@ -5161,7 +5161,7 @@
         dashboard: "Painel geral",
         materials: "Materiais",
         collaborators: "Colaboradores",
-        inactiveCollaborators: "Colaboradores inativos",
+        inactiveCollaborators: "Cargos/Colaboradores inativos",
         withdrawal: "Nova retirada",
         inventory: "Inventário",
         alerts: "Alertas",
