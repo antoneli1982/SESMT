@@ -5019,6 +5019,19 @@
           status: collaborator.status === "Demitido" ? "Demitido" : "Ativo",
           dismissalDate: collaborator.dismissalDate || ""
         }));
+        const previouslyDismissed = loaded.collaborators.filter(collaborator => collaborator.status === "Demitido");
+        if (previouslyDismissed.length) {
+          const inactiveIds = new Set(loaded.inactiveCollaborators.map(collaborator => String(collaborator.id)));
+          previouslyDismissed.forEach(collaborator => {
+            if (inactiveIds.has(String(collaborator.id))) return;
+            loaded.inactiveCollaborators.push({
+              ...collaborator,
+              inactiveAt: collaborator.dismissalDate || new Date().toISOString().slice(0, 10),
+              inactiveReason: "Demissão"
+            });
+          });
+          loaded.collaborators = loaded.collaborators.filter(collaborator => collaborator.status !== "Demitido");
+        }
         const greatestMaterialSequence = loaded.materials.reduce((greatest, material) => {
           const match = String(material.code || "").match(/(\d+)$/);
           return match ? Math.max(greatest, Number(match[1])) : greatest;
@@ -5825,7 +5838,8 @@
       const restored = state.inactiveCollaborators.splice(index, 1)[0];
       state.collaborators.push({
         ...restored,
-        status: restored.status === "Demitido" ? "Demitido" : "Ativo",
+        status: "Ativo",
+        dismissalDate: "",
         inactiveAt: "",
         inactiveReason: ""
       });
@@ -7939,7 +7953,23 @@
         showToast("Não foi possível armazenar a foto otimizada. O cadastro não foi alterado.", true);
         return;
       }
-      if (editingCollaboratorId) {
+      if (collaborator.status === "Demitido") {
+        const inactiveRecord = {
+          ...collaborator,
+          inactiveAt: collaborator.dismissalDate,
+          inactiveReason: "Demissão"
+        };
+        if (editingCollaboratorId) {
+          const index = state.collaborators.findIndex(item => item.id === editingCollaboratorId);
+          if (index >= 0) state.collaborators.splice(index, 1);
+        }
+        const inactiveIndex = state.inactiveCollaborators.findIndex(item => String(item.id) === String(collaborator.id));
+        if (inactiveIndex >= 0) {
+          state.inactiveCollaborators[inactiveIndex] = inactiveRecord;
+        } else {
+          state.inactiveCollaborators.push(inactiveRecord);
+        }
+      } else if (editingCollaboratorId) {
         const index = state.collaborators.findIndex(item => item.id === editingCollaboratorId);
         state.collaborators[index] = collaborator;
       } else {
@@ -7948,7 +7978,13 @@
       saveState();
       closeCollaboratorModal();
       renderAll();
-      showToast(wasEditing ? "Colaborador atualizado com sucesso." : "Colaborador cadastrado com sucesso.");
+      showToast(
+        collaborator.status === "Demitido"
+          ? "Colaborador demitido e movido para inativos."
+          : wasEditing
+            ? "Colaborador atualizado com sucesso."
+            : "Colaborador cadastrado com sucesso."
+      );
     });
 
     ["materialSearch", "categoryFilter", "stockFilter"].forEach(id => {
