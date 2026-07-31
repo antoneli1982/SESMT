@@ -1462,6 +1462,35 @@
       font-size: 9px;
     }
 
+    .collaboratorHistoryLink {
+      display: inline;
+      padding: 0;
+      border: 0;
+      color: var(--blue);
+      background: transparent;
+      font: inherit;
+      font-weight: 800;
+      line-height: inherit;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      text-underline-offset: 3px;
+      transition: color .18s ease, text-decoration-color .18s ease;
+    }
+
+    .collaboratorHistoryLink:hover,
+    .collaboratorHistoryLink:focus-visible {
+      color: var(--cyan);
+      text-decoration-color: currentColor;
+    }
+
+    .collaboratorHistoryLink:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -4472,6 +4501,8 @@
   <div class="toastStack" id="toastStack" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script>
     const STORAGE_KEY = "sese_epi_manager_demo_250_v1";
     const THEME_KEY = "sese_epi_theme";
@@ -4479,6 +4510,29 @@
     const PHOTO_STORE_NAME = "photos";
     const PHOTO_MAX_DIMENSION = 400;
     const PHOTO_TARGET_BYTES = 60 * 1024;
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyA6BHrBqyXzYCqskK22b2n46qRupC7uPosk",
+      authDomain: "sesmt-f60eb.firebaseapp.com",
+      projectId: "sesmt-f60eb",
+      storageBucket: "sesmt-f60eb.firebasestorage.app",
+      messagingSenderId: "371964657958",
+      appId: "1:371964657958:web:96cbbb78944988137801e7"
+    };
+    const CLOUD_META_COLLECTION = "seseSystem";
+    const CLOUD_META_DOCUMENT = "state";
+    const CLOUD_CHUNKS_COLLECTION = "seseStateChunks";
+    const CLOUD_PHOTOS_COLLECTION = "seseCollaboratorPhotos";
+    const CLOUD_CHUNK_LENGTH = 180000;
+    const CLOUD_SAVE_DELAY = 900;
+    let cloudDatabase = null;
+    let cloudReady = false;
+    let cloudApplyingState = false;
+    let cloudSaveTimer = null;
+    let cloudLastVersion = "";
+    let cloudUnsubscribe = null;
+    let cloudWriteQueue = Promise.resolve();
+    let cloudStatusElement = null;
+    const hadLocalStateAtStartup = Boolean(localStorage.getItem(STORAGE_KEY));
 
     function createDemonstrationData() {
       const dateOnly = date => {
@@ -4808,20 +4862,61 @@
       });
       database.close();
       clearCollaboratorPhotoUrl(photoKey);
+      if (cloudReady && cloudDatabase) {
+        try {
+          const dataUrl = await blobToDataUrl(blob);
+          await cloudDatabase.collection(CLOUD_PHOTOS_COLLECTION).doc(String(photoKey)).set({
+            dataUrl,
+            size: blob.size,
+            type: blob.type,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (error) {
+          console.error("Falha ao sincronizar a foto", error);
+          setCloudStatus("Foto pendente de sincronização", "error");
+        }
+      }
     }
 
     async function getCollaboratorPhoto(photoKey) {
       if (!photoKey) return null;
-      const database = await openPhotoDatabase();
-      const record = await new Promise((resolve, reject) => {
-        const request = database.transaction(PHOTO_STORE_NAME, "readonly")
-          .objectStore(PHOTO_STORE_NAME)
-          .get(String(photoKey));
-        request.onsuccess = () => resolve(request.result || null);
-        request.onerror = () => reject(request.error || new Error("Não foi possível ler a foto"));
-      });
-      database.close();
-      return record;
+      try {
+        const database = await openPhotoDatabase();
+        const record = await new Promise((resolve, reject) => {
+          const request = database.transaction(PHOTO_STORE_NAME, "readonly")
+            .objectStore(PHOTO_STORE_NAME)
+            .get(String(photoKey));
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error || new Error("Não foi possível ler a foto"));
+        });
+        database.close();
+        if (record) return record;
+      } catch (error) {
+        console.warn("Foto local indisponível", error);
+      }
+      if (!cloudReady || !cloudDatabase) return null;
+      const snapshot = await cloudDatabase.collection(CLOUD_PHOTOS_COLLECTION).doc(String(photoKey)).get();
+      if (!snapshot.exists || !snapshot.data().dataUrl) return null;
+      const dataUrl = snapshot.data().dataUrl;
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      try {
+        const database = await openPhotoDatabase();
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(PHOTO_STORE_NAME, "readwrite");
+          transaction.objectStore(PHOTO_STORE_NAME).put({
+            key: String(photoKey),
+            blob,
+            size: blob.size,
+            type: blob.type,
+            updatedAt: new Date().toISOString()
+          });
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error || new Error("Não foi possível criar a cópia local da foto"));
+        });
+        database.close();
+      } catch {}
+      return { key: String(photoKey), blob, size: blob.size, type: blob.type };
     }
 
     async function deleteCollaboratorPhoto(photoKey) {
@@ -4834,6 +4929,12 @@
         transaction.onerror = () => reject(transaction.error || new Error("Não foi possível remover a foto"));
       });
       database.close();
+      if (cloudReady && cloudDatabase) {
+        await cloudDatabase.collection(CLOUD_PHOTOS_COLLECTION).doc(String(photoKey)).delete().catch(error => {
+          console.error("Falha ao remover a foto compartilhada", error);
+          setCloudStatus("Exclusão de foto pendente", "error");
+        });
+      }
       clearCollaboratorPhotoUrl(photoKey);
     }
 
@@ -4847,6 +4948,14 @@
         transaction.onerror = () => reject(transaction.error || new Error("Não foi possível limpar as fotos"));
       });
       database.close();
+      if (cloudReady && cloudDatabase) {
+        const snapshot = await cloudDatabase.collection(CLOUD_PHOTOS_COLLECTION).get();
+        for (let offset = 0; offset < snapshot.docs.length; offset += 450) {
+          const batch = cloudDatabase.batch();
+          snapshot.docs.slice(offset, offset + 450).forEach(document => batch.delete(document.ref));
+          await batch.commit();
+        }
+      }
       collaboratorPhotoUrls.forEach(url => URL.revokeObjectURL(url));
       collaboratorPhotoUrls.clear();
     }
@@ -5063,6 +5172,180 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      scheduleCloudSave();
+    }
+
+    function setCloudStatus(label, mode = "waiting") {
+      if (!cloudStatusElement) {
+        cloudStatusElement = document.createElement("div");
+        cloudStatusElement.id = "cloudSyncStatus";
+        cloudStatusElement.setAttribute("role", "status");
+        cloudStatusElement.style.cssText = "display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;border:1px solid rgba(15,67,124,.18);background:#eef5ff;color:#174a84";
+        const actions = document.querySelector(".topActions");
+        if (actions) actions.prepend(cloudStatusElement);
+      }
+      const colors = {
+        online: ["#e9f8ef", "#157347", "#9bd6b3"],
+        saving: ["#fff8e5", "#815b00", "#e7c766"],
+        error: ["#fff0f0", "#b42318", "#efaaa5"],
+        waiting: ["#eef5ff", "#174a84", "#b7cce8"]
+      };
+      const palette = colors[mode] || colors.waiting;
+      cloudStatusElement.style.background = palette[0];
+      cloudStatusElement.style.color = palette[1];
+      cloudStatusElement.style.borderColor = palette[2];
+      cloudStatusElement.textContent = label;
+      cloudStatusElement.title = label;
+    }
+
+    function splitCloudState(serializedState) {
+      const chunks = [];
+      for (let offset = 0; offset < serializedState.length; offset += CLOUD_CHUNK_LENGTH) {
+        chunks.push(serializedState.slice(offset, offset + CLOUD_CHUNK_LENGTH));
+      }
+      return chunks.length ? chunks : ["{}"];
+    }
+
+    async function readCloudState(meta) {
+      const chunkCount = Number(meta.chunkCount || 0);
+      const version = String(meta.version || "");
+      if (!version || !chunkCount) throw new Error("Base compartilhada incompleta");
+      const references = Array.from({ length: chunkCount }, (_, index) => {
+        return cloudDatabase.collection(CLOUD_CHUNKS_COLLECTION).doc(`${version}_${String(index).padStart(4, "0")}`);
+      });
+      const snapshots = await Promise.all(references.map(reference => reference.get()));
+      const serialized = snapshots.map((snapshot, index) => {
+        if (!snapshot.exists) throw new Error(`Parte ${index + 1} da base não foi encontrada`);
+        return snapshot.data().content || "";
+      }).join("");
+      return JSON.parse(serialized);
+    }
+
+    function normalizeLoadedState(loaded) {
+      if (!loaded || typeof loaded !== "object") return createEmptyState();
+      if (!Array.isArray(loaded.collaborators)) loaded.collaborators = [];
+      if (!Array.isArray(loaded.inactiveCollaborators)) loaded.inactiveCollaborators = [];
+      if (!Array.isArray(loaded.materials)) loaded.materials = [];
+      if (!Array.isArray(loaded.history)) loaded.history = [];
+      if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
+      if (!loaded.settings || typeof loaded.settings !== "object") loaded.settings = createEmptyState().settings;
+      loaded.materials = loaded.materials.map(material => ({
+        ...material,
+        size: material.size || "",
+        manufacturer: material.manufacturer || ""
+      }));
+      loaded.collaborators = loaded.collaborators.map(collaborator => ({
+        ...collaborator,
+        status: collaborator.status === "Demitido" ? "Demitido" : "Ativo",
+        dismissalDate: collaborator.dismissalDate || ""
+      }));
+      const greatestMaterialSequence = loaded.materials.reduce((greatest, material) => {
+        const match = String(material.code || "").match(/(\d+)$/);
+        return match ? Math.max(greatest, Number(match[1])) : greatest;
+      }, 0);
+      loaded.nextMaterialSequence = Math.max(Number(loaded.nextMaterialSequence) || 1, greatestMaterialSequence + 1);
+      return loaded;
+    }
+
+    async function applyCloudState(meta) {
+      const version = String(meta.version || "");
+      if (!version || version === cloudLastVersion) return;
+      setCloudStatus("Atualizando dados", "saving");
+      const loaded = normalizeLoadedState(await readCloudState(meta));
+      cloudApplyingState = true;
+      cloudLastVersion = version;
+      state = loaded;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+      cloudApplyingState = false;
+      setCloudStatus("Dados sincronizados", "online");
+    }
+
+    async function removeOldCloudChunks(currentVersion) {
+      const snapshot = await cloudDatabase.collection(CLOUD_CHUNKS_COLLECTION).get();
+      const oldDocuments = snapshot.docs.filter(document => !document.id.startsWith(`${currentVersion}_`));
+      for (let offset = 0; offset < oldDocuments.length; offset += 450) {
+        const batch = cloudDatabase.batch();
+        oldDocuments.slice(offset, offset + 450).forEach(document => batch.delete(document.ref));
+        await batch.commit();
+      }
+    }
+
+    async function writeCloudState() {
+      if (!cloudReady || cloudApplyingState) return;
+      setCloudStatus("Salvando na nuvem", "saving");
+      const serialized = JSON.stringify(state);
+      const chunks = splitCloudState(serialized);
+      const version = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      for (let offset = 0; offset < chunks.length; offset += 450) {
+        const batch = cloudDatabase.batch();
+        chunks.slice(offset, offset + 450).forEach((content, relativeIndex) => {
+          const index = offset + relativeIndex;
+          const reference = cloudDatabase.collection(CLOUD_CHUNKS_COLLECTION).doc(`${version}_${String(index).padStart(4, "0")}`);
+          batch.set(reference, { content, version, index });
+        });
+        await batch.commit();
+      }
+      await cloudDatabase.collection(CLOUD_META_COLLECTION).doc(CLOUD_META_DOCUMENT).set({
+        version,
+        chunkCount: chunks.length,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedFrom: navigator.userAgent.slice(0, 180)
+      });
+      cloudLastVersion = version;
+      setCloudStatus("Dados sincronizados", "online");
+      removeOldCloudChunks(version).catch(() => {});
+    }
+
+    function scheduleCloudSave() {
+      if (!cloudReady || cloudApplyingState) return;
+      clearTimeout(cloudSaveTimer);
+      setCloudStatus("Alterações pendentes", "saving");
+      cloudSaveTimer = setTimeout(() => {
+        cloudWriteQueue = cloudWriteQueue
+          .then(writeCloudState)
+          .catch(error => {
+            console.error("Falha na sincronização", error);
+            setCloudStatus("Sem sincronização", "error");
+          });
+      }, CLOUD_SAVE_DELAY);
+    }
+
+    async function initializeCloudSync() {
+      setCloudStatus("Conectando ao Firebase", "waiting");
+      if (!window.firebase?.firestore) {
+        setCloudStatus("Firebase indisponível", "error");
+        return;
+      }
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        cloudDatabase = firebase.firestore();
+        cloudDatabase.settings({ ignoreUndefinedProperties: true });
+        const metaReference = cloudDatabase.collection(CLOUD_META_COLLECTION).doc(CLOUD_META_DOCUMENT);
+        const firstSnapshot = await metaReference.get();
+        cloudReady = true;
+        if (firstSnapshot.exists) {
+          await applyCloudState(firstSnapshot.data());
+        } else if (hadLocalStateAtStartup) {
+          await writeCloudState();
+          showToast("Base deste computador enviada ao Firebase com sucesso.");
+        } else {
+          setCloudStatus("Aguardando base principal", "waiting");
+        }
+        cloudUnsubscribe = metaReference.onSnapshot(snapshot => {
+          if (!snapshot.exists) return;
+          applyCloudState(snapshot.data()).catch(error => {
+            console.error("Falha ao receber atualização", error);
+            setCloudStatus("Falha ao atualizar", "error");
+          });
+        }, error => {
+          console.error("Falha na conexão em tempo real", error);
+          setCloudStatus("Sem conexão", "error");
+        });
+      } catch (error) {
+        console.error("Falha ao iniciar o Firebase", error);
+        setCloudStatus("Firebase não conectado", "error");
+      }
     }
 
     function applyTheme(theme) {
@@ -5792,7 +6075,7 @@
         const conditions = [dismissal, isPcd(item) ? "PCD" : "", item.committee || ""].filter(Boolean).join(" · ") || "Ativo";
         return `
           <tr>
-            <td data-label="Colaborador"><div class="materialCell"><div class="collaboratorAvatar"><span>${escapeHtml(initials)}</span>${item.photoKey ? `<img data-collaborator-photo="${escapeHtml(item.photoKey)}" alt="Foto de ${escapeHtml(item.name)}" hidden>` : ""}</div><div><strong>${escapeHtml(item.name)}</strong><small>${item.photoKey ? "Foto otimizada cadastrada" : "Sem foto"} · ${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
+            <td data-label="Colaborador"><div class="materialCell"><div class="collaboratorAvatar"><span>${escapeHtml(initials)}</span>${item.photoKey ? `<img data-collaborator-photo="${escapeHtml(item.photoKey)}" alt="Foto de ${escapeHtml(item.name)}" hidden>` : ""}</div><div><button class="collaboratorHistoryLink" type="button" title="Abrir histórico de retiradas de ${escapeHtml(item.name)}" aria-label="Abrir histórico de retiradas de ${escapeHtml(item.name)}" onclick="openEmployeeHistory(${item.id})">${escapeHtml(item.name)}</button><small>${item.photoKey ? "Foto otimizada cadastrada" : "Sem foto"} · ${escapeHtml(item.versatility || "Carta não informada")}</small></div></div></td>
             <td data-label="Chapa VW">${escapeHtml(item.vwId || "Não informada")}</td>
             <td data-label="Matrícula SESÉ"><strong>${escapeHtml(item.companyId || "Não informada")}</strong></td>
             <td data-label="Admissão">${formatDate(item.admission)}</td>
@@ -5831,7 +6114,7 @@
       document.getElementById("inactiveCollaboratorTotal").textContent = records.length.toLocaleString("pt-BR");
       document.getElementById("inactiveCollaboratorsTable").innerHTML = filtered.length ? filtered.map(item => `
         <tr>
-          <td data-label="Colaborador"><strong>${escapeHtml(item.name || "Não informado")}</strong></td>
+          <td data-label="Colaborador"><button class="collaboratorHistoryLink" type="button" title="Abrir histórico de retiradas de ${escapeHtml(item.name || "colaborador")}" aria-label="Abrir histórico de retiradas de ${escapeHtml(item.name || "colaborador")}" onclick="openInactiveEmployeeHistory(${item.id})">${escapeHtml(item.name || "Não informado")}</button></td>
           <td data-label="Chapa VW">${escapeHtml(item.vwId || "Não informada")}</td>
           <td data-label="Matrícula SESÉ">${escapeHtml(item.companyId || "Não informada")}</td>
           <td data-label="Cargo">${escapeHtml(item.role || "Não informado")}</td>
@@ -8431,6 +8714,7 @@
     initializeTheme();
     renderAll();
     resizeCanvas();
+    initializeCloudSync();
   </script>
 </body>
 </html>
