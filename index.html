@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000f2a">
+  <meta name="application-name" content="Gestão EPI SESÉ">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Gestão EPI">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="shortcut icon" href="app.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple180.png">
   <title>Gestão de Estoque EPI | SESÉ</title>
   <style>
     @font-face {
@@ -387,6 +397,18 @@
       grid-template-columns: auto auto;
       gap: 7px;
       white-space: nowrap;
+    }
+
+    .installButton {
+      width: auto;
+      min-width: 112px;
+      padding: 0 13px;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .installButton[hidden] {
+      display: none;
     }
 
     .iconButton .dot {
@@ -3429,6 +3451,10 @@
           </div>
         </div>
         <div class="topActions">
+          <button class="iconButton installButton" id="installApp" type="button" hidden aria-label="Instalar aplicativo">
+            <span aria-hidden="true">⇩</span>
+            <span>Instalar app</span>
+          </button>
           <button class="iconButton themeButton" id="themeToggle" type="button" aria-label="Ativar modo escuro" aria-pressed="false">
             <span id="themeIcon">◐</span>
             <span id="themeLabel">Modo escuro</span>
@@ -3727,9 +3753,20 @@
             <div class="withdrawalIdentityLayout">
               <div class="formGrid">
                 <div class="field">
-                  <label for="employeeName">Nome completo <span class="required">*</span></label>
-                  <input class="input" id="employeeName" list="employeeNameOptions" required autocomplete="name" placeholder="Selecione um colaborador cadastrado">
-                  <datalist id="employeeNameOptions"></datalist>
+                  <label for="employeeLookupType">Localizar colaborador por</label>
+                  <select class="select" id="employeeLookupType" aria-label="Escolher localização por nome ou chapa">
+                    <option value="name">Nome</option>
+                    <option value="vwId">Chapa</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="employeeLookup">Colaborador <span class="required">*</span></label>
+                  <input class="input" id="employeeLookup" list="employeeLookupOptions" required autocomplete="off" placeholder="Digite ou selecione o nome">
+                  <datalist id="employeeLookupOptions"></datalist>
+                </div>
+                <div class="field">
+                  <label for="employeeName">Nome completo</label>
+                  <input class="input" id="employeeName" required readonly aria-readonly="true" placeholder="Preenchido pelo cadastro">
                 </div>
                 <div class="field">
                   <label for="employeeVwId">Chapa Volkswagen <span class="required">*</span></label>
@@ -6195,9 +6232,19 @@
           const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
           return admissionDifference || Number(b.id || 0) - Number(a.id || 0);
         });
-      document.getElementById("employeeNameOptions").innerHTML = collaborators
-        .map(item => `<option value="${escapeHtml(item.name)}">Volkswagen ${escapeHtml(item.vwId || "Não informada")} · SESÉ ${escapeHtml(item.companyId || "Não informada")}</option>`)
-        .join("");
+      const lookupType = document.getElementById("employeeLookupType")?.value || "name";
+      const lookup = document.getElementById("employeeLookup");
+      const options = document.getElementById("employeeLookupOptions");
+      if (!lookup || !options) return;
+      lookup.placeholder = lookupType === "vwId" ? "Digite ou selecione a chapa" : "Digite ou selecione o nome";
+      options.innerHTML = collaborators.map(item => {
+        const value = lookupType === "vwId" ? item.vwId : item.name;
+        if (!value) return "";
+        const detail = lookupType === "vwId"
+          ? `${item.name || "Nome não informado"} · SESÉ ${item.companyId || "Não informada"}`
+          : `Chapa ${item.vwId || "Não informada"} · SESÉ ${item.companyId || "Não informada"}`;
+        return `<option value="${escapeHtml(value)}">${escapeHtml(detail)}</option>`;
+      }).join("");
     }
 
     async function renderWithdrawalCollaboratorPhoto(collaborator = null) {
@@ -6269,6 +6316,9 @@
         return;
       }
       document.getElementById("employeeName").value = collaborator.name || "";
+      document.getElementById("employeeLookup").value = document.getElementById("employeeLookupType").value === "vwId"
+        ? collaborator.vwId || ""
+        : collaborator.name || "";
       document.getElementById("employeeVwId").value = collaborator.vwId || "";
       document.getElementById("employeeCompanyId").value = collaborator.companyId || "";
       document.getElementById("employeeCategory").value = collaborator.role || "";
@@ -6595,6 +6645,7 @@
       signatureStarted = false;
       document.getElementById("signatureBox").classList.remove("signed");
       document.getElementById("withdrawalForm").reset();
+      populateWithdrawalCollaborators();
       document.getElementById("withdrawalQty").value = 1;
       clearCanvas();
       updateWithdrawalMaterialInfo();
@@ -8461,15 +8512,30 @@
 
     document.getElementById("consumptionPeriod").addEventListener("change", renderDashboard);
 
-    document.getElementById("employeeName").addEventListener("input", event => {
-      const typedName = normalizeColumnName(event.target.value);
+    document.getElementById("employeeLookupType").addEventListener("change", () => {
+      document.getElementById("employeeLookup").value = "";
+      document.getElementById("employeeName").value = "";
+      document.getElementById("employeeVwId").value = "";
+      document.getElementById("employeeCompanyId").value = "";
+      document.getElementById("employeeCategory").value = "";
+      document.getElementById("employeeShift").value = "";
+      populateWithdrawalCollaborators();
+      updateWithdrawalSummary();
+      renderWithdrawalCollaboratorPhoto();
+    });
+
+    document.getElementById("employeeLookup").addEventListener("input", event => {
+      const typedValue = normalizeColumnName(event.target.value);
+      const lookupType = document.getElementById("employeeLookupType").value;
       const selectedCollaborator = (state.collaborators || []).find(item =>
-        item.status !== "Demitido" && normalizeColumnName(item.name) === typedName
+        item.status !== "Demitido"
+        && normalizeColumnName(lookupType === "vwId" ? item.vwId : item.name) === typedValue
       );
       if (selectedCollaborator) {
-        fillWithdrawalFromCollaborator(selectedCollaborator.name);
+        fillWithdrawalFromCollaborator(lookupType === "vwId" ? selectedCollaborator.vwId : selectedCollaborator.name);
         return;
       }
+      document.getElementById("employeeName").value = "";
       document.getElementById("employeeVwId").value = "";
       document.getElementById("employeeCompanyId").value = "";
       document.getElementById("employeeCategory").value = "";
@@ -8477,7 +8543,7 @@
       updateWithdrawalSummary();
       renderWithdrawalCollaboratorPhoto();
     });
-    document.getElementById("employeeName").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
+    document.getElementById("employeeLookup").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
 
     document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
 
@@ -8570,7 +8636,7 @@
         || normalizeColumnName(collaborator.name) !== normalizeColumnName(document.getElementById("employeeName").value)
       ) {
         showToast("Selecione um colaborador ativo e cadastrado.", true);
-        document.getElementById("employeeName").focus();
+        document.getElementById("employeeLookup").focus();
         return;
       }
       const withdrawal = {
@@ -8718,6 +8784,49 @@
     });
 
     window.addEventListener("resize", resizeCanvas);
+
+    let deferredInstallPrompt = null;
+    const installAppButton = document.getElementById("installApp");
+    const isAppleMobile = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandaloneApp = (typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+
+    if (!isStandaloneApp && isAppleMobile) installAppButton.hidden = false;
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      installAppButton.hidden = false;
+    });
+
+    installAppButton.addEventListener("click", async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if (choice.outcome === "accepted") installAppButton.hidden = true;
+        return;
+      }
+      if (isAppleMobile) {
+        alert("No iPhone ou iPad, toque no botão Compartilhar do Safari e escolha Adicionar à Tela de Início.");
+        return;
+      }
+      alert("Abra o menu do navegador e escolha Instalar aplicativo ou Adicionar à tela inicial.");
+    });
+
+    window.addEventListener("appinstalled", () => {
+      installAppButton.hidden = true;
+      deferredInstallPrompt = null;
+      showToast("Aplicativo instalado com sucesso.");
+    });
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("serviceworker.js").catch(() => {
+          console.warn("Não foi possível ativar o modo de aplicativo.");
+        });
+      });
+    }
+
     document.getElementById("currentDate").textContent = new Intl.DateTimeFormat("pt-BR", {
       weekday: "long",
       day: "2-digit",
