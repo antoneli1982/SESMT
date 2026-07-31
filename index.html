@@ -3344,12 +3344,13 @@
         <button class="navButton active" data-page="dashboard"><span class="navIcon">01</span>Painel geral</button>
         <button class="navButton" data-page="materials"><span class="navIcon">02</span>Materiais</button>
         <button class="navButton" data-page="collaborators"><span class="navIcon">03</span>Colaboradores</button>
-        <button class="navButton" data-page="withdrawal"><span class="navIcon">04</span>Nova retirada</button>
-        <button class="navButton" data-page="inventory"><span class="navIcon">05</span>Inventário</button>
-        <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">06</span>Alertas</button>
-        <button class="navButton" data-page="history"><span class="navIcon">07</span>Histórico</button>
-        <button class="navButton" data-page="employeeHistory"><span class="navIcon">08</span>Histórico do colaborador</button>
-        <button class="navButton" data-page="settings"><span class="navIcon">09</span>Configurações</button>
+        <button class="navButton" data-page="inactiveCollaborators"><span class="navIcon">04</span>Colaboradores inativos</button>
+        <button class="navButton" data-page="withdrawal"><span class="navIcon">05</span>Nova retirada</button>
+        <button class="navButton" data-page="inventory"><span class="navIcon">06</span>Inventário</button>
+        <button class="navButton" data-page="alerts" data-count="4"><span class="navIcon">07</span>Alertas</button>
+        <button class="navButton" data-page="history"><span class="navIcon">08</span>Histórico</button>
+        <button class="navButton" data-page="employeeHistory"><span class="navIcon">09</span>Histórico do colaborador</button>
+        <button class="navButton" data-page="settings"><span class="navIcon">10</span>Configurações</button>
       </nav>
 
       <div class="userCard">
@@ -3620,6 +3621,40 @@
             <span class="collaboratorPageNumber" id="collaboratorPageNumber">Página 1 de 1</span>
             <button class="miniButton" id="collaboratorNextPage" type="button" aria-label="Próxima página">›</button>
           </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-inactiveCollaborators">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Memória funcional</p>
+            <h2>Colaboradores inativos</h2>
+            <p>Consulte os colaboradores retirados da base ativa durante a conciliação de uma nova planilha.</p>
+          </div>
+        </div>
+        <div class="stats">
+          <article class="statCard"><div class="statTop"><span>Total inativo</span><span class="statBadge">I</span></div><strong id="inactiveCollaboratorTotal">0</strong><small>Cadastros preservados</small></article>
+        </div>
+        <div class="filters">
+          <input class="input" id="inactiveCollaboratorSearch" type="search" placeholder="Pesquisar nome, chapa ou matrícula" aria-label="Pesquisar colaboradores inativos">
+        </div>
+        <div class="tableWrap" role="region" aria-label="Tabela de colaboradores inativos" tabindex="0">
+          <table class="collaboratorTable">
+            <thead>
+              <tr>
+                <th>Colaborador</th>
+                <th>Chapa VW</th>
+                <th>Matrícula SESÉ</th>
+                <th>Cargo</th>
+                <th>Turno</th>
+                <th>Posto</th>
+                <th>Data de inativação</th>
+                <th>Motivo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="inactiveCollaboratorsTable"></tbody>
+          </table>
         </div>
       </section>
 
@@ -4339,6 +4374,30 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="missingCollaboratorsModal" role="dialog" aria-modal="true" aria-labelledby="missingCollaboratorsTitle">
+    <div class="modal duplicateDecisionModal">
+      <div class="modalHeader">
+        <h3 id="missingCollaboratorsTitle">Colaboradores ausentes na nova lista</h3>
+      </div>
+      <div class="modalBody duplicateDecisionContent">
+        <div class="duplicateDecisionLead">
+          <div class="duplicateDecisionIcon" aria-hidden="true">!</div>
+          <div>
+            <strong id="missingCollaboratorsSummary">Alguns colaboradores não apareceram na planilha importada.</strong>
+            <p>Confira os nomes antes de decidir. O histórico de movimentações continuará preservado nas duas opções.</p>
+          </div>
+        </div>
+        <div class="duplicateDecisionList" id="missingCollaboratorsList"></div>
+        <p class="duplicateDecisionHelp">Armazenar move os registros para a página Colaboradores inativos. Excluir remove somente os cadastros da base ativa.</p>
+      </div>
+      <div class="modalFooter">
+        <button class="ghostButton" id="cancelMissingCollaborators" type="button">Cancelar importação</button>
+        <button class="dangerButton" id="deleteMissingCollaborators" type="button">Excluir ausentes</button>
+        <button class="primaryButton" id="archiveMissingCollaborators" type="button">Armazenar como inativos</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modalBackdrop" id="unitModal" role="dialog" aria-modal="true" aria-labelledby="unitModalTitle">
     <div class="modal">
       <div class="modalHeader">
@@ -4664,6 +4723,7 @@
         },
         materials,
         collaborators,
+        inactiveCollaborators: [],
         history: [
           ...withdrawalHistory,
           ...returnHistory,
@@ -4920,6 +4980,7 @@
         },
         materials: [],
         collaborators: [],
+        inactiveCollaborators: [],
         history: [],
         withdrawals: [],
         nextMaterialSequence: 1,
@@ -4944,6 +5005,7 @@
         const stored = localStorage.getItem(STORAGE_KEY);
         const loaded = stored ? JSON.parse(stored) : cloneSeed();
         if (!Array.isArray(loaded.collaborators)) loaded.collaborators = [];
+        if (!Array.isArray(loaded.inactiveCollaborators)) loaded.inactiveCollaborators = [];
         if (!Array.isArray(loaded.materials)) loaded.materials = [];
         if (!Array.isArray(loaded.history)) loaded.history = [];
         if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
@@ -5086,6 +5148,7 @@
         dashboard: "Painel geral",
         materials: "Materiais",
         collaborators: "Colaboradores",
+        inactiveCollaborators: "Colaboradores inativos",
         withdrawal: "Nova retirada",
         inventory: "Inventário",
         alerts: "Alertas",
@@ -5722,6 +5785,59 @@
       hydrateCollaboratorPhotos();
       populateWithdrawalCollaborators();
       renderCollaboratorNameSuggestions();
+    }
+
+    function renderInactiveCollaborators() {
+      const records = Array.isArray(state.inactiveCollaborators) ? state.inactiveCollaborators : [];
+      const search = normalizeColumnName(document.getElementById("inactiveCollaboratorSearch").value);
+      const filtered = records
+        .filter(item => normalizeColumnName([
+          item.name,
+          item.vwId,
+          item.companyId,
+          item.role,
+          item.shift,
+          item.workstation
+        ].join(" ")).includes(search))
+        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+      document.getElementById("inactiveCollaboratorTotal").textContent = records.length.toLocaleString("pt-BR");
+      document.getElementById("inactiveCollaboratorsTable").innerHTML = filtered.length ? filtered.map(item => `
+        <tr>
+          <td data-label="Colaborador"><strong>${escapeHtml(item.name || "Não informado")}</strong></td>
+          <td data-label="Chapa VW">${escapeHtml(item.vwId || "Não informada")}</td>
+          <td data-label="Matrícula SESÉ">${escapeHtml(item.companyId || "Não informada")}</td>
+          <td data-label="Cargo">${escapeHtml(item.role || "Não informado")}</td>
+          <td data-label="Turno">${escapeHtml(item.shift || "Não informado")}</td>
+          <td data-label="Posto">${escapeHtml(item.workstation || "Não informado")}</td>
+          <td data-label="Data de inativação">${formatDate(item.inactiveAt)}</td>
+          <td data-label="Motivo">${escapeHtml(item.inactiveReason || "Ausente na nova lista")}</td>
+          <td data-label="Ações"><div class="actionsCell">
+            <button class="miniButton" type="button" title="Histórico do colaborador" onclick="openInactiveEmployeeHistory(${item.id})">▤</button>
+            <button class="miniButton" type="button" title="Reativar colaborador" onclick="restoreInactiveCollaborator(${item.id})">↺</button>
+          </div></td>
+        </tr>
+      `).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhum colaborador inativo encontrado</strong>Os registros armazenados durante uma importação aparecerão aqui.</div></td></tr>`;
+    }
+
+    function restoreInactiveCollaborator(id) {
+      const index = state.inactiveCollaborators.findIndex(item => item.id === id);
+      if (index < 0) return;
+      const restored = state.inactiveCollaborators.splice(index, 1)[0];
+      state.collaborators.push({
+        ...restored,
+        status: restored.status === "Demitido" ? "Demitido" : "Ativo",
+        inactiveAt: "",
+        inactiveReason: ""
+      });
+      saveState();
+      renderAll();
+      showToast("Colaborador reativado e devolvido à base principal.");
+    }
+
+    function openInactiveEmployeeHistory(id) {
+      const collaborator = state.inactiveCollaborators.find(item => item.id === id);
+      if (!collaborator) return;
+      openEmployeeHistory(collaborator.id);
     }
 
     async function hydrateCollaboratorPhotos() {
@@ -6546,7 +6662,10 @@
     function resolveEmployeeHistoryCollaborator(query) {
       const normalizedQuery = normalizeColumnName(query);
       if (!normalizedQuery) return null;
-      const collaborators = state.collaborators || [];
+      const collaborators = [
+        ...(state.collaborators || []),
+        ...(state.inactiveCollaborators || [])
+      ];
       const exact = collaborators.find(collaborator => {
         return [
           collaborator.name,
@@ -6596,7 +6715,10 @@
     function renderEmployeeHistory() {
       const search = document.getElementById("employeeHistorySearch");
       const options = document.getElementById("employeeHistoryOptions");
-      const collaborators = (state.collaborators || []).slice()
+      const collaborators = [
+        ...(state.collaborators || []),
+        ...(state.inactiveCollaborators || [])
+      ].slice()
         .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
       options.innerHTML = collaborators.map(collaborator => {
         const details = [
@@ -6636,7 +6758,9 @@
         collaborator.role || "Não informada",
         collaborator.status === "Demitido"
           ? `DEMITIDO${collaborator.dismissalDate ? ` em ${formatDate(collaborator.dismissalDate)}` : ""}`
-          : "Ativo"
+          : collaborator.inactiveAt
+            ? `INATIVO desde ${formatDate(collaborator.inactiveAt)}`
+            : "Ativo"
       ].join(" · ");
       employeeHistoryRole.classList.toggle("dismissedStatus", collaborator.status === "Demitido");
       document.getElementById("employeeHistoryAdmission").textContent = formatDate(collaborator.admission);
@@ -6682,7 +6806,10 @@
     }
 
     window.openEmployeeHistory = function(collaboratorId) {
-      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(collaboratorId));
+      const collaborator = [
+        ...(state.collaborators || []),
+        ...(state.inactiveCollaborators || [])
+      ].find(item => String(item.id) === String(collaboratorId));
       if (!collaborator) return;
       employeeHistorySelectedId = collaborator.id;
       document.getElementById("employeeHistorySearch").value = collaborator.name;
@@ -6691,7 +6818,10 @@
     };
 
     async function printSelectedEmployeeHistory() {
-      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(employeeHistorySelectedId));
+      const collaborator = [
+        ...(state.collaborators || []),
+        ...(state.inactiveCollaborators || [])
+      ].find(item => String(item.id) === String(employeeHistorySelectedId));
       if (!collaborator) {
         showToast("Selecione um colaborador para imprimir o histórico.", true);
         return;
@@ -6707,7 +6837,10 @@
     }
 
     function exportSelectedEmployeeHistory() {
-      const collaborator = (state.collaborators || []).find(item => String(item.id) === String(employeeHistorySelectedId));
+      const collaborator = [
+        ...(state.collaborators || []),
+        ...(state.inactiveCollaborators || [])
+      ].find(item => String(item.id) === String(employeeHistorySelectedId));
       if (!collaborator) {
         showToast("Selecione um colaborador para exportar o histórico.", true);
         return;
@@ -6750,6 +6883,7 @@
       renderDashboard();
       renderMaterials();
       renderCollaborators();
+      renderInactiveCollaborators();
       renderInventory();
       renderAlerts();
       renderHistory();
@@ -7201,7 +7335,8 @@
         pcd: textOrExisting("pcd"),
         committee: textOrExisting("committee"),
         photoKey: existing?.photoKey || "",
-        status: "Ativo"
+        status: existing?.status || "Ativo",
+        dismissalDate: existing?.dismissalDate || ""
       };
       const valid = Boolean(
         collaborator.name
@@ -7261,6 +7396,33 @@
       });
     }
 
+    function requestMissingCollaboratorsDecision(entries) {
+      const modal = document.getElementById("missingCollaboratorsModal");
+      const summary = document.getElementById("missingCollaboratorsSummary");
+      const list = document.getElementById("missingCollaboratorsList");
+      const cancelButton = document.getElementById("cancelMissingCollaborators");
+      const deleteButton = document.getElementById("deleteMissingCollaborators");
+      const archiveButton = document.getElementById("archiveMissingCollaborators");
+      summary.textContent = `${entries.length} ${entries.length === 1 ? "colaborador não apareceu" : "colaboradores não apareceram"} na nova lista.`;
+      list.innerHTML = entries.map(person => {
+        const identity = person.companyId || person.vwId || "Sem identificação";
+        return `<div class="duplicateDecisionItem"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(identity)} · ${escapeHtml(person.role || "Cargo não informado")} · ${escapeHtml(person.shift || "Turno não informado")}</span></div>`;
+      }).join("");
+      modal.classList.add("open");
+      return new Promise(resolve => {
+        const finish = decision => {
+          modal.classList.remove("open");
+          cancelButton.onclick = null;
+          deleteButton.onclick = null;
+          archiveButton.onclick = null;
+          resolve(decision);
+        };
+        cancelButton.onclick = () => finish("cancel");
+        deleteButton.onclick = () => finish("delete");
+        archiveButton.onclick = () => finish("archive");
+      });
+    }
+
     async function importCollaboratorsFromExcel(file) {
       if (!file) return;
       if (typeof XLSX === "undefined") {
@@ -7290,6 +7452,7 @@
 
         const seenCompanyIds = new Set();
         const seenVwIds = new Set();
+        const importedIdentityKeys = new Set();
         const prepared = [];
         let rejected = 0;
         let added = 0;
@@ -7316,6 +7479,8 @@
           }
           if (companyId) seenCompanyIds.add(companyId);
           if (vwId) seenVwIds.add(vwId);
+          if (companyId) importedIdentityKeys.add(`company:${companyId}`);
+          if (vwId) importedIdentityKeys.add(`vw:${vwId}`);
           prepared.push({ ...result, existing: Boolean(existing), existingRecord: existing || null });
           if (existing) updated += 1;
           else added += 1;
@@ -7326,39 +7491,55 @@
           return;
         }
 
-        const duplicateEntries = prepared.filter(entry => entry.existing);
-        let updateDuplicates = false;
-        if (duplicateEntries.length) {
-          updateDuplicates = await requestDuplicateImportDecision(
-            duplicateEntries,
-            added,
-            repeatedInFile,
-            rejected
-          );
+        const missingCollaborators = state.collaborators.filter(item => {
+          const companyKey = item.companyId ? `company:${normalizeColumnName(item.companyId)}` : "";
+          const vwKey = item.vwId ? `vw:${normalizeColumnName(item.vwId)}` : "";
+          return !(companyKey && importedIdentityKeys.has(companyKey))
+            && !(vwKey && importedIdentityKeys.has(vwKey));
+        });
+        let missingDecision = "none";
+        if (missingCollaborators.length) {
+          missingDecision = await requestMissingCollaboratorsDecision(missingCollaborators);
+          if (missingDecision === "cancel") return;
         } else {
-          const message = `Prévia da aba ${source.sheetName}\n\nNovos colaboradores: ${added}\nRepetidos na própria planilha: ${repeatedInFile}\nLinhas não importadas: ${rejected}\n\nDeseja confirmar a importação dos registros válidos?`;
+          const message = `Prévia da aba ${source.sheetName}\n\nNovos colaboradores: ${added}\nCadastros conciliados: ${updated}\nRepetidos na própria planilha: ${repeatedInFile}\nLinhas não importadas: ${rejected}\n\nDeseja confirmar a importação?`;
           if (!confirm(message)) return;
         }
 
-        const entriesToApply = prepared.filter(entry => !entry.existing || updateDuplicates);
-        if (!entriesToApply.length) {
-          showToast(`Nenhum cadastro foi alterado. Duplicados mantidos: ${updated}.`);
-          return;
+        const missingIds = new Set(missingCollaborators.map(item => item.id));
+        if (missingIds.size) {
+          if (missingDecision === "archive") {
+            const archivedAt = new Date().toISOString();
+            const existingInactiveIds = new Set(state.inactiveCollaborators.map(item => item.id));
+            missingCollaborators.forEach(item => {
+              if (!existingInactiveIds.has(item.id)) {
+                state.inactiveCollaborators.push({
+                  ...item,
+                  inactiveAt: archivedAt,
+                  inactiveReason: "Ausente na nova lista importada"
+                });
+              }
+            });
+          }
+          state.collaborators = state.collaborators.filter(item => !missingIds.has(item.id));
         }
 
-        entriesToApply.forEach(entry => {
+        prepared.forEach(entry => {
           if (entry.existing) {
             const index = state.collaborators.findIndex(item => item.id === entry.collaborator.id);
-            state.collaborators[index] = entry.collaborator;
+            if (index >= 0) state.collaborators[index] = entry.collaborator;
           } else {
             state.collaborators.push(entry.collaborator);
           }
         });
         saveState();
         renderAll();
-        const updatedApplied = updateDuplicates ? updated : 0;
-        const duplicatesKept = updateDuplicates ? 0 : updated;
-        showToast(`Importação concluída. Novos: ${added}. Atualizados: ${updatedApplied}. Duplicados mantidos: ${duplicatesKept}. Não importados: ${rejected}.`);
+        const missingResult = missingDecision === "archive"
+          ? ` Armazenados como inativos: ${missingCollaborators.length}.`
+          : missingDecision === "delete"
+            ? ` Ausentes excluídos: ${missingCollaborators.length}.`
+            : "";
+        showToast(`Importação concluída. Novos: ${added}. Conciliados: ${updated}. Não importados: ${rejected}.${missingResult}`);
       } catch (error) {
         console.error(error);
         showToast("Não foi possível ler a planilha de colaboradores.", true);
@@ -7591,6 +7772,7 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("newMaterialButton").addEventListener("click", () => openMaterialModal());
     document.getElementById("newCollaboratorButton").addEventListener("click", () => openCollaboratorModal());
+    document.getElementById("inactiveCollaboratorSearch").addEventListener("input", renderInactiveCollaborators);
     document.getElementById("toggleCollaboratorDismissed").addEventListener("click", () => {
       const button = document.getElementById("toggleCollaboratorDismissed");
       setCollaboratorDismissedState(button.getAttribute("aria-pressed") !== "true");
