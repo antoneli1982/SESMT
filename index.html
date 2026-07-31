@@ -1517,6 +1517,18 @@
       background: color-mix(in srgb, var(--danger) 10%, transparent);
     }
 
+    #toggleCollaboratorInactiveRole[aria-pressed="true"] {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: color-mix(in srgb, var(--blue) 10%, transparent);
+    }
+
+    .collaboratorSituationActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
     .actionsCell {
       display: flex;
       gap: 6px;
@@ -4327,7 +4339,10 @@
             </div>
             <div class="field full">
               <label>Situação do colaborador</label>
-              <button class="ghostButton" id="toggleCollaboratorDismissed" type="button" aria-pressed="false">Marcar como demitido</button>
+              <div class="collaboratorSituationActions">
+                <button class="ghostButton" id="toggleCollaboratorInactiveRole" type="button" aria-pressed="false">Cargo inativo</button>
+                <button class="ghostButton" id="toggleCollaboratorDismissed" type="button" aria-pressed="false">Marcar como demitido</button>
+              </div>
             </div>
             <div class="field full dismissedStatusField" id="collaboratorDismissalField" hidden>
               <label for="collaboratorDismissalDate">DEMITIDO · Data de demissão <span class="required">*</span></label>
@@ -6064,6 +6079,7 @@
         document.getElementById("collaboratorShift").value = normalizeShift(collaborator.shift);
       }
       setCollaboratorDismissedState(collaborator?.status === "Demitido");
+      setCollaboratorInactiveRoleState(false);
       document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(collaborator?.name);
       document.getElementById("collaboratorModal").classList.add("open");
       await loadCollaboratorPhotoPreview(collaborator);
@@ -6079,6 +6095,12 @@
       field.hidden = !isDismissed;
       dateInput.required = isDismissed;
       if (!isDismissed) dateInput.value = "";
+    }
+
+    function setCollaboratorInactiveRoleState(isInactive) {
+      const button = document.getElementById("toggleCollaboratorInactiveRole");
+      button.setAttribute("aria-pressed", String(isInactive));
+      button.textContent = isInactive ? "Cargo inativo marcado" : "Cargo inativo";
     }
 
     function collaboratorComparableValue(value) {
@@ -7789,7 +7811,15 @@
     document.getElementById("inactiveCollaboratorSearch").addEventListener("input", renderInactiveCollaborators);
     document.getElementById("toggleCollaboratorDismissed").addEventListener("click", () => {
       const button = document.getElementById("toggleCollaboratorDismissed");
-      setCollaboratorDismissedState(button.getAttribute("aria-pressed") !== "true");
+      const willDismiss = button.getAttribute("aria-pressed") !== "true";
+      setCollaboratorDismissedState(willDismiss);
+      if (willDismiss) setCollaboratorInactiveRoleState(false);
+    });
+    document.getElementById("toggleCollaboratorInactiveRole").addEventListener("click", () => {
+      const button = document.getElementById("toggleCollaboratorInactiveRole");
+      const willInactivate = button.getAttribute("aria-pressed") !== "true";
+      setCollaboratorInactiveRoleState(willInactivate);
+      if (willInactivate) setCollaboratorDismissedState(false);
     });
     document.getElementById("clearAllMaterials").addEventListener("click", () => openProtectedAction("materials"));
     document.getElementById("clearAllCollaborators").addEventListener("click", () => openProtectedAction("collaborators"));
@@ -7928,6 +7958,8 @@
         photoKey: existingCollaborator?.photoKey || "",
         status: document.getElementById("toggleCollaboratorDismissed").getAttribute("aria-pressed") === "true"
           ? "Demitido"
+          : document.getElementById("toggleCollaboratorInactiveRole").getAttribute("aria-pressed") === "true"
+            ? "Cargo inativo"
           : "Ativo"
       };
       if (collaborator.status === "Demitido" && !collaborator.dismissalDate) {
@@ -7953,11 +7985,12 @@
         showToast("Não foi possível armazenar a foto otimizada. O cadastro não foi alterado.", true);
         return;
       }
-      if (collaborator.status === "Demitido") {
+      if (collaborator.status === "Demitido" || collaborator.status === "Cargo inativo") {
+        const isDismissed = collaborator.status === "Demitido";
         const inactiveRecord = {
           ...collaborator,
-          inactiveAt: collaborator.dismissalDate,
-          inactiveReason: "Demissão"
+          inactiveAt: isDismissed ? collaborator.dismissalDate : localDateKey(new Date()),
+          inactiveReason: isDismissed ? "Demissão" : "Cargo inativo"
         };
         if (editingCollaboratorId) {
           const index = state.collaborators.findIndex(item => item.id === editingCollaboratorId);
@@ -7981,6 +8014,8 @@
       showToast(
         collaborator.status === "Demitido"
           ? "Colaborador demitido e movido para inativos."
+          : collaborator.status === "Cargo inativo"
+            ? "Cargo e colaborador movidos para inativos."
           : wasEditing
             ? "Colaborador atualizado com sucesso."
             : "Colaborador cadastrado com sucesso."
