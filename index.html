@@ -4307,8 +4307,8 @@
               <input class="input" id="materialMinimum" type="number" min="0" placeholder="Opcional">
             </div>
             <div class="field">
-              <label for="materialLifetime">Vida útil em dias <span class="required">*</span></label>
-              <input class="input" id="materialLifetime" type="number" min="1" required>
+              <label for="materialLifetime">Vida útil em dias</label>
+              <input class="input" id="materialLifetime" type="number" min="1" placeholder="Opcional">
             </div>
             <div class="field">
               <label for="materialLocation">Localização</label>
@@ -5471,7 +5471,16 @@
       return !Number.isFinite(days) || days >= 0;
     }
 
+    function hasLifetime(lifetime) {
+      return lifetime !== null
+        && lifetime !== undefined
+        && String(lifetime).trim() !== ""
+        && Number.isFinite(Number(lifetime))
+        && Number(lifetime) > 0;
+    }
+
     function calculateNextChange(lifetime, baseDate = new Date()) {
+      if (!hasLifetime(lifetime)) return "";
       const date = new Date(baseDate);
       date.setHours(12, 0, 0, 0);
       date.setDate(date.getDate() + Number(lifetime || 0));
@@ -5874,8 +5883,9 @@
         const collaborator = findWithdrawalCollaborator(withdrawal);
         const identity = resolveWithdrawalIdentity(withdrawal);
         const nextChange = item.nextChange || calculateNextChange(item.lifetime, withdrawal.date);
+        if (!nextChange) return alerts;
         const remainingDays = daysUntil(nextChange);
-        if (remainingDays > 7) return alerts;
+        if (!Number.isFinite(remainingDays) || remainingDays > 7) return alerts;
 
         const employeeName = collaborator?.name || withdrawal.employee || "Não informado";
         const employeeVwId = identity.vwId || "Não informada";
@@ -5985,7 +5995,7 @@
             <td>${formatDate(material.lotValidity)}</td>
             <td><strong>${material.stock}</strong> un.</td>
             <td>${hasConfiguredMinimum(material) ? `<strong>${Number(material.minimum)}</strong> un.` : "Não informado"}</td>
-            <td><strong>${Number(material.lifetime || 0)}</strong> dias</td>
+            <td>${hasLifetime(material.lifetime) ? `<strong>${Number(material.lifetime)}</strong> dias` : "Não informada"}</td>
             <td>${escapeHtml(material.location || "Não informada")}</td>
             <td class="materialNotesCell">${escapeHtml(material.notes || "Sem observações")}</td>
             <td><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
@@ -6602,14 +6612,14 @@
       }
       const blockReason = material => {
         if (!notExpired(material.caValidity)) return "CA vencido";
-        if (Number(material.stock || 0) <= 0) return "sem saldo";
         return "";
       };
+      const stockNote = material => (Number(material.stock || 0) <= 0 ? " — sem saldo" : "");
       select.innerHTML = `<option value="">Selecione um material</option>` + materials.map(material => {
         const reason = blockReason(material);
         const caText = material.ca ? `CA ${escapeHtml(material.ca)}` : "sem CA";
         const label = `${escapeHtml(materialLabel(material))} · ${caText} · ${Number(material.stock || 0)} un.`;
-        return `<option value="${material.id}"${reason ? " disabled" : ""}>${label}${reason ? ` — ${reason}` : ""}</option>`;
+        return `<option value="${material.id}"${reason ? " disabled" : ""}>${label}${reason ? ` — ${reason}` : stockNote(material)}</option>`;
       }).join("");
       if (materials.some(material => String(material.id) === current && !blockReason(material))) {
         select.value = current;
@@ -6621,9 +6631,11 @@
       const materialId = Number(document.getElementById("withdrawalMaterial").value);
       const material = state.materials.find(item => item.id === materialId);
       document.getElementById("withdrawalCa").textContent = material ? (material.ca || "Não informado") : "Selecione um EPI";
-      document.getElementById("withdrawalLifetime").textContent = material ? `${material.lifetime} dias` : "Selecione um EPI";
+      document.getElementById("withdrawalLifetime").textContent = material
+        ? (hasLifetime(material.lifetime) ? `${Number(material.lifetime)} dias` : "Não informada")
+        : "Selecione um EPI";
       document.getElementById("withdrawalNextChange").textContent = material
-        ? formatDate(calculateNextChange(material.lifetime))
+        ? (hasLifetime(material.lifetime) ? formatDate(calculateNextChange(material.lifetime)) : "Não aplicável")
         : "Selecione um EPI";
     }
 
@@ -6643,7 +6655,7 @@
         document.getElementById("materialLotValidity").value = material.lotValidity;
         document.getElementById("materialStock").value = material.stock ?? "";
         document.getElementById("materialMinimum").value = material.minimum ?? "";
-        document.getElementById("materialLifetime").value = material.lifetime;
+        document.getElementById("materialLifetime").value = hasLifetime(material.lifetime) ? material.lifetime : "";
         document.getElementById("materialLocation").value = material.location || "";
         document.getElementById("materialNotes").value = material.notes || "";
       } else {
@@ -6697,7 +6709,7 @@
       container.innerHTML = withdrawalSelection.length ? withdrawalSelection.map((entry, index) => `
         <div class="activityItem">
           <div class="activityIcon">${String(index + 1).padStart(2, "0")}</div>
-          <div style="flex:1"><strong>${escapeHtml(materialLabel(entry))}</strong><p>CA ${escapeHtml(entry.ca || "Não informado")} · Lote ${escapeHtml(entry.lot || "Não informado")} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
+          <div style="flex:1"><strong>${escapeHtml(materialLabel(entry))}</strong><p>CA ${escapeHtml(entry.ca || "Não informado")} · Lote ${escapeHtml(entry.lot || "Não informado")} · Próxima troca ${entry.nextChange ? formatDate(entry.nextChange) : "Não aplicável"}</p></div>
           <strong>${entry.qty} un.</strong>
           <button class="miniButton" type="button" onclick="removeWithdrawalItem(${index})">×</button>
         </div>
@@ -6711,7 +6723,7 @@
         const nextChange = withdrawalSelection
           .map(item => item.nextChange)
           .sort()[0];
-        document.getElementById("summaryValidity").textContent = formatDate(nextChange);
+        document.getElementById("summaryValidity").textContent = nextChange ? formatDate(nextChange) : "Não aplicável";
       } else {
         document.getElementById("summaryCa").textContent = "Sem item";
         document.getElementById("summaryValidity").textContent = "Sem item";
@@ -7042,7 +7054,7 @@
             <td>${escapeHtml(merLabel(item.reason))}</td>
             <td><button class="miniButton" type="button" title="Abrir documento assinado" onclick="printHistoryTerm(${withdrawal.historyId})" style="width:auto;height:auto;padding:4px"><img class="signatureThumbnail" src="${withdrawal.signature}" alt="Assinatura eletrônica de ${escapeHtml(withdrawal.employee)}"></button></td>
             <td>${escapeHtml(withdrawal.responsible || "Não informado")}</td>
-            <td>${formatDate(expiry)}</td>
+            <td>${expiry ? formatDate(expiry) : "Não aplicável"}</td>
             <td><button class="textButton" type="button" onclick="printHistoryTerm(${withdrawal.historyId})">Gerar PDF histórico</button></td>
           </tr>
         `;
@@ -7477,7 +7489,7 @@
         item.lotValidity,
         Number(item.stock),
         hasConfiguredMinimum(item) ? Number(item.minimum) : "",
-        Number(item.lifetime),
+        hasLifetime(item.lifetime) ? Number(item.lifetime) : "",
         item.location || "",
         item.notes || ""
       ]));
@@ -7662,8 +7674,10 @@
       const numbersInvalid = !Number.isFinite(material.stock)
         || material.stock < 0
         || (!minimumMissing && (!Number.isFinite(Number(material.minimum)) || Number(material.minimum) < 0))
-        || !Number.isFinite(material.lifetime)
-        || material.lifetime < 1;
+        || (material.lifetime !== null
+          && material.lifetime !== undefined
+          && material.lifetime !== ""
+          && (!Number.isFinite(Number(material.lifetime)) || Number(material.lifetime) < 1));
       return {
         material,
         valid: !textMissing && !numbersInvalid,
@@ -8067,7 +8081,7 @@
               <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(merLabel(item.reason))}</td>
               <td style="padding:3px;border:1px solid #9da8b4;text-align:center"><img src="${entry.signature}" alt="Assinatura eletrônica" style="display:block;width:88px;height:34px;object-fit:contain;margin:auto"></td>
               <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(entry.responsible || "Não informado")}</td>
-              <td style="padding:5px;border:1px solid #9da8b4">${formatDate(expiry)}</td>
+              <td style="padding:5px;border:1px solid #9da8b4">${expiry ? formatDate(expiry) : "Não aplicável"}</td>
             </tr>
           `;
         });
@@ -8338,7 +8352,9 @@
         lotValidity: document.getElementById("materialLotValidity").value,
         stock: stockValue === "" ? 0 : Number(stockValue),
         minimum: minimumValue === "" ? null : Number(minimumValue),
-        lifetime: Number(document.getElementById("materialLifetime").value),
+        lifetime: document.getElementById("materialLifetime").value.trim() === ""
+          ? null
+          : Number(document.getElementById("materialLifetime").value),
         location: document.getElementById("materialLocation").value.trim(),
         notes: document.getElementById("materialNotes").value.trim()
       };
@@ -8652,9 +8668,8 @@
         return false;
       }
       const already = withdrawalSelection.filter(item => item.id === id).reduce((sum, item) => sum + item.qty, 0);
-      if (qty + already > material.stock) {
-        showToast(`Saldo insuficiente. Disponível: ${material.stock} unidades.`, true);
-        return false;
+      if (qty + already > Number(material.stock || 0)) {
+        showToast(`Retirada acima do saldo. Disponível: ${Number(material.stock || 0)} un. O saldo ficará negativo.`);
       }
       withdrawalSelection.push({
         id: material.id,
