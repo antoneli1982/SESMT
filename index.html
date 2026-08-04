@@ -72,6 +72,9 @@
       --success: #00a86b;
       --shadow: 0 14px 40px rgba(0, 15, 42, .12);
       --radius: 20px;
+      --table-bg: #ffffff;
+      --table-head-bg: #f6f8fa;
+      --table-hover-bg: #fbfcfd;
     }
 
     html.darkTheme {
@@ -90,6 +93,9 @@
       --warning: #ffc14a;
       --success: #42e6a3;
       --shadow: 0 15px 42px rgba(0, 0, 0, .3);
+      --table-bg: #0b1d38;
+      --table-head-bg: #101d2d;
+      --table-hover-bg: #182a40;
     }
 
     * {
@@ -1304,6 +1310,34 @@
 
     .materialsCatalogTable {
       min-width: 1480px;
+    }
+
+    .materialsCatalogTable th:last-child,
+    .materialsCatalogTable td:last-child {
+      position: sticky;
+      right: 0;
+      z-index: 2;
+      width: 142px;
+      min-width: 142px;
+      background: var(--table-bg);
+      box-shadow: -10px 0 14px -10px rgba(0, 15, 42, .35);
+    }
+
+    .materialsCatalogTable th:last-child {
+      z-index: 3;
+      background: var(--table-head-bg);
+    }
+
+    .materialsCatalogTable tr:hover td:last-child {
+      background: var(--table-hover-bg);
+    }
+
+    .materialsCatalogTable td[colspan] {
+      position: static;
+      width: auto;
+      min-width: 0;
+      box-shadow: none;
+      background: transparent;
     }
 
     .materialNotesCell {
@@ -6000,9 +6034,9 @@
             <td class="materialNotesCell">${escapeHtml(material.notes || "Sem observações")}</td>
             <td><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
             <td><div class="actionsCell">
-              <button class="miniButton" type="button" title="Editar" onclick="editMaterial(${material.id})">✎</button>
-              <button class="miniButton" type="button" title="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
-              <button class="miniButton" type="button" title="Excluir" onclick="deleteMaterial(${material.id})">×</button>
+              <button class="miniButton" type="button" title="Editar material" aria-label="Editar material" onclick="editMaterial(${material.id})">✎</button>
+              <button class="miniButton" type="button" title="Entrada de estoque" aria-label="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
+              <button class="miniButton" type="button" title="Excluir material" aria-label="Excluir material" onclick="deleteMaterial(${material.id})">×</button>
             </div></td>
           </tr>
         `;
