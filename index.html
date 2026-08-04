@@ -3755,13 +3755,14 @@
                 <div class="field">
                   <label for="employeeLookupType">Localizar colaborador por</label>
                   <select class="select" id="employeeLookupType" aria-label="Escolher localização por nome ou chapa">
+                    <option value="both">Nome e chapa</option>
                     <option value="name">Nome</option>
                     <option value="vwId">Chapa</option>
                   </select>
                 </div>
                 <div class="field">
                   <label for="employeeLookup">Colaborador <span class="required">*</span></label>
-                  <input class="input" id="employeeLookup" list="employeeLookupOptions" required autocomplete="off" placeholder="Digite ou selecione o nome">
+                  <input class="input" id="employeeLookup" list="employeeLookupOptions" required autocomplete="off" placeholder="Digite o nome ou a chapa Volkswagen">
                   <datalist id="employeeLookupOptions"></datalist>
                 </div>
                 <div class="field">
@@ -4583,6 +4584,7 @@
     let cloudUnsubscribe = null;
     let cloudWriteQueue = Promise.resolve();
     let cloudStatusElement = null;
+    let cloudPersistenceRequested = false;
     const hadLocalStateAtStartup = Boolean(localStorage.getItem(STORAGE_KEY));
 
     function createDemonstrationData() {
@@ -5226,12 +5228,20 @@
       scheduleCloudSave();
     }
 
-    function setCloudStatus(label, mode = "waiting") {
+    let cloudStatusDetail = "";
+
+    function setCloudStatus(label, mode = "waiting", detail = "") {
+      cloudStatusDetail = detail || "";
       if (!cloudStatusElement) {
         cloudStatusElement = document.createElement("div");
         cloudStatusElement.id = "cloudSyncStatus";
         cloudStatusElement.setAttribute("role", "status");
-        cloudStatusElement.style.cssText = "display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;border:1px solid rgba(15,67,124,.18);background:#eef5ff;color:#174a84";
+        cloudStatusElement.setAttribute("tabindex", "0");
+        cloudStatusElement.style.cssText = "display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;border:1px solid rgba(15,67,124,.18);background:#eef5ff;color:#174a84;cursor:pointer";
+        cloudStatusElement.addEventListener("click", () => {
+          if (cloudStatusDetail) showToast(cloudStatusDetail, true);
+          initializeCloudSync();
+        });
         const actions = document.querySelector(".topActions");
         if (actions) actions.prepend(cloudStatusElement);
       }
@@ -5246,7 +5256,7 @@
       cloudStatusElement.style.color = palette[1];
       cloudStatusElement.style.borderColor = palette[2];
       cloudStatusElement.textContent = label;
-      cloudStatusElement.title = label;
+      cloudStatusElement.title = detail ? `${label} — ${detail} (toque para tentar novamente)` : `${label} (toque para sincronizar novamente)`;
     }
 
     function splitCloudState(serializedState) {
@@ -5357,21 +5367,41 @@
           .then(writeCloudState)
           .catch(error => {
             console.error("Falha na sincronização", error);
-            setCloudStatus("Sem sincronização", "error");
+            setCloudStatus("Sem sincronização", "error", describeCloudError(error));
           });
       }, CLOUD_SAVE_DELAY);
     }
 
+    function describeCloudError(error) {
+      const code = String(error?.code || "");
+      const message = String(error?.message || error || "Erro desconhecido");
+      if (code.includes("permission-denied")) {
+        return "Permissão negada pelo Firestore. As regras de segurança do projeto precisam liberar leitura e escrita nas coleções do sistema.";
+      }
+      if (code.includes("unavailable") || code.includes("failed-precondition")) {
+        return "O tablet não conseguiu falar com o Firestore. Verifique a rede e se firestore.googleapis.com está liberado.";
+      }
+      return `${code ? code + ": " : ""}${message}`;
+    }
+
     async function initializeCloudSync() {
+      if (cloudUnsubscribe) {
+        cloudUnsubscribe();
+        cloudUnsubscribe = null;
+      }
       setCloudStatus("Conectando ao Firebase", "waiting");
       if (!window.firebase?.firestore) {
-        setCloudStatus("Firebase indisponível", "error");
+        setCloudStatus("Firebase indisponível", "error", "Os scripts do Firebase não carregaram. Verifique a conexão e se a rede do tablet libera gstatic.com e firestore.googleapis.com.");
         return;
       }
       try {
         if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
         cloudDatabase = firebase.firestore();
         cloudDatabase.settings({ ignoreUndefinedProperties: true });
+        if (!cloudPersistenceRequested) {
+          cloudPersistenceRequested = true;
+          cloudDatabase.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+        }
         const metaReference = cloudDatabase.collection(CLOUD_META_COLLECTION).doc(CLOUD_META_DOCUMENT);
         const firstSnapshot = await metaReference.get();
         cloudReady = true;
@@ -5387,15 +5417,15 @@
           if (!snapshot.exists) return;
           applyCloudState(snapshot.data()).catch(error => {
             console.error("Falha ao receber atualização", error);
-            setCloudStatus("Falha ao atualizar", "error");
+            setCloudStatus("Falha ao atualizar", "error", describeCloudError(error));
           });
         }, error => {
           console.error("Falha na conexão em tempo real", error);
-          setCloudStatus("Sem conexão", "error");
+          setCloudStatus("Sem conexão", "error", describeCloudError(error));
         });
       } catch (error) {
         console.error("Falha ao iniciar o Firebase", error);
-        setCloudStatus("Firebase não conectado", "error");
+        setCloudStatus("Firebase não conectado", "error", describeCloudError(error));
       }
     }
 
@@ -6238,19 +6268,36 @@
           const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
           return admissionDifference || Number(b.id || 0) - Number(a.id || 0);
         });
-      const lookupType = document.getElementById("employeeLookupType")?.value || "name";
+      const lookupType = document.getElementById("employeeLookupType")?.value || "both";
       const lookup = document.getElementById("employeeLookup");
       const options = document.getElementById("employeeLookupOptions");
       if (!lookup || !options) return;
-      lookup.placeholder = lookupType === "vwId" ? "Digite ou selecione a chapa" : "Digite ou selecione o nome";
+      lookup.placeholder = lookupType === "vwId"
+        ? "Digite ou selecione a chapa"
+        : lookupType === "name"
+          ? "Digite ou selecione o nome"
+          : "Digite o nome ou a chapa Volkswagen";
       options.innerHTML = collaborators.map(item => {
-        const value = lookupType === "vwId" ? item.vwId : item.name;
+        const value = lookupType === "vwId"
+          ? item.vwId
+          : lookupType === "name"
+            ? item.name
+            : collaboratorLookupLabel(item);
         if (!value) return "";
         const detail = lookupType === "vwId"
           ? `${item.name || "Nome não informado"} · SESÉ ${item.companyId || "Não informada"}`
-          : `Chapa ${item.vwId || "Não informada"} · SESÉ ${item.companyId || "Não informada"}`;
+          : lookupType === "name"
+            ? `Chapa ${item.vwId || "Não informada"} · SESÉ ${item.companyId || "Não informada"}`
+            : `SESÉ ${item.companyId || "Não informada"} · ${item.role || "Função não informada"}`;
         return `<option value="${escapeHtml(value)}">${escapeHtml(detail)}</option>`;
       }).join("");
+    }
+
+    function collaboratorLookupLabel(item) {
+      const name = String(item?.name || "").trim();
+      const vwId = String(item?.vwId || "").trim();
+      if (name && vwId) return `${name} · Chapa ${vwId}`;
+      return name || vwId || "";
     }
 
     async function renderWithdrawalCollaboratorPhoto(collaborator = null) {
@@ -6305,13 +6352,23 @@
     }
 
     function fillWithdrawalFromCollaborator(value) {
-      const normalized = normalizeColumnName(value);
+      const raw = String(value || "").trim();
+      const normalized = normalizeColumnName(raw);
+      const parts = raw.split("·").map(part => normalizeColumnName(part.replace(/^\s*chapa\s*/i, "")));
+      const matchesPart = candidate => {
+        const target = normalizeColumnName(candidate);
+        return Boolean(target) && parts.includes(target);
+      };
       const collaborator = (state.collaborators || [])
         .filter(item => item.status !== "Demitido")
         .filter(item => {
-          return normalizeColumnName(item.name) === normalized
+          return normalizeColumnName(collaboratorLookupLabel(item)) === normalized
+            || normalizeColumnName(item.name) === normalized
             || normalizeColumnName(item.companyId) === normalized
-            || normalizeColumnName(item.vwId) === normalized;
+            || normalizeColumnName(item.vwId) === normalized
+            || matchesPart(item.name)
+            || matchesPart(item.vwId)
+            || matchesPart(item.companyId);
         })
         .sort((a, b) => {
           const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
@@ -6322,9 +6379,12 @@
         return;
       }
       document.getElementById("employeeName").value = collaborator.name || "";
-      document.getElementById("employeeLookup").value = document.getElementById("employeeLookupType").value === "vwId"
+      const activeLookupType = document.getElementById("employeeLookupType").value;
+      document.getElementById("employeeLookup").value = activeLookupType === "vwId"
         ? collaborator.vwId || ""
-        : collaborator.name || "";
+        : activeLookupType === "name"
+          ? collaborator.name || ""
+          : collaboratorLookupLabel(collaborator);
       document.getElementById("employeeVwId").value = collaborator.vwId || "";
       document.getElementById("employeeCompanyId").value = collaborator.companyId || "";
       document.getElementById("employeeCategory").value = collaborator.role || "";
@@ -6532,11 +6592,28 @@
     function populateWithdrawalMaterials() {
       const select = document.getElementById("withdrawalMaterial");
       const current = select.value;
-      const available = state.materials.filter(material => material.stock > 0 && notExpired(material.caValidity));
-      select.innerHTML = `<option value="">Selecione um material</option>` + available.map(material => `
-        <option value="${material.id}">${escapeHtml(materialLabel(material))} · CA ${escapeHtml(material.ca || "Não informado")} · ${material.stock} un.</option>
-      `).join("");
-      if (available.some(material => String(material.id) === current)) select.value = current;
+      const materials = (Array.isArray(state.materials) ? state.materials : [])
+        .slice()
+        .sort((a, b) => String(a.description || "").localeCompare(String(b.description || ""), "pt-BR"));
+      if (!materials.length) {
+        select.innerHTML = `<option value="">Nenhum EPI cadastrado</option>`;
+        updateWithdrawalMaterialInfo();
+        return;
+      }
+      const blockReason = material => {
+        if (!notExpired(material.caValidity)) return "CA vencido";
+        if (Number(material.stock || 0) <= 0) return "sem saldo";
+        return "";
+      };
+      select.innerHTML = `<option value="">Selecione um material</option>` + materials.map(material => {
+        const reason = blockReason(material);
+        const caText = material.ca ? `CA ${escapeHtml(material.ca)}` : "sem CA";
+        const label = `${escapeHtml(materialLabel(material))} · ${caText} · ${Number(material.stock || 0)} un.`;
+        return `<option value="${material.id}"${reason ? " disabled" : ""}>${label}${reason ? ` — ${reason}` : ""}</option>`;
+      }).join("");
+      if (materials.some(material => String(material.id) === current && !blockReason(material))) {
+        select.value = current;
+      }
       updateWithdrawalMaterialInfo();
     }
 
@@ -8533,12 +8610,23 @@
     document.getElementById("employeeLookup").addEventListener("input", event => {
       const typedValue = normalizeColumnName(event.target.value);
       const lookupType = document.getElementById("employeeLookupType").value;
+      const candidateOf = item => lookupType === "vwId"
+        ? item.vwId
+        : lookupType === "name"
+          ? item.name
+          : collaboratorLookupLabel(item);
       const selectedCollaborator = (state.collaborators || []).find(item =>
         item.status !== "Demitido"
-        && normalizeColumnName(lookupType === "vwId" ? item.vwId : item.name) === typedValue
-      );
+        && normalizeColumnName(candidateOf(item)) === typedValue
+      ) || (lookupType === "both"
+        ? (state.collaborators || []).find(item =>
+            item.status !== "Demitido"
+            && typedValue
+            && (normalizeColumnName(item.vwId) === typedValue || normalizeColumnName(item.name) === typedValue)
+          )
+        : null);
       if (selectedCollaborator) {
-        fillWithdrawalFromCollaborator(lookupType === "vwId" ? selectedCollaborator.vwId : selectedCollaborator.name);
+        fillWithdrawalFromCollaborator(candidateOf(selectedCollaborator));
         return;
       }
       document.getElementById("employeeName").value = "";
