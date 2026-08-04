@@ -4282,20 +4282,20 @@
               <input class="input" id="materialManufacturer" required>
             </div>
             <div class="field">
-              <label for="materialCa">Número do CA <span class="required">*</span></label>
-              <input class="input" id="materialCa" required inputmode="numeric">
+              <label for="materialCa">Número do CA</label>
+              <input class="input" id="materialCa" inputmode="numeric" placeholder="Opcional">
             </div>
             <div class="field">
-              <label for="materialCaValidity">Validade do CA <span class="required">*</span></label>
-              <input class="input" id="materialCaValidity" type="date" required>
+              <label for="materialCaValidity">Validade do CA</label>
+              <input class="input" id="materialCaValidity" type="date">
             </div>
             <div class="field">
-              <label for="materialLot">Lote <span class="required">*</span></label>
-              <input class="input" id="materialLot" required>
+              <label for="materialLot">Lote</label>
+              <input class="input" id="materialLot" placeholder="Opcional">
             </div>
             <div class="field">
-              <label for="materialLotValidity">Validade do lote <span class="required">*</span></label>
-              <input class="input" id="materialLotValidity" type="date" required>
+              <label for="materialLotValidity">Validade do lote</label>
+              <input class="input" id="materialLotValidity" type="date">
             </div>
             <div class="field">
               <label for="materialStock">Saldo inicial</label>
@@ -5435,6 +5435,12 @@
       return Math.ceil((end - now) / 86400000);
     }
 
+    function notExpired(dateString) {
+      if (!dateString) return true;
+      const days = daysUntil(dateString);
+      return !Number.isFinite(days) || days >= 0;
+    }
+
     function calculateNextChange(lifetime, baseDate = new Date()) {
       const date = new Date(baseDate);
       date.setHours(12, 0, 0, 0);
@@ -5655,8 +5661,8 @@
       document.getElementById("statWithdrawals").textContent = monthly;
       document.getElementById("statConsumption").textContent = monthlyConsumption.toLocaleString("pt-BR");
       const compliantMaterials = state.materials.filter(material => {
-        return daysUntil(material.caValidity) >= 0
-          && daysUntil(material.lotValidity) >= 0
+        return notExpired(material.caValidity)
+          && notExpired(material.lotValidity)
           && !isCriticalStock(material);
       }).length;
       const compliance = state.materials.length
@@ -5943,9 +5949,9 @@
         return `
           <tr>
             <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
-            <td><strong>${escapeHtml(material.ca)}</strong></td>
+            <td><strong>${escapeHtml(material.ca || "Não informado")}</strong></td>
             <td>${formatDate(material.caValidity)}</td>
-            <td>${escapeHtml(material.lot)}</td>
+            <td>${escapeHtml(material.lot || "Não informado")}</td>
             <td>${formatDate(material.lotValidity)}</td>
             <td><strong>${material.stock}</strong> un.</td>
             <td>${hasConfiguredMinimum(material) ? `<strong>${Number(material.minimum)}</strong> un.` : "Não informado"}</td>
@@ -6526,9 +6532,9 @@
     function populateWithdrawalMaterials() {
       const select = document.getElementById("withdrawalMaterial");
       const current = select.value;
-      const available = state.materials.filter(material => material.stock > 0 && daysUntil(material.caValidity) >= 0);
+      const available = state.materials.filter(material => material.stock > 0 && notExpired(material.caValidity));
       select.innerHTML = `<option value="">Selecione um material</option>` + available.map(material => `
-        <option value="${material.id}">${escapeHtml(materialLabel(material))} · CA ${escapeHtml(material.ca)} · ${material.stock} un.</option>
+        <option value="${material.id}">${escapeHtml(materialLabel(material))} · CA ${escapeHtml(material.ca || "Não informado")} · ${material.stock} un.</option>
       `).join("");
       if (available.some(material => String(material.id) === current)) select.value = current;
       updateWithdrawalMaterialInfo();
@@ -6537,7 +6543,7 @@
     function updateWithdrawalMaterialInfo() {
       const materialId = Number(document.getElementById("withdrawalMaterial").value);
       const material = state.materials.find(item => item.id === materialId);
-      document.getElementById("withdrawalCa").textContent = material ? material.ca : "Selecione um EPI";
+      document.getElementById("withdrawalCa").textContent = material ? (material.ca || "Não informado") : "Selecione um EPI";
       document.getElementById("withdrawalLifetime").textContent = material ? `${material.lifetime} dias` : "Selecione um EPI";
       document.getElementById("withdrawalNextChange").textContent = material
         ? formatDate(calculateNextChange(material.lifetime))
@@ -6614,7 +6620,7 @@
       container.innerHTML = withdrawalSelection.length ? withdrawalSelection.map((entry, index) => `
         <div class="activityItem">
           <div class="activityIcon">${String(index + 1).padStart(2, "0")}</div>
-          <div style="flex:1"><strong>${escapeHtml(materialLabel(entry))}</strong><p>CA ${escapeHtml(entry.ca)} · Lote ${escapeHtml(entry.lot)} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
+          <div style="flex:1"><strong>${escapeHtml(materialLabel(entry))}</strong><p>CA ${escapeHtml(entry.ca || "Não informado")} · Lote ${escapeHtml(entry.lot || "Não informado")} · Próxima troca ${formatDate(entry.nextChange)}</p></div>
           <strong>${entry.qty} un.</strong>
           <button class="miniButton" type="button" onclick="removeWithdrawalItem(${index})">×</button>
         </div>
@@ -6622,7 +6628,7 @@
       document.getElementById("summaryItems").textContent = withdrawalSelection.reduce((sum, item) => sum + item.qty, 0);
       if (withdrawalSelection.length) {
         document.getElementById("summaryCa").textContent = withdrawalSelection
-          .map(item => item.ca)
+          .map(item => item.ca || "Não informado")
           .filter((ca, index, list) => list.indexOf(ca) === index)
           .join(", ");
         const nextChange = withdrawalSelection
@@ -6666,8 +6672,8 @@
       document.getElementById("finishInventory").disabled = !inventoryActive;
       document.getElementById("inventoryTable").innerHTML = state.materials.map(material => `
         <tr>
-          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.lot)}</small></div></div></td>
-          <td><span class="caValue">CA ${escapeHtml(material.ca)}</span></td>
+          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · Lote ${escapeHtml(material.lot || "Não informado")}</small></div></div></td>
+          <td><span class="caValue">CA ${escapeHtml(material.ca || "Não informado")}</span></td>
           <td>${escapeHtml(material.location || "Não informada")}</td>
           <td><strong>${material.stock}</strong></td>
           <td><input class="input inventoryCount" data-id="${material.id}" type="number" min="0" ${inventoryActive ? "" : "disabled"} placeholder="Contar"></td>
@@ -7571,7 +7577,7 @@
       if (!Number.isFinite(material.minimum) && importedText(importedValue(row, "minimum")) === "") {
         material.minimum = null;
       }
-      const textFields = ["code", "description", "category", "ca", "caValidity", "lot", "lotValidity"];
+      const textFields = ["code", "description", "category"];
       const textMissing = textFields.some(field => importedText(material[field]) === "");
       const minimumMissing = material.minimum === null
         || material.minimum === undefined
@@ -8821,11 +8827,19 @@
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("serviceworker.js").catch(() => {
-          console.warn("Não foi possível ativar o modo de aplicativo.");
-        });
+        navigator.serviceWorker.register("serviceworker.js")
+          .then(registration => registration.update())
+          .catch(() => {
+            console.warn("Não foi possível ativar o modo de aplicativo.");
+          });
       });
     }
+
+    // Garantia: CA, validade do CA, lote e validade do lote são opcionais.
+    ["materialCa", "materialCaValidity", "materialLot", "materialLotValidity"].forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.removeAttribute("required");
+    });
 
     document.getElementById("currentDate").textContent = new Intl.DateTimeFormat("pt-BR", {
       weekday: "long",
