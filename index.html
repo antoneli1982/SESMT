@@ -4620,13 +4620,13 @@
             <div class="field">
               <label for="materialCategory">Categoria <span class="required">*</span></label>
               <select class="select" id="materialCategory" required>
-                <option value="">Selecione</option>
-                <option>Proteção da cabeça</option>
-                <option>Proteção auditiva</option>
-                <option>Proteção das mãos</option>
-                <option>Proteção dos pés</option>
-                <option>Proteção respiratória</option>
-                <option>Proteção visual</option>
+                <option value="">SELECIONE</option>
+                <option>PROTEÇÃO DA CABEÇA</option>
+                <option>PROTEÇÃO AUDITIVA</option>
+                <option>PROTEÇÃO DAS MÃOS</option>
+                <option>PROTEÇÃO DOS PÉS</option>
+                <option>PROTEÇÃO RESPIRATÓRIA</option>
+                <option>PROTEÇÃO VISUAL</option>
               </select>
             </div>
             <div class="field">
@@ -5567,6 +5567,8 @@
         if (!Array.isArray(loaded.materials)) loaded.materials = [];
         if (!Array.isArray(loaded.history)) loaded.history = [];
         if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
+        if (!loaded.settings || typeof loaded.settings !== "object") loaded.settings = createEmptyState().settings;
+        normalizeOperationalUppercase(loaded);
         loaded.materials = loaded.materials.map(material => ({
           ...material,
           description: upperText(material.description || ""),
@@ -5601,11 +5603,12 @@
         );
         return loaded;
       } catch {
-        return cloneSeed();
+        return normalizeOperationalUppercase(cloneSeed());
       }
     }
 
     function saveState() {
+      normalizeOperationalUppercase(state);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       scheduleCloudSave();
     }
@@ -5672,6 +5675,7 @@
       if (!Array.isArray(loaded.history)) loaded.history = [];
       if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
       if (!loaded.settings || typeof loaded.settings !== "object") loaded.settings = createEmptyState().settings;
+      normalizeOperationalUppercase(loaded);
       loaded.materials = loaded.materials.map(material => ({
         ...material,
         description: upperText(material.description || ""),
@@ -5920,6 +5924,59 @@
 
     function upperText(value) {
       return String(value ?? "").toLocaleUpperCase("pt-BR");
+    }
+
+    function uppercaseRecordFields(record, fields) {
+      if (!record || typeof record !== "object") return record;
+      const normalized = { ...record };
+      fields.forEach(field => {
+        if (typeof normalized[field] === "string") normalized[field] = upperText(normalized[field]);
+      });
+      return normalized;
+    }
+
+    function normalizeOperationalUppercase(loaded) {
+      if (!loaded || typeof loaded !== "object") return loaded;
+      loaded.settings = uppercaseRecordFields(loaded.settings || {}, ["unit", "address", "responsible"]);
+      loaded.materials = (loaded.materials || []).map(material => uppercaseRecordFields(material, [
+        "code", "description", "size", "manufacturer", "category", "ca", "lot", "location", "notes"
+      ]));
+      const collaboratorFields = [
+        "name", "vwId", "companyId", "role", "shift", "versatility", "workstation", "manager",
+        "pcd", "committee", "operationNotes", "hrNotes"
+      ];
+      loaded.collaborators = (loaded.collaborators || []).map(collaborator => uppercaseRecordFields(collaborator, collaboratorFields));
+      loaded.inactiveCollaborators = (loaded.inactiveCollaborators || []).map(collaborator => uppercaseRecordFields(collaborator, collaboratorFields));
+      loaded.history = (loaded.history || []).map(entry => uppercaseRecordFields(entry, [
+        "material", "employee", "employeeVwId", "employeeCompanyId", "employeeCategory", "responsible"
+      ]));
+      loaded.withdrawals = (loaded.withdrawals || []).map(withdrawal => {
+        const normalized = uppercaseRecordFields(withdrawal, [
+          "employee", "employeeVwId", "employeeCompanyId", "employeeId", "employeeCategory", "area", "shift", "responsible"
+        ]);
+        normalized.items = (withdrawal.items || []).map(item => uppercaseRecordFields(item, [
+          "code", "description", "size", "manufacturer", "category", "ca", "lot"
+        ]));
+        return normalized;
+      });
+      return loaded;
+    }
+
+    function forceUppercaseEditableField(event) {
+      if (event.isComposing) return;
+      const field = event.target;
+      const isTextarea = field instanceof HTMLTextAreaElement;
+      const isTextInput = field instanceof HTMLInputElement
+        && ["text", "search", "tel"].includes(String(field.type || "text").toLowerCase());
+      if ((!isTextarea && !isTextInput) || field.dataset.preserveCase === "true") return;
+      const uppercaseValue = upperText(field.value);
+      if (field.value === uppercaseValue) return;
+      const selectionStart = field.selectionStart;
+      const selectionEnd = field.selectionEnd;
+      field.value = uppercaseValue;
+      if (selectionStart !== null && selectionEnd !== null) {
+        try { field.setSelectionRange(selectionStart, selectionEnd); } catch (error) {}
+      }
     }
 
     function escapeHtml(value) {
@@ -8389,6 +8446,10 @@
       return String(value ?? "").trim();
     }
 
+    function importedUpperText(value) {
+      return upperText(importedText(value));
+    }
+
     function importedNumber(value) {
       if (typeof value === "number") return value;
       const normalized = String(value ?? "").trim().replace(/\s/g, "").replace(",", ".");
@@ -8417,7 +8478,7 @@
 
     function prepareImportedMaterial(sourceRow, existing, rowNumber, generatedCode = "") {
       const row = normalizedRow(sourceRow);
-      const valueOrExisting = (field, parser = importedText) => {
+      const valueOrExisting = (field, parser = importedUpperText) => {
         const value = importedValue(row, field);
         if (importedText(value) === "" && existing) return existing[field];
         return parser(value);
@@ -8569,7 +8630,7 @@
       const row = normalizedRow(sourceRow);
       const textOrExisting = field => {
         const value = importedText(collaboratorImportedValue(row, field));
-        return value || (existing ? existing[field] || "" : "");
+        return upperText(value || (existing ? existing[field] || "" : ""));
       };
       const dateOrExisting = field => {
         const source = collaboratorImportedValue(row, field);
@@ -8993,6 +9054,9 @@
       document.getElementById("mobileOverlay").classList.remove("open");
     }
 
+    document.addEventListener("input", forceUppercaseEditableField, true);
+    document.addEventListener("change", forceUppercaseEditableField, true);
+
     document.querySelectorAll("[data-page], [data-page-jump]").forEach(button => {
       button.addEventListener("click", () => navigate(button.dataset.page || button.dataset.pageJump));
     });
@@ -9121,22 +9185,22 @@
         id: editingMaterialId || Date.now(),
         description: upperText(document.getElementById("materialDescription").value.trim()),
         code: editingMaterialId
-          ? document.getElementById("materialCode").value.trim()
+          ? upperText(document.getElementById("materialCode").value.trim())
           : nextMaterialCode(),
-        size: document.getElementById("materialSize").value.trim(),
-        manufacturer: document.getElementById("materialManufacturer").value.trim(),
-        category: document.getElementById("materialCategory").value,
-        ca: document.getElementById("materialCa").value.trim(),
+        size: upperText(document.getElementById("materialSize").value.trim()),
+        manufacturer: upperText(document.getElementById("materialManufacturer").value.trim()),
+        category: upperText(document.getElementById("materialCategory").value),
+        ca: upperText(document.getElementById("materialCa").value.trim()),
         caValidity: document.getElementById("materialCaValidity").value,
-        lot: document.getElementById("materialLot").value.trim(),
+        lot: upperText(document.getElementById("materialLot").value.trim()),
         lotValidity: document.getElementById("materialLotValidity").value,
         stock: stockValue === "" ? 0 : Number(stockValue),
         minimum: minimumValue === "" ? null : Number(minimumValue),
         lifetime: document.getElementById("materialLifetime").value.trim() === ""
           ? null
           : Number(document.getElementById("materialLifetime").value),
-        location: document.getElementById("materialLocation").value.trim(),
-        notes: document.getElementById("materialNotes").value.trim()
+        location: upperText(document.getElementById("materialLocation").value.trim()),
+        notes: upperText(document.getElementById("materialNotes").value.trim())
       };
       if (editingMaterialId) {
         const index = state.materials.findIndex(item => item.id === editingMaterialId);
@@ -9165,23 +9229,23 @@
         : null;
       const collaborator = {
         id: collaboratorId,
-        name: document.getElementById("collaboratorName").value.trim(),
-        vwId: document.getElementById("collaboratorVwId").value.trim(),
-        companyId: document.getElementById("collaboratorCompanyId").value.trim(),
+        name: upperText(document.getElementById("collaboratorName").value.trim()),
+        vwId: upperText(document.getElementById("collaboratorVwId").value.trim()),
+        companyId: upperText(document.getElementById("collaboratorCompanyId").value.trim()),
         admission: document.getElementById("collaboratorAdmission").value,
         probation45: document.getElementById("collaboratorProbation45").value,
         probation90: document.getElementById("collaboratorProbation90").value,
-        role: document.getElementById("collaboratorRole").value.trim(),
-        shift: document.getElementById("collaboratorShift").value.trim(),
-        versatility: document.getElementById("collaboratorVersatility").value.trim(),
-        workstation: document.getElementById("collaboratorWorkstation").value.trim(),
-        manager: document.getElementById("collaboratorManager").value.trim(),
+        role: upperText(document.getElementById("collaboratorRole").value.trim()),
+        shift: upperText(document.getElementById("collaboratorShift").value.trim()),
+        versatility: upperText(document.getElementById("collaboratorVersatility").value.trim()),
+        workstation: upperText(document.getElementById("collaboratorWorkstation").value.trim()),
+        manager: upperText(document.getElementById("collaboratorManager").value.trim()),
         returnDate: document.getElementById("collaboratorReturnDate").value,
-        pcd: document.getElementById("collaboratorPcd").value.trim(),
-        committee: document.getElementById("collaboratorCommittee").value.trim(),
+        pcd: upperText(document.getElementById("collaboratorPcd").value.trim()),
+        committee: upperText(document.getElementById("collaboratorCommittee").value.trim()),
         dismissalDate: document.getElementById("collaboratorDismissalDate").value,
-        operationNotes: document.getElementById("collaboratorOperationNotes").value.trim(),
-        hrNotes: document.getElementById("collaboratorHrNotes").value.trim(),
+        operationNotes: upperText(document.getElementById("collaboratorOperationNotes").value.trim()),
+        hrNotes: upperText(document.getElementById("collaboratorHrNotes").value.trim()),
         photoKey: existingCollaborator?.photoKey || "",
         status: document.getElementById("toggleCollaboratorDismissed").getAttribute("aria-pressed") === "true"
           ? "Demitido"
@@ -9657,9 +9721,9 @@
     }));
     document.getElementById("unitForm").addEventListener("submit", event => {
       event.preventDefault();
-      state.settings.unit = document.getElementById("unitName").value.trim();
-      state.settings.address = document.getElementById("unitAddress").value.trim();
-      state.settings.responsible = document.getElementById("unitResponsible").value.trim();
+      state.settings.unit = upperText(document.getElementById("unitName").value.trim());
+      state.settings.address = upperText(document.getElementById("unitAddress").value.trim());
+      state.settings.responsible = upperText(document.getElementById("unitResponsible").value.trim());
       saveState();
       document.getElementById("unitModal").classList.remove("open");
       renderAll();
