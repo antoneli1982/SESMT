@@ -5916,6 +5916,32 @@
       return parts.join(" · ");
     }
 
+    function findMaterialDuplicate(candidate, ignoredId = null) {
+      const identityFields = ["description", "size", "manufacturer", "ca"];
+      return (state.materials || []).find(material => {
+        if (String(material.id) === String(ignoredId)) return false;
+        return identityFields.every(field => {
+          return normalizeColumnName(material[field]) === normalizeColumnName(candidate[field]);
+        });
+      }) || null;
+    }
+
+    function showMaterialDuplicate(duplicate) {
+      const details = [
+        `Código: ${duplicate.code || "NÃO INFORMADO"}`,
+        `Descrição: ${duplicate.description || "NÃO INFORMADA"}`,
+        `Tamanho: ${duplicate.size || "NÃO INFORMADO"}`,
+        `Fabricante: ${duplicate.manufacturer || "NÃO INFORMADO"}`,
+        `CA: ${duplicate.ca || "NÃO INFORMADO"}`,
+        `Saldo atual: ${Number(duplicate.stock || 0)} UN.`,
+        `Localização: ${duplicate.location || "NÃO INFORMADA"}`
+      ].join("\n");
+      alert(`DUPLICIDADE DE MATERIAL IDENTIFICADA\n\nEste material já está cadastrado:\n\n${details}\n\nO novo cadastro não foi salvo.`);
+      showToast(`Material duplicado. Utilize o cadastro ${duplicate.code || "existente"}.`, true);
+      document.getElementById("materialDescription").focus();
+      document.getElementById("materialDescription").select();
+    }
+
     function hasConfiguredMinimum(material) {
       return material?.minimum !== null
         && material?.minimum !== undefined
@@ -9305,6 +9331,11 @@
         location: upperText(document.getElementById("materialLocation").value.trim()),
         notes: upperText(document.getElementById("materialNotes").value.trim())
       };
+      const duplicate = findMaterialDuplicate(material, editingMaterialId);
+      if (duplicate) {
+        showMaterialDuplicate(duplicate);
+        return;
+      }
       if (editingMaterialId) {
         const index = state.materials.findIndex(item => item.id === editingMaterialId);
         state.materials[index] = material;
