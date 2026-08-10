@@ -3924,7 +3924,7 @@
           </div>
         </div>
         <div class="filters">
-          <input class="input" id="materialSearch" type="search" placeholder="Pesquisar por nome ou tamanho" aria-label="Pesquisar materiais por nome ou tamanho">
+          <input class="input" id="materialSearch" type="search" placeholder="Pesquisar por nome, tamanho ou fabricante" aria-label="Pesquisar materiais por nome, tamanho ou fabricante">
           <select class="select" id="categoryFilter" aria-label="Filtrar categoria">
             <option value="">Todas as categorias</option>
             <option>Proteção da cabeça</option>
@@ -4275,7 +4275,7 @@
             <button class="primaryButton" id="finishInventory" disabled>Finalizar inventário</button>
           </div>
           <div class="filters">
-            <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar nome do produto, código, CA ou local" aria-label="Pesquisar produto no inventário">
+            <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar produto, fabricante, código, CA ou local" aria-label="Pesquisar produto no inventário por nome, fabricante, código, CA ou local">
             <select class="select" id="inventoryCategoryFilter" aria-label="Filtrar categoria no inventário">
               <option value="">Todas as categorias</option>
               <option>Proteção da cabeça</option>
@@ -6421,7 +6421,7 @@
       const category = document.getElementById("categoryFilter").value;
       const filter = document.getElementById("stockFilter").value;
       const materials = state.materials.filter(material => {
-        const searchable = normalizeColumnName(`${material.description} ${material.size || ""}`);
+        const searchable = normalizeColumnName(`${material.description} ${material.size || ""} ${material.manufacturer || ""}`);
         const status = materialStatus(material);
         return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
           && (!category || material.category === category)
