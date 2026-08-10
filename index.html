@@ -1125,11 +1125,26 @@
       outline: none;
     }
 
+    .searchableFilterOption:disabled {
+      opacity: .62;
+      color: var(--muted);
+      background: #f5f7fa;
+      cursor: not-allowed;
+    }
+
     .searchableFilterEmpty {
       padding: 13px;
       color: var(--muted);
       font-size: 10px;
       text-align: center;
+    }
+
+    .withdrawalMaterialSearch .input {
+      padding-right: 44px;
+    }
+
+    .withdrawalMaterialSearch .searchableFilterClear {
+      right: 7px;
     }
 
     .alertFilters .filterClear,
@@ -1310,7 +1325,8 @@
 
     #materialDescription,
     #materialSearch,
-    #inventorySearch {
+    #inventorySearch,
+    #withdrawalMaterialSearch {
       text-transform: uppercase;
     }
 
@@ -4150,8 +4166,13 @@
               <h3 class="sectionTitle"><span>2</span> EPI entregue</h3>
               <div class="selectedEpi">
                 <div class="field">
-                  <label for="withdrawalMaterial">Material <span class="required">*</span></label>
-                  <select class="select" id="withdrawalMaterial"></select>
+                  <label for="withdrawalMaterialSearch">Material <span class="required">*</span></label>
+                  <div class="searchableFilter withdrawalMaterialSearch" id="withdrawalMaterialSearchBox">
+                    <input class="input" id="withdrawalMaterialSearch" type="search" placeholder="Digite a descrição do material" autocomplete="off" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="withdrawalMaterialSuggestions">
+                    <button class="searchableFilterClear" id="clearWithdrawalMaterialSearch" type="button" title="Limpar material" aria-label="Limpar material pesquisado" hidden>×</button>
+                    <div class="searchableFilterList" id="withdrawalMaterialSuggestions" role="listbox" aria-label="Materiais encontrados pela descrição" hidden></div>
+                    <input id="withdrawalMaterial" type="hidden">
+                  </div>
                 </div>
                 <div class="field">
                   <label for="withdrawalQty">Quantidade</label>
@@ -7043,31 +7064,111 @@
       showToast("Colaborador excluído. O histórico foi preservado.");
     };
 
+    let withdrawalMaterialSuggestionIndex = -1;
+
+    function withdrawalMaterialMatchesDescription(query) {
+      const terms = normalizeColumnName(query).split(/\s+/).filter(Boolean);
+      if (!terms.length) return [];
+      return (Array.isArray(state.materials) ? state.materials : [])
+        .filter(material => {
+          const description = normalizeColumnName(material.description);
+          return terms.every(term => description.includes(term));
+        })
+        .sort((a, b) => String(a.description || "").localeCompare(String(b.description || ""), "pt-BR"));
+    }
+
+    function closeWithdrawalMaterialSuggestions() {
+      const input = document.getElementById("withdrawalMaterialSearch");
+      const list = document.getElementById("withdrawalMaterialSuggestions");
+      withdrawalMaterialSuggestionIndex = -1;
+      list.hidden = true;
+      list.innerHTML = "";
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function renderWithdrawalMaterialSuggestions() {
+      const input = document.getElementById("withdrawalMaterialSearch");
+      const list = document.getElementById("withdrawalMaterialSuggestions");
+      const clearButton = document.getElementById("clearWithdrawalMaterialSearch");
+      const query = input.value.trim();
+      clearButton.hidden = !query;
+      withdrawalMaterialSuggestionIndex = -1;
+      input.removeAttribute("aria-activedescendant");
+      if (!query || document.activeElement !== input) {
+        closeWithdrawalMaterialSuggestions();
+        clearButton.hidden = !query;
+        return;
+      }
+
+      const matches = withdrawalMaterialMatchesDescription(query);
+      list.innerHTML = matches.length ? matches.map((material, index) => {
+        const caExpired = !notExpired(material.caValidity);
+        const status = caExpired
+          ? "CA VENCIDO"
+          : Number(material.stock || 0) <= 0
+            ? "SEM SALDO"
+            : `${Number(material.stock || 0)} UN. DISPONÍVEIS`;
+        return `
+          <button class="searchableFilterOption" id="withdrawalMaterialSuggestion${index}" type="button" role="option" data-material-id="${material.id}" aria-selected="false" ${caExpired ? "disabled" : ""}>
+            <strong>${escapeHtml(material.description || "MATERIAL SEM DESCRIÇÃO")}</strong>
+            <small>TAMANHO: ${escapeHtml(material.size || "NÃO INFORMADO")} · FABRICANTE: ${escapeHtml(material.manufacturer || "NÃO INFORMADO")}</small>
+            <small>CA: ${escapeHtml(material.ca || "NÃO INFORMADO")} · ${status}</small>
+          </button>
+        `;
+      }).join("") : `<div class="searchableFilterEmpty">NENHUM MATERIAL CORRESPONDE À DESCRIÇÃO.</div>`;
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+    }
+
+    function selectWithdrawalMaterial(materialId) {
+      const material = state.materials.find(item => String(item.id) === String(materialId));
+      if (!material || !notExpired(material.caValidity)) return;
+      document.getElementById("withdrawalMaterial").value = String(material.id);
+      document.getElementById("withdrawalMaterialSearch").value = material.description || "";
+      document.getElementById("clearWithdrawalMaterialSearch").hidden = false;
+      closeWithdrawalMaterialSuggestions();
+      updateWithdrawalMaterialInfo();
+      document.getElementById("withdrawalQty").focus();
+    }
+
+    function moveWithdrawalMaterialSuggestion(direction) {
+      const input = document.getElementById("withdrawalMaterialSearch");
+      const options = Array.from(document.querySelectorAll("#withdrawalMaterialSuggestions .searchableFilterOption:not(:disabled)"));
+      if (!options.length) return;
+      withdrawalMaterialSuggestionIndex = (withdrawalMaterialSuggestionIndex + direction + options.length) % options.length;
+      options.forEach((option, index) => {
+        const active = index === withdrawalMaterialSuggestionIndex;
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) {
+          option.scrollIntoView({ block: "nearest" });
+          input.setAttribute("aria-activedescendant", option.id);
+        }
+      });
+    }
+
     function populateWithdrawalMaterials() {
-      const select = document.getElementById("withdrawalMaterial");
-      const current = select.value;
+      const selectedField = document.getElementById("withdrawalMaterial");
+      const searchField = document.getElementById("withdrawalMaterialSearch");
+      const current = selectedField.value;
       const materials = (Array.isArray(state.materials) ? state.materials : [])
         .slice()
         .sort((a, b) => String(a.description || "").localeCompare(String(b.description || ""), "pt-BR"));
       if (!materials.length) {
-        select.innerHTML = `<option value="">Nenhum EPI cadastrado</option>`;
+        selectedField.value = "";
+        searchField.value = "";
+        searchField.placeholder = "NENHUM EPI CADASTRADO";
+        searchField.disabled = true;
+        closeWithdrawalMaterialSuggestions();
         updateWithdrawalMaterialInfo();
         return;
       }
-      const blockReason = material => {
-        if (!notExpired(material.caValidity)) return "CA vencido";
-        return "";
-      };
-      const stockNote = material => (Number(material.stock || 0) <= 0 ? " — sem saldo" : "");
-      select.innerHTML = `<option value="">Selecione um material</option>` + materials.map(material => {
-        const reason = blockReason(material);
-        const caText = material.ca ? `CA ${escapeHtml(material.ca)}` : "sem CA";
-        const label = `${escapeHtml(materialLabel(material))} · ${caText} · ${Number(material.stock || 0)} un.`;
-        return `<option value="${material.id}"${reason ? " disabled" : ""}>${label}${reason ? ` — ${reason}` : stockNote(material)}</option>`;
-      }).join("");
-      if (materials.some(material => String(material.id) === current && !blockReason(material))) {
-        select.value = current;
-      }
+      searchField.disabled = false;
+      searchField.placeholder = "DIGITE A DESCRIÇÃO DO MATERIAL";
+      const selectedMaterial = materials.find(material => String(material.id) === String(current) && notExpired(material.caValidity));
+      if (selectedMaterial) searchField.value = selectedMaterial.description || "";
+      else selectedField.value = "";
       updateWithdrawalMaterialInfo();
     }
 
@@ -7184,6 +7285,8 @@
       signatureStarted = false;
       document.getElementById("signatureBox").classList.remove("signed");
       document.getElementById("withdrawalForm").reset();
+      document.getElementById("clearWithdrawalMaterialSearch").hidden = true;
+      closeWithdrawalMaterialSuggestions();
       populateWithdrawalCollaborators();
       document.getElementById("withdrawalQty").value = 1;
       clearCanvas();
@@ -9492,7 +9595,61 @@
     });
     document.getElementById("employeeLookup").addEventListener("change", event => fillWithdrawalFromCollaborator(event.target.value));
 
-    document.getElementById("withdrawalMaterial").addEventListener("change", updateWithdrawalMaterialInfo);
+    const withdrawalMaterialSearch = document.getElementById("withdrawalMaterialSearch");
+    withdrawalMaterialSearch.addEventListener("input", () => {
+      document.getElementById("withdrawalMaterial").value = "";
+      updateWithdrawalMaterialInfo();
+      renderWithdrawalMaterialSuggestions();
+    });
+    withdrawalMaterialSearch.addEventListener("focus", renderWithdrawalMaterialSuggestions);
+    withdrawalMaterialSearch.addEventListener("keydown", event => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions();
+        moveWithdrawalMaterialSuggestion(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions();
+        moveWithdrawalMaterialSuggestion(-1);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        const options = document.querySelectorAll("#withdrawalMaterialSuggestions .searchableFilterOption:not(:disabled)");
+        const option = withdrawalMaterialSuggestionIndex >= 0
+          ? options[withdrawalMaterialSuggestionIndex]
+          : options.length === 1
+            ? options[0]
+            : null;
+        if (option) selectWithdrawalMaterial(option.dataset.materialId);
+      } else if (event.key === "Escape") {
+        closeWithdrawalMaterialSuggestions();
+      }
+    });
+    withdrawalMaterialSearch.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!document.getElementById("withdrawalMaterialSearchBox").contains(document.activeElement)) {
+          closeWithdrawalMaterialSuggestions();
+        }
+      }, 0);
+    });
+
+    document.getElementById("withdrawalMaterialSuggestions").addEventListener("pointerdown", event => {
+      const option = event.target.closest("[data-material-id]");
+      if (!option || option.disabled) return;
+      event.preventDefault();
+      selectWithdrawalMaterial(option.dataset.materialId);
+    });
+
+    document.getElementById("clearWithdrawalMaterialSearch").addEventListener("click", () => {
+      document.getElementById("withdrawalMaterial").value = "";
+      withdrawalMaterialSearch.value = "";
+      closeWithdrawalMaterialSuggestions();
+      updateWithdrawalMaterialInfo();
+      withdrawalMaterialSearch.focus();
+    });
+
+    document.addEventListener("pointerdown", event => {
+      if (!event.target.closest("#withdrawalMaterialSearchBox")) closeWithdrawalMaterialSuggestions();
+    });
 
     function addSelectedWithdrawalItem(options = {}) {
       const { silentWhenEmpty = false } = options;
@@ -9501,7 +9658,14 @@
       const material = state.materials.find(item => item.id === id);
       if (!material && silentWhenEmpty) return true;
       if (!material || !Number.isInteger(qty) || qty <= 0) {
-        showToast("Selecione um material e informe uma quantidade válida.", true);
+        const typedDescription = document.getElementById("withdrawalMaterialSearch").value.trim();
+        showToast(
+          typedDescription && !material
+            ? "Selecione na lista o material correspondente à descrição digitada."
+            : "Selecione um material e informe uma quantidade válida.",
+          true
+        );
+        if (!material) document.getElementById("withdrawalMaterialSearch").focus();
         return false;
       }
       const already = withdrawalSelection.filter(item => item.id === id).reduce((sum, item) => sum + item.qty, 0);
@@ -9525,6 +9689,9 @@
       });
       renderWithdrawalSelection();
       document.getElementById("withdrawalMaterial").value = "";
+      document.getElementById("withdrawalMaterialSearch").value = "";
+      document.getElementById("clearWithdrawalMaterialSearch").hidden = true;
+      closeWithdrawalMaterialSuggestions();
       document.getElementById("withdrawalQty").value = 1;
       updateWithdrawalMaterialInfo();
       return true;
@@ -9545,6 +9712,12 @@
 
     document.getElementById("withdrawalForm").addEventListener("submit", async event => {
       event.preventDefault();
+      if (document.getElementById("withdrawalMaterialSearch").value.trim() && !document.getElementById("withdrawalMaterial").value) {
+        showToast("Selecione na lista o material correspondente à descrição digitada.", true);
+        document.getElementById("withdrawalMaterialSearch").focus();
+        renderWithdrawalMaterialSuggestions();
+        return;
+      }
       if (document.getElementById("withdrawalMaterial").value) {
         const pendingItemAdded = addSelectedWithdrawalItem();
         if (!pendingItemAdded) return;
