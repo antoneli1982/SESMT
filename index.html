@@ -1308,6 +1308,12 @@
       cursor: not-allowed;
     }
 
+    #materialDescription,
+    #materialSearch,
+    #inventorySearch {
+      text-transform: uppercase;
+    }
+
     .materialsCatalogTable {
       min-width: 1480px;
     }
@@ -2943,6 +2949,140 @@
         justify-self: start;
       }
 
+      .materialsCatalogTable,
+      .inventoryCountTable {
+        min-width: 0;
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        table-layout: auto;
+      }
+
+      .materialsCatalogTable,
+      .materialsCatalogTable tbody,
+      .materialsCatalogTable tr,
+      .materialsCatalogTable td,
+      .inventoryCountTable,
+      .inventoryCountTable tbody,
+      .inventoryCountTable tr,
+      .inventoryCountTable td {
+        display: block;
+        width: 100%;
+      }
+
+      .materialsCatalogTable thead,
+      .inventoryCountTable thead {
+        display: none;
+      }
+
+      .materialsCatalogTable tbody,
+      .inventoryCountTable tbody {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .materialsCatalogTable tr,
+      .inventoryCountTable tr {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--surface);
+        box-shadow: 0 7px 20px rgba(0, 15, 42, .06);
+      }
+
+      .materialsCatalogTable tr:hover td,
+      .inventoryCountTable tr:hover td {
+        background: transparent;
+      }
+
+      .materialsCatalogTable td,
+      .inventoryCountTable td {
+        display: grid;
+        grid-template-columns: minmax(104px, .75fr) minmax(0, 1.25fr);
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-top: 1px solid var(--line);
+        overflow-wrap: anywhere;
+      }
+
+      .materialsCatalogTable td::before,
+      .inventoryCountTable td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 8px;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+
+      .materialsCatalogTable td:first-child,
+      .inventoryCountTable td:first-child {
+        display: block;
+        padding: 14px 12px;
+        border-top: 0;
+        background: var(--blue-soft);
+      }
+
+      .materialsCatalogTable td:first-child::before,
+      .inventoryCountTable td:first-child::before {
+        display: none;
+      }
+
+      .materialsCatalogTable th:last-child,
+      .materialsCatalogTable td:last-child {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .materialsCatalogTable .materialNotesCell {
+        min-width: 0;
+        max-width: none;
+      }
+
+      .materialsCatalogTable .actionsCell,
+      .materialsCatalogTable .pill {
+        justify-content: flex-start;
+        justify-self: start;
+      }
+
+      .materialsCatalogTable .materialStockCell::before,
+      .inventoryCountTable .materialStockCell::before {
+        color: var(--blue);
+      }
+
+      .materialsCatalogTable .materialStockCell,
+      .inventoryCountTable .materialStockCell {
+        background: var(--blue-soft);
+      }
+
+      .materialsCatalogTable .materialStockCell strong,
+      .inventoryCountTable .materialStockCell strong {
+        color: var(--blue);
+        font-size: 17px;
+        font-weight: 900;
+      }
+
+      .materialsCatalogTable td[colspan],
+      .inventoryCountTable td[colspan] {
+        display: block;
+        grid-template-columns: none;
+        background: transparent;
+      }
+
+      .materialsCatalogTable td[colspan]::before,
+      .inventoryCountTable td[colspan]::before {
+        display: none;
+      }
+
+      .inventoryCountTable .input {
+        width: 100%;
+      }
+
       .employeeHistoryControls {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -3164,7 +3304,9 @@
         grid-template-columns: 1fr;
       }
 
-      .collaboratorTable tbody {
+      .collaboratorTable tbody,
+      .materialsCatalogTable tbody,
+      .inventoryCountTable tbody {
         grid-template-columns: 1fr;
       }
 
@@ -3302,8 +3444,34 @@
       }
 
       #printTerm,
-      #printTerm * {
+      #printTerm *,
+      #printReport,
+      #printReport * {
         visibility: visible;
+      }
+
+      #printReport {
+        position: absolute;
+        inset: 0;
+        display: block !important;
+        padding: 0;
+        color: #111;
+        background: white;
+        font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      #printReport .stockReportTable thead {
+        display: table-header-group;
+      }
+
+      #printReport .stockReportTable tr {
+        page-break-inside: avoid;
+      }
+
+      #printReport .stockReportHeader {
+        page-break-after: avoid;
       }
 
       #printTerm {
@@ -3612,6 +3780,7 @@
             <input id="importMaterialsFile" type="file" accept=".xlsx,.xls,.csv" hidden>
             <button class="ghostButton" id="importMaterials" type="button">Importar Excel</button>
             <button class="ghostButton" id="exportMaterials" type="button">Exportar Excel</button>
+            <button class="ghostButton" id="exportMaterialsPdf" type="button">Relatório PDF</button>
             <button class="dangerButton" id="clearAllMaterials" type="button">Limpar tudo</button>
             <button class="primaryButton" id="newMaterialButton">＋ Novo material</button>
           </div>
@@ -3967,8 +4136,21 @@
             </div>
             <button class="primaryButton" id="finishInventory" disabled>Finalizar inventário</button>
           </div>
+          <div class="filters">
+            <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar equipamento, código, CA ou local" aria-label="Pesquisar equipamento no inventário">
+            <select class="select" id="inventoryCategoryFilter" aria-label="Filtrar categoria no inventário">
+              <option value="">Todas as categorias</option>
+              <option>Proteção da cabeça</option>
+              <option>Proteção auditiva</option>
+              <option>Proteção das mãos</option>
+              <option>Proteção dos pés</option>
+              <option>Proteção respiratória</option>
+              <option>Proteção visual</option>
+            </select>
+            <button class="ghostButton filterClear" id="clearInventoryFilters" type="button">Limpar filtros</button>
+          </div>
           <div class="tableWrap">
-            <table>
+            <table class="inventoryCountTable">
               <thead>
                 <tr>
                   <th>Material</th>
@@ -4584,6 +4766,7 @@
   </div>
 
   <div id="printTerm" style="display:none"></div>
+  <div id="printReport" style="display:none"></div>
   <div class="toastStack" id="toastStack" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -4905,6 +5088,8 @@
     let editingCollaboratorId = null;
     let withdrawalSelection = [];
     let inventoryActive = false;
+    let inventoryCounts = {};
+    let inventoryReasons = {};
     let activeAlertCard = "";
     let signatureStarted = false;
     let stagedCollaboratorPhoto = null;
@@ -5222,6 +5407,7 @@
         if (!Array.isArray(loaded.withdrawals)) loaded.withdrawals = [];
         loaded.materials = loaded.materials.map(material => ({
           ...material,
+          description: upperText(material.description || ""),
           size: material.size || "",
           manufacturer: material.manufacturer || ""
         }));
@@ -5326,6 +5512,7 @@
       if (!loaded.settings || typeof loaded.settings !== "object") loaded.settings = createEmptyState().settings;
       loaded.materials = loaded.materials.map(material => ({
         ...material,
+        description: upperText(material.description || ""),
         size: material.size || "",
         manufacturer: material.manufacturer || ""
       }));
@@ -5567,6 +5754,10 @@
       toast.innerHTML = `<strong>${error ? "!" : "✓"}</strong><span>${message}</span>`;
       document.getElementById("toastStack").appendChild(toast);
       setTimeout(() => toast.remove(), 3500);
+    }
+
+    function upperText(value) {
+      return String(value ?? "").toLocaleUpperCase("pt-BR");
     }
 
     function escapeHtml(value) {
@@ -6022,18 +6213,18 @@
         const status = materialStatus(material);
         return `
           <tr>
-            <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
-            <td><strong>${escapeHtml(material.ca || "Não informado")}</strong></td>
-            <td>${formatDate(material.caValidity)}</td>
-            <td>${escapeHtml(material.lot || "Não informado")}</td>
-            <td>${formatDate(material.lotValidity)}</td>
-            <td><strong>${material.stock}</strong> un.</td>
-            <td>${hasConfiguredMinimum(material) ? `<strong>${Number(material.minimum)}</strong> un.` : "Não informado"}</td>
-            <td>${hasLifetime(material.lifetime) ? `<strong>${Number(material.lifetime)}</strong> dias` : "Não informada"}</td>
-            <td>${escapeHtml(material.location || "Não informada")}</td>
-            <td class="materialNotesCell">${escapeHtml(material.notes || "Sem observações")}</td>
-            <td><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
-            <td><div class="actionsCell">
+            <td data-label="Material"><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(upperText(material.description))}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · ${escapeHtml(material.category)}</small></div></div></td>
+            <td data-label="CA"><strong>${escapeHtml(material.ca || "Não informado")}</strong></td>
+            <td data-label="Validade do CA">${formatDate(material.caValidity)}</td>
+            <td data-label="Lote">${escapeHtml(material.lot || "Não informado")}</td>
+            <td data-label="Validade do lote">${formatDate(material.lotValidity)}</td>
+            <td class="materialStockCell" data-label="Saldo"><strong>${material.stock}</strong> un.</td>
+            <td data-label="Estoque mínimo">${hasConfiguredMinimum(material) ? `<strong>${Number(material.minimum)}</strong> un.` : "Não informado"}</td>
+            <td data-label="Vida útil">${hasLifetime(material.lifetime) ? `<strong>${Number(material.lifetime)}</strong> dias` : "Não informada"}</td>
+            <td data-label="Localização">${escapeHtml(material.location || "Não informada")}</td>
+            <td class="materialNotesCell" data-label="Observações">${escapeHtml(material.notes || "Sem observações")}</td>
+            <td data-label="Situação"><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
+            <td data-label="Ações"><div class="actionsCell">
               <button class="miniButton" type="button" title="Editar material" aria-label="Editar material" onclick="editMaterial(${material.id})">✎</button>
               <button class="miniButton" type="button" title="Entrada de estoque" aria-label="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
               <button class="miniButton" type="button" title="Excluir material" aria-label="Excluir material" onclick="deleteMaterial(${material.id})">×</button>
@@ -6790,32 +6981,80 @@
       document.getElementById("summaryCategory").textContent = document.getElementById("employeeCategory").value || "Não informada";
     }
 
+    function inventoryPendingCount() {
+      return state.materials.filter(material => {
+        const value = inventoryCounts[String(material.id)];
+        return value === undefined || value === "";
+      }).length;
+    }
+
+    function filteredInventoryMaterials() {
+      const searchField = document.getElementById("inventorySearch");
+      const categoryField = document.getElementById("inventoryCategoryFilter");
+      const searchTerms = normalizeColumnName(searchField ? searchField.value : "").split(/\s+/).filter(Boolean);
+      const category = categoryField ? categoryField.value : "";
+      return state.materials.filter(material => {
+        const searchable = normalizeColumnName([
+          material.description,
+          material.size,
+          material.manufacturer,
+          material.code,
+          material.ca,
+          material.lot,
+          material.location,
+          material.category
+        ].filter(Boolean).join(" "));
+        return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
+          && (!category || material.category === category);
+      });
+    }
+
     function renderInventory() {
-      document.getElementById("inventoryPending").textContent = inventoryActive ? state.materials.length : 0;
+      const materials = filteredInventoryMaterials();
+      document.getElementById("inventoryPending").textContent = inventoryActive ? inventoryPendingCount() : 0;
       document.getElementById("finishInventory").disabled = !inventoryActive;
-      document.getElementById("inventoryTable").innerHTML = state.materials.map(material => `
+      document.getElementById("inventoryTable").innerHTML = materials.length ? materials.map(material => {
+        const key = String(material.id);
+        const countValue = inventoryCounts[key] === undefined ? "" : inventoryCounts[key];
+        const reasonValue = inventoryReasons[key] === undefined ? "" : inventoryReasons[key];
+        const difference = countValue === "" ? null : Number(countValue) - Number(material.stock);
+        const differenceLabel = difference === null ? "—" : (difference > 0 ? `+${difference}` : String(difference));
+        const differenceColor = difference === null ? "" : (difference === 0 ? "var(--success)" : "var(--danger)");
+        return `
         <tr>
-          <td><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(material.description)}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · Lote ${escapeHtml(material.lot || "Não informado")}</small></div></div></td>
-          <td><span class="caValue">CA ${escapeHtml(material.ca || "Não informado")}</span></td>
-          <td>${escapeHtml(material.location || "Não informada")}</td>
-          <td><strong>${material.stock}</strong></td>
-          <td><input class="input inventoryCount" data-id="${material.id}" type="number" min="0" ${inventoryActive ? "" : "disabled"} placeholder="Contar"></td>
-          <td><strong class="inventoryDifference" data-id="${material.id}">—</strong></td>
-          <td><input class="input inventoryReason" data-id="${material.id}" ${inventoryActive ? "" : "disabled"} placeholder="Justifique se houver diferença"></td>
+          <td data-label="Material"><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(upperText(material.description))}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · Lote ${escapeHtml(material.lot || "Não informado")}</small></div></div></td>
+          <td data-label="Número do CA"><span class="caValue">CA ${escapeHtml(material.ca || "Não informado")}</span></td>
+          <td data-label="Local">${escapeHtml(material.location || "Não informada")}</td>
+          <td class="materialStockCell" data-label="Saldo esperado"><strong>${material.stock}</strong></td>
+          <td data-label="Contagem física"><input class="input inventoryCount" data-id="${material.id}" type="number" min="0" value="${escapeHtml(countValue)}" ${inventoryActive ? "" : "disabled"} placeholder="Contar"></td>
+          <td data-label="Diferença"><strong class="inventoryDifference" data-id="${material.id}" style="color:${differenceColor}">${differenceLabel}</strong></td>
+          <td data-label="Justificativa"><input class="input inventoryReason" data-id="${material.id}" value="${escapeHtml(reasonValue)}" ${inventoryActive ? "" : "disabled"} placeholder="Justifique se houver diferença"></td>
         </tr>
-      `).join("");
+      `;
+      }).join("") : `<tr><td colspan="7"><div class="emptyState"><strong>Nenhum equipamento encontrado</strong>Ajuste a pesquisa ou o filtro de categoria.</div></td></tr>`;
 
       document.querySelectorAll(".inventoryCount").forEach(input => {
         input.addEventListener("input", () => {
-          const material = state.materials.find(item => item.id === Number(input.dataset.id));
+          const key = String(input.dataset.id);
+          const material = state.materials.find(item => String(item.id) === key);
+          inventoryCounts[key] = input.value;
+          document.getElementById("inventoryPending").textContent = inventoryActive ? inventoryPendingCount() : 0;
           const output = document.querySelector(`.inventoryDifference[data-id="${input.dataset.id}"]`);
+          if (!output) return;
           if (input.value === "") {
             output.textContent = "—";
+            output.style.color = "";
             return;
           }
-          const difference = Number(input.value) - material.stock;
+          const difference = Number(input.value) - Number(material.stock);
           output.textContent = difference > 0 ? `+${difference}` : difference;
           output.style.color = difference === 0 ? "var(--success)" : "var(--danger)";
+        });
+      });
+
+      document.querySelectorAll(".inventoryReason").forEach(input => {
+        input.addEventListener("input", () => {
+          inventoryReasons[String(input.dataset.id)] = input.value;
         });
       });
     }
@@ -7344,6 +7583,7 @@
       clone.hidden = false;
       clone.removeAttribute("id");
       clone.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
+      document.getElementById("printReport").innerHTML = "";
       document.getElementById("printTerm").innerHTML = "";
       document.getElementById("printTerm").appendChild(clone);
       window.print();
@@ -7503,6 +7743,108 @@
 
     function toCsv(rows) {
       return "\uFEFF" + rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";")).join("\n");
+    }
+
+    function buildStockReport() {
+      const materials = [...state.materials].sort((a, b) =>
+        String(a.description || "").localeCompare(String(b.description || ""), "pt-BR")
+      );
+      const generatedAt = new Date().toLocaleString("pt-BR");
+      const totalUnits = materials.reduce((sum, material) => sum + (Number(material.stock) || 0), 0);
+      const zeroed = materials.filter(material => Number(material.stock) === 0).length;
+      const critical = materials.filter(material => materialStatus(material).key === "critical").length;
+      const cell = "padding:3px 4px;border:1px solid #9da8b4;vertical-align:top;word-break:break-word";
+      const head = "padding:4px;border:1px solid #5d6875;background:#e7eef8;font-weight:800;text-align:left";
+
+      const rows = materials.length ? materials.map((material, index) => {
+        const status = materialStatus(material);
+        const stockColor = Number(material.stock) === 0
+          ? "#b42318"
+          : (status.key === "critical" ? "#815b00" : "#0f437c");
+        return `
+          <tr>
+            <td style="${cell};text-align:center">${index + 1}</td>
+            <td style="${cell}">${escapeHtml(material.code || "")}</td>
+            <td style="${cell}"><strong>${escapeHtml(upperText(material.description))}</strong></td>
+            <td style="${cell}">${escapeHtml(material.category || "")}</td>
+            <td style="${cell};text-align:center">${escapeHtml(material.size || "—")}</td>
+            <td style="${cell};text-align:center">${escapeHtml(material.ca || "—")}</td>
+            <td style="${cell};text-align:center">${escapeHtml(material.lot || "—")}</td>
+            <td style="${cell}">${escapeHtml(material.location || "—")}</td>
+            <td style="${cell};text-align:center;color:${stockColor};font-weight:900">${Number(material.stock) || 0}</td>
+            <td style="${cell};text-align:center">${hasConfiguredMinimum(material) ? Number(material.minimum) : "—"}</td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="10" style="${cell};text-align:center;padding:14px">Nenhum material cadastrado.</td></tr>`;
+
+      return `
+        <div style="font-size:8px;color:#111">
+          <div class="stockReportHeader" style="border:1px solid #5d6875;margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid #5d6875;background:#e7eef8">
+              <div>
+                <div style="font-size:13px;font-weight:900;letter-spacing:.02em">RELATÓRIO DE ESTOQUE DE MATERIAIS</div>
+                <div style="font-size:8px;margin-top:2px">${escapeHtml(state.settings.unit || "Gestão de EPI")}${state.settings.address ? " · " + escapeHtml(state.settings.address) : ""}</div>
+              </div>
+              <div style="text-align:right;font-size:8px">
+                <div><strong>Emissão:</strong> ${escapeHtml(generatedAt)}</div>
+                <div><strong>Responsável:</strong> ${escapeHtml(state.settings.responsible || "Não informado")}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap">
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">ITENS CADASTRADOS</div><div style="font-size:13px;font-weight:900">${materials.length}</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">TOTAL EM ESTOQUE</div><div style="font-size:13px;font-weight:900">${totalUnits} un.</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">ESTOQUE CRÍTICO</div><div style="font-size:13px;font-weight:900;color:#815b00">${critical}</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px"><div style="font-size:7px;font-weight:800;color:#5d6875">SALDO ZERADO</div><div style="font-size:13px;font-weight:900;color:#b42318">${zeroed}</div></div>
+            </div>
+          </div>
+
+          <table class="stockReportTable" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:7px">
+            <colgroup>
+              <col style="width:4%"><col style="width:10%"><col style="width:24%"><col style="width:13%">
+              <col style="width:7%"><col style="width:8%"><col style="width:8%"><col style="width:12%">
+              <col style="width:7%"><col style="width:7%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="${head};text-align:center">#</th>
+                <th style="${head}">Código</th>
+                <th style="${head}">Descrição</th>
+                <th style="${head}">Categoria</th>
+                <th style="${head};text-align:center">Tam.</th>
+                <th style="${head};text-align:center">CA</th>
+                <th style="${head};text-align:center">Lote</th>
+                <th style="${head}">Localização</th>
+                <th style="${head};text-align:center">Saldo</th>
+                <th style="${head};text-align:center">Mín.</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="8" style="${cell};text-align:right;font-weight:900;background:#e7eef8">TOTAL GERAL EM ESTOQUE</td>
+                <td style="${cell};text-align:center;font-weight:900;background:#e7eef8">${totalUnits}</td>
+                <td style="${cell};background:#e7eef8"></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="margin-top:8px;font-size:6px;color:#5d6875">Documento gerado automaticamente pelo sistema de Gestão de EPI. Saldos referentes à data e hora de emissão.</div>
+        </div>
+      `;
+    }
+
+    function exportMaterialsPdf() {
+      const previousTitle = document.title;
+      document.getElementById("printTerm").innerHTML = "";
+      document.getElementById("printReport").innerHTML = buildStockReport();
+      document.title = `relatorio_estoque_materiais_${new Date().toISOString().slice(0, 10)}`;
+      const restore = () => {
+        document.title = previousTitle;
+        document.getElementById("printReport").innerHTML = "";
+        window.removeEventListener("afterprint", restore);
+      };
+      window.addEventListener("afterprint", restore);
+      setTimeout(() => window.print(), 120);
     }
 
     function exportMaterials() {
@@ -7680,7 +8022,7 @@
       const material = {
         id: existing ? existing.id : Date.now() + rowNumber,
         code: existing ? existing.code : generatedCode || valueOrExisting("code"),
-        description: valueOrExisting("description"),
+        description: upperText(valueOrExisting("description")),
         size: valueOrExisting("size"),
         manufacturer: valueOrExisting("manufacturer"),
         category: valueOrExisting("category"),
@@ -8176,6 +8518,7 @@
       const collaborator = findWithdrawalCollaborator(withdrawal);
       const photoKey = withdrawal.collaboratorPhotoKey || collaborator?.photoKey || "";
       const photoDataUrl = await getCollaboratorPhotoDataUrl(photoKey);
+      document.getElementById("printReport").innerHTML = "";
       document.getElementById("printTerm").innerHTML = buildTerm(withdrawal, photoDataUrl);
       window.print();
     };
@@ -8373,7 +8716,7 @@
       const minimumValue = document.getElementById("materialMinimum").value.trim();
       const material = {
         id: editingMaterialId || Date.now(),
-        description: document.getElementById("materialDescription").value.trim(),
+        description: upperText(document.getElementById("materialDescription").value.trim()),
         code: editingMaterialId
           ? document.getElementById("materialCode").value.trim()
           : nextMaterialCode(),
@@ -8820,6 +9163,7 @@
       });
       saveState();
       const photoDataUrl = await getCollaboratorPhotoDataUrl(withdrawal.collaboratorPhotoKey);
+      document.getElementById("printReport").innerHTML = "";
       document.getElementById("printTerm").innerHTML = buildTerm(withdrawal, photoDataUrl);
       renderAll();
       resetWithdrawal();
@@ -8831,30 +9175,41 @@
 
     document.getElementById("startInventory").addEventListener("click", () => {
       inventoryActive = true;
+      inventoryCounts = {};
+      inventoryReasons = {};
       renderInventory();
       showToast("Nova contagem iniciada.");
     });
 
+    document.getElementById("inventorySearch").addEventListener("input", renderInventory);
+    document.getElementById("inventoryCategoryFilter").addEventListener("change", renderInventory);
+    document.getElementById("clearInventoryFilters").addEventListener("click", () => {
+      document.getElementById("inventorySearch").value = "";
+      document.getElementById("inventoryCategoryFilter").value = "";
+      renderInventory();
+    });
+
     document.getElementById("finishInventory").addEventListener("click", () => {
-      const counts = Array.from(document.querySelectorAll(".inventoryCount"));
-      if (counts.some(input => input.value === "")) {
-        showToast("Preencha a contagem física de todos os materiais.", true);
+      const pending = inventoryPendingCount();
+      if (pending) {
+        showToast(`Preencha a contagem física de todos os materiais. Faltam ${pending} item(ns) — limpe os filtros para localizá-los.`, true);
         return;
       }
-      const missingReason = counts.some(input => {
-        const material = state.materials.find(item => item.id === Number(input.dataset.id));
-        const difference = Number(input.value) - material.stock;
-        const reason = document.querySelector(`.inventoryReason[data-id="${input.dataset.id}"]`).value.trim();
+      const missingReason = state.materials.some(material => {
+        const key = String(material.id);
+        const difference = Number(inventoryCounts[key]) - Number(material.stock);
+        const reason = String(inventoryReasons[key] || "").trim();
         return difference !== 0 && !reason;
       });
       if (missingReason) {
         showToast("Justifique todas as divergências encontradas.", true);
         return;
       }
-      counts.forEach(input => {
-        const material = state.materials.find(item => item.id === Number(input.dataset.id));
-        material.stock = Number(input.value);
+      state.materials.forEach(material => {
+        material.stock = Number(inventoryCounts[String(material.id)]);
       });
+      inventoryCounts = {};
+      inventoryReasons = {};
       state.history.unshift({
         id: Date.now(),
         date: new Date().toISOString(),
@@ -8884,6 +9239,7 @@
       importCollaboratorsFromExcel(event.target.files[0]);
     });
     document.getElementById("exportMaterials").addEventListener("click", exportMaterials);
+    document.getElementById("exportMaterialsPdf").addEventListener("click", exportMaterialsPdf);
     document.getElementById("exportCollaborators").addEventListener("click", exportCollaborators);
     document.getElementById("exportHistory").addEventListener("click", exportHistory);
     document.getElementById("exportInventory").addEventListener("click", exportInventory);
