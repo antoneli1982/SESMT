@@ -3530,6 +3530,20 @@
         margin: 12mm;
       }
 
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0 !important;
+        color-scheme: light !important;
+        color: #00235a !important;
+        background: #ffffff !important;
+      }
+
+      body > *:not(#printTerm):not(#printReport) {
+        display: none !important;
+      }
+
       body * {
         visibility: hidden;
       }
@@ -3545,12 +3559,24 @@
         position: absolute;
         inset: 0;
         display: block !important;
+        width: 100%;
+        min-height: 100%;
         padding: 0;
-        color: #111;
-        background: white;
+        color: #00235a !important;
+        background: #ffffff !important;
         font-family: "Poppins", "Segoe UI", Arial, sans-serif;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
+      }
+
+      #printReport,
+      #printReport * {
+        color: #00235a !important;
+        background: #ffffff !important;
+        background-image: none !important;
+        border-color: #00235a !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
       }
 
       #printReport .stockReportTable thead {
@@ -7858,14 +7884,11 @@
       const totalUnits = materials.reduce((sum, material) => sum + (Number(material.stock) || 0), 0);
       const zeroed = materials.filter(material => Number(material.stock) === 0).length;
       const critical = materials.filter(material => materialStatus(material).key === "critical").length;
-      const cell = "padding:3px 4px;border:1px solid #9da8b4;vertical-align:top;word-break:break-word";
-      const head = "padding:4px;border:1px solid #5d6875;background:#e7eef8;font-weight:800;text-align:left";
+      const reportBlue = "#00235a";
+      const cell = `padding:3px 4px;border:1px solid ${reportBlue};vertical-align:top;word-break:break-word;color:${reportBlue};background:#ffffff`;
+      const head = `padding:4px;border:1px solid ${reportBlue};background:#ffffff;color:${reportBlue};font-weight:800;text-align:left`;
 
       const rows = materials.length ? materials.map((material, index) => {
-        const status = materialStatus(material);
-        const stockColor = Number(material.stock) === 0
-          ? "#b42318"
-          : (status.key === "critical" ? "#815b00" : "#0f437c");
         return `
           <tr>
             <td style="${cell};text-align:center">${index + 1}</td>
@@ -7876,16 +7899,16 @@
             <td style="${cell};text-align:center">${escapeHtml(material.ca || "—")}</td>
             <td style="${cell};text-align:center">${escapeHtml(material.lot || "—")}</td>
             <td style="${cell}">${escapeHtml(material.location || "—")}</td>
-            <td style="${cell};text-align:center;color:${stockColor};font-weight:900">${Number(material.stock) || 0}</td>
+            <td style="${cell};text-align:center;font-weight:900">${Number(material.stock) || 0}</td>
             <td style="${cell};text-align:center">${hasConfiguredMinimum(material) ? Number(material.minimum) : "—"}</td>
           </tr>
         `;
       }).join("") : `<tr><td colspan="10" style="${cell};text-align:center;padding:14px">Nenhum material cadastrado.</td></tr>`;
 
       return `
-        <div style="font-size:8px;color:#111">
-          <div class="stockReportHeader" style="border:1px solid #5d6875;margin-bottom:8px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid #5d6875;background:#e7eef8">
+        <div style="font-size:8px;color:${reportBlue};background:#ffffff">
+          <div class="stockReportHeader" style="border:1px solid ${reportBlue};margin-bottom:8px;background:#ffffff">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid ${reportBlue};background:#ffffff">
               <div>
                 <div style="font-size:13px;font-weight:900;letter-spacing:.02em">RELATÓRIO DE ESTOQUE DE MATERIAIS</div>
                 <div style="font-size:8px;margin-top:2px">${escapeHtml(state.settings.unit || "Gestão de EPI")}${state.settings.address ? " · " + escapeHtml(state.settings.address) : ""}</div>
@@ -7896,10 +7919,10 @@
               </div>
             </div>
             <div style="display:flex;flex-wrap:wrap">
-              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">ITENS CADASTRADOS</div><div style="font-size:13px;font-weight:900">${materials.length}</div></div>
-              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">TOTAL EM ESTOQUE</div><div style="font-size:13px;font-weight:900">${totalUnits} un.</div></div>
-              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid #9da8b4"><div style="font-size:7px;font-weight:800;color:#5d6875">ESTOQUE CRÍTICO</div><div style="font-size:13px;font-weight:900;color:#815b00">${critical}</div></div>
-              <div style="flex:1;min-width:90px;padding:6px 10px"><div style="font-size:7px;font-weight:800;color:#5d6875">SALDO ZERADO</div><div style="font-size:13px;font-weight:900;color:#b42318">${zeroed}</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:7px;font-weight:800;color:${reportBlue}">ITENS CADASTRADOS</div><div style="font-size:13px;font-weight:900">${materials.length}</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:7px;font-weight:800;color:${reportBlue}">TOTAL EM ESTOQUE</div><div style="font-size:13px;font-weight:900">${totalUnits} un.</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:7px;font-weight:800;color:${reportBlue}">ESTOQUE CRÍTICO</div><div style="font-size:13px;font-weight:900;color:${reportBlue}">${critical}</div></div>
+              <div style="flex:1;min-width:90px;padding:6px 10px"><div style="font-size:7px;font-weight:800;color:${reportBlue}">SALDO ZERADO</div><div style="font-size:13px;font-weight:900;color:${reportBlue}">${zeroed}</div></div>
             </div>
           </div>
 
@@ -7926,14 +7949,14 @@
             <tbody>${rows}</tbody>
             <tfoot>
               <tr>
-                <td colspan="8" style="${cell};text-align:right;font-weight:900;background:#e7eef8">TOTAL GERAL EM ESTOQUE</td>
-                <td style="${cell};text-align:center;font-weight:900;background:#e7eef8">${totalUnits}</td>
-                <td style="${cell};background:#e7eef8"></td>
+                <td colspan="8" style="${cell};text-align:right;font-weight:900;background:#ffffff">TOTAL GERAL EM ESTOQUE</td>
+                <td style="${cell};text-align:center;font-weight:900;background:#ffffff">${totalUnits}</td>
+                <td style="${cell};background:#ffffff"></td>
               </tr>
             </tfoot>
           </table>
 
-          <div style="margin-top:8px;font-size:6px;color:#5d6875">Documento gerado automaticamente pelo sistema de Gestão de EPI. Saldos referentes à data e hora de emissão.</div>
+          <div style="margin-top:8px;font-size:6px;color:${reportBlue}">Documento gerado automaticamente pelo sistema de Gestão de EPI. Saldos referentes à data e hora de emissão.</div>
         </div>
       `;
     }
