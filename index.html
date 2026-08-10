@@ -2303,6 +2303,27 @@
       display: none;
     }
 
+    .pdfReadyMessage {
+      display: grid;
+      gap: 6px;
+      padding: 16px;
+      border: 1px solid rgba(0, 84, 180, .24);
+      border-radius: 14px;
+      color: var(--blue);
+      background: var(--soft);
+      line-height: 1.5;
+    }
+
+    .pdfReadyMessage strong {
+      font-size: 14px;
+    }
+
+    .pdfReadyMessage span {
+      overflow-wrap: anywhere;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
     .duplicateDecisionContent {
       display: grid;
       gap: 16px;
@@ -4883,6 +4904,26 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="stockPdfReadyModal" role="dialog" aria-modal="true" aria-labelledby="stockPdfReadyTitle">
+    <div class="modal protectedActionModal">
+      <div class="modalHeader">
+        <h3 id="stockPdfReadyTitle">PDF gerado</h3>
+        <button class="iconButton" id="closeStockPdfReady" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="modalBody protectedActionContent">
+        <div class="pdfReadyMessage">
+          <strong>O relatório está pronto.</strong>
+          <span id="stockPdfReadyFilename"></span>
+        </div>
+        <p class="protectedActionHint">Agora você pode conferir o documento ou escolher onde salvar e compartilhar. Nenhum local é solicitado antes da geração terminar.</p>
+      </div>
+      <div class="modalFooter">
+        <button class="ghostButton" id="openGeneratedStockPdf" type="button">Abrir e conferir</button>
+        <button class="primaryButton" id="saveGeneratedStockPdf" type="button">Escolher onde salvar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="printTerm" style="display:none"></div>
   <div id="printReport" style="display:none"></div>
   <div class="toastStack" id="toastStack" aria-live="polite"></div>
@@ -5218,6 +5259,7 @@
     let withdrawalPhotoRequestId = 0;
     let employeeHistorySelectedId = null;
     let employeeHistoryPhotoRequestId = 0;
+    let pendingStockPdf = null;
     const collaboratorPhotoUrls = new Map();
 
     function openPhotoDatabase() {
@@ -8073,8 +8115,32 @@
       return documentPdf;
     }
 
-    async function deliverStockPdf(documentPdf, filename) {
-      const blob = documentPdf.output("blob");
+    function showStockPdfReadyModal(blob, filename) {
+      pendingStockPdf = { blob, filename };
+      document.getElementById("stockPdfReadyFilename").textContent = filename;
+      document.getElementById("stockPdfReadyModal").classList.add("open");
+      setTimeout(() => document.getElementById("openGeneratedStockPdf").focus(), 80);
+    }
+
+    function closeStockPdfReadyModal() {
+      document.getElementById("stockPdfReadyModal").classList.remove("open");
+      pendingStockPdf = null;
+    }
+
+    function openGeneratedStockPdf() {
+      if (!pendingStockPdf) return;
+      const url = URL.createObjectURL(pendingStockPdf.blob);
+      const openedWindow = window.open(url, "_blank");
+      if (!openedWindow) {
+        URL.revokeObjectURL(url);
+        showToast("O navegador bloqueou a abertura. Use Escolher onde salvar.", true);
+        return;
+      }
+      try { openedWindow.opener = null; } catch (error) {}
+      setTimeout(() => URL.revokeObjectURL(url), 120000);
+    }
+
+    async function deliverStockPdf(blob, filename) {
       const ipadDesktopMode = navigator.platform === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1;
       const mobileOrTablet = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) || ipadDesktopMode;
       if (mobileOrTablet && typeof File === "function" && typeof navigator.share === "function" && typeof navigator.canShare === "function") {
@@ -8094,17 +8160,26 @@
         }
       }
 
-      const url = URL.createObjectURL(blob);
-      const appleMobile = /iphone|ipad|ipod/i.test(navigator.userAgent) || ipadDesktopMode;
-      if (appleMobile) {
-        const openedWindow = window.open(url, "_blank");
-        if (openedWindow) {
-          try { openedWindow.opener = null; } catch (error) {}
-          setTimeout(() => URL.revokeObjectURL(url), 120000);
-          return "opened";
+      if (!mobileOrTablet && typeof window.showSaveFilePicker === "function") {
+        try {
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{
+              description: "Documento PDF",
+              accept: { "application/pdf": [".pdf"] }
+            }]
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return "saved";
+        } catch (error) {
+          if (error?.name === "AbortError") return "cancelled";
+          console.warn("Seletor de armazenamento indisponível", error);
         }
       }
 
+      const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = filename;
@@ -8114,6 +8189,29 @@
       anchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
       return "downloaded";
+    }
+
+    async function saveGeneratedStockPdf() {
+      if (!pendingStockPdf) return;
+      const generatedPdf = pendingStockPdf;
+      const button = document.getElementById("saveGeneratedStockPdf");
+      const originalLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Abrindo opções...";
+      try {
+        const delivery = await deliverStockPdf(generatedPdf.blob, generatedPdf.filename);
+        if (delivery === "cancelled") return;
+        closeStockPdfReadyModal();
+        if (delivery === "shared") showToast("PDF compartilhado ou armazenado com sucesso.");
+        if (delivery === "saved") showToast("PDF armazenado no local escolhido.");
+        if (delivery === "downloaded") showToast("PDF enviado para a pasta de downloads do navegador.");
+      } catch (error) {
+        console.error("Falha ao armazenar o PDF", error);
+        showToast("Não foi possível armazenar o PDF. Tente abrir e conferir.", true);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
     }
 
     function exportMaterialsPdfWithPrintDialog() {
@@ -8136,12 +8234,12 @@
       button.disabled = true;
       button.textContent = "Gerando PDF...";
       try {
+        await new Promise(resolve => requestAnimationFrame(resolve));
         const documentPdf = generateStockPdfDocument();
         const filename = `relatorio_estoque_materiais_${new Date().toISOString().slice(0, 10)}.pdf`;
-        const delivery = await deliverStockPdf(documentPdf, filename);
-        if (delivery === "shared") showToast("PDF gerado. Escolha no tablet onde salvar ou compartilhar.");
-        if (delivery === "opened") showToast("PDF gerado e aberto em uma nova aba.");
-        if (delivery === "downloaded") showToast("PDF gerado e preparado para download.");
+        const blob = documentPdf.output("blob");
+        showStockPdfReadyModal(blob, filename);
+        showToast("PDF gerado. Agora escolha como armazenar.");
       } catch (error) {
         console.error("Falha na geração direta do PDF", error);
         showToast("Geração direta indisponível. Abrindo a impressão do navegador.", true);
@@ -9538,6 +9636,12 @@
     });
     document.getElementById("exportMaterials").addEventListener("click", exportMaterials);
     document.getElementById("exportMaterialsPdf").addEventListener("click", exportMaterialsPdf);
+    document.getElementById("openGeneratedStockPdf").addEventListener("click", openGeneratedStockPdf);
+    document.getElementById("saveGeneratedStockPdf").addEventListener("click", saveGeneratedStockPdf);
+    document.getElementById("closeStockPdfReady").addEventListener("click", closeStockPdfReadyModal);
+    document.getElementById("stockPdfReadyModal").addEventListener("click", event => {
+      if (event.target.id === "stockPdfReadyModal") closeStockPdfReadyModal();
+    });
     document.getElementById("exportCollaborators").addEventListener("click", exportCollaborators);
     document.getElementById("exportHistory").addEventListener("click", exportHistory);
     document.getElementById("exportInventory").addEventListener("click", exportInventory);
