@@ -7837,9 +7837,23 @@
     }
 
     function buildStockReport() {
-      const materials = [...state.materials].sort((a, b) =>
-        String(a.description || "").localeCompare(String(b.description || ""), "pt-BR")
-      );
+      const alphabeticalCollator = new Intl.Collator("pt-BR", {
+        usage: "sort",
+        sensitivity: "base",
+        ignorePunctuation: true,
+        numeric: true
+      });
+      const materials = [...state.materials].sort((a, b) => {
+        const productNameComparison = alphabeticalCollator.compare(
+          String(a.description || "").trim(),
+          String(b.description || "").trim()
+        );
+        if (productNameComparison !== 0) return productNameComparison;
+        return alphabeticalCollator.compare(
+          String(a.code || "").trim(),
+          String(b.code || "").trim()
+        );
+      });
       const generatedAt = new Date().toLocaleString("pt-BR");
       const totalUnits = materials.reduce((sum, material) => sum + (Number(material.stock) || 0), 0);
       const zeroed = materials.filter(material => Number(material.stock) === 0).length;
