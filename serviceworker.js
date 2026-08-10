@@ -1,4 +1,4 @@
-const CACHE_NAME = "gestaoepi20260810fabricanteopcional1";
+const CACHE_NAME = "gestaoepi20260810fabricanteslimpos1";
 const APP_FILES = [
   "./",
   "./index.html",
