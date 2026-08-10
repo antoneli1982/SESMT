@@ -4704,6 +4704,29 @@
     </div>
   </div>
 
+  <div class="modalBackdrop" id="materialDuplicateModal" role="dialog" aria-modal="true" aria-labelledby="materialDuplicateTitle">
+    <div class="modal duplicateDecisionModal">
+      <div class="modalHeader">
+        <h3 id="materialDuplicateTitle">Possível duplicidade de material</h3>
+      </div>
+      <div class="modalBody duplicateDecisionContent">
+        <div class="duplicateDecisionLead">
+          <div class="duplicateDecisionIcon" aria-hidden="true">!</div>
+          <div>
+            <strong>Já existe um material com a mesma descrição, tamanho e fabricante.</strong>
+            <p id="materialDuplicateExplanation"></p>
+          </div>
+        </div>
+        <div class="duplicateDecisionList" id="materialDuplicateComparison"></div>
+        <p class="duplicateDecisionHelp">Compare os CAs antes de liberar. Use “Liberar cadastro” somente quando o novo registro for necessário, por exemplo, quando o mesmo material possuir outro CA.</p>
+      </div>
+      <div class="modalFooter">
+        <button class="ghostButton" id="keepMaterialDuplicateBlocked" type="button">Manter bloqueado</button>
+        <button class="primaryButton" id="releaseMaterialDuplicate" type="button">Liberar cadastro</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modalBackdrop" id="collaboratorModal" role="dialog" aria-modal="true" aria-labelledby="collaboratorModalTitle">
     <div class="modal">
       <div class="modalHeader">
@@ -5917,7 +5940,7 @@
     }
 
     function findMaterialDuplicate(candidate, ignoredId = null) {
-      const identityFields = ["description", "size", "manufacturer", "ca"];
+      const identityFields = ["description", "size", "manufacturer"];
       return (state.materials || []).find(material => {
         if (String(material.id) === String(ignoredId)) return false;
         return identityFields.every(field => {
@@ -5926,20 +5949,38 @@
       }) || null;
     }
 
-    function showMaterialDuplicate(duplicate) {
-      const details = [
-        `Código: ${duplicate.code || "NÃO INFORMADO"}`,
-        `Descrição: ${duplicate.description || "NÃO INFORMADA"}`,
-        `Tamanho: ${duplicate.size || "NÃO INFORMADO"}`,
-        `Fabricante: ${duplicate.manufacturer || "NÃO INFORMADO"}`,
-        `CA: ${duplicate.ca || "NÃO INFORMADO"}`,
-        `Saldo atual: ${Number(duplicate.stock || 0)} UN.`,
-        `Localização: ${duplicate.location || "NÃO INFORMADA"}`
-      ].join("\n");
-      alert(`DUPLICIDADE DE MATERIAL IDENTIFICADA\n\nEste material já está cadastrado:\n\n${details}\n\nO novo cadastro não foi salvo.`);
-      showToast(`Material duplicado. Utilize o cadastro ${duplicate.code || "existente"}.`, true);
-      document.getElementById("materialDescription").focus();
-      document.getElementById("materialDescription").select();
+    function requestMaterialDuplicateRelease(duplicate, candidate) {
+      const existingCa = duplicate.ca || "NÃO INFORMADO";
+      const newCa = candidate.ca || "NÃO INFORMADO";
+      const sameCa = normalizeColumnName(existingCa) === normalizeColumnName(newCa);
+      document.getElementById("materialDuplicateExplanation").textContent = sameCa
+        ? "O CA informado também coincide. O cadastro permanecerá bloqueado até uma liberação manual."
+        : "Os CAs são diferentes. Isso pode representar outro CA válido para o mesmo material.";
+      document.getElementById("materialDuplicateComparison").innerHTML = `
+        <div class="duplicateDecisionItem">
+          <strong>CADASTRO EXISTENTE · ${escapeHtml(duplicate.code || "SEM CÓDIGO")}</strong>
+          <span>CA ${escapeHtml(existingCa)} · SALDO ${Number(duplicate.stock || 0)} UN. · ${escapeHtml(duplicate.location || "LOCAL NÃO INFORMADO")}</span>
+        </div>
+        <div class="duplicateDecisionItem">
+          <strong>NOVO CADASTRO · ${escapeHtml(candidate.code || "NOVO CÓDIGO")}</strong>
+          <span>CA ${escapeHtml(newCa)} · SALDO INICIAL ${Number(candidate.stock || 0)} UN. · ${escapeHtml(candidate.location || "LOCAL NÃO INFORMADO")}</span>
+        </div>
+      `;
+      const modal = document.getElementById("materialDuplicateModal");
+      const blockButton = document.getElementById("keepMaterialDuplicateBlocked");
+      const releaseButton = document.getElementById("releaseMaterialDuplicate");
+      modal.classList.add("open");
+      setTimeout(() => blockButton.focus(), 80);
+      return new Promise(resolve => {
+        const finish = shouldRelease => {
+          modal.classList.remove("open");
+          blockButton.onclick = null;
+          releaseButton.onclick = null;
+          resolve(shouldRelease);
+        };
+        blockButton.onclick = () => finish(false);
+        releaseButton.onclick = () => finish(true);
+      });
     }
 
     function hasConfiguredMinimum(material) {
@@ -9305,7 +9346,7 @@
       if (event.target.id === "collaboratorModal") closeCollaboratorModal();
     });
 
-    document.getElementById("materialForm").addEventListener("submit", event => {
+    document.getElementById("materialForm").addEventListener("submit", async event => {
       event.preventDefault();
       const wasEditing = Boolean(editingMaterialId);
       const stockValue = document.getElementById("materialStock").value.trim();
@@ -9333,8 +9374,14 @@
       };
       const duplicate = findMaterialDuplicate(material, editingMaterialId);
       if (duplicate) {
-        showMaterialDuplicate(duplicate);
-        return;
+        const shouldRelease = await requestMaterialDuplicateRelease(duplicate, material);
+        if (!shouldRelease) {
+          showToast(`Cadastro mantido bloqueado. Utilize o material ${duplicate.code || "existente"}.`, true);
+          document.getElementById("materialDescription").focus();
+          document.getElementById("materialDescription").select();
+          return;
+        }
+        showToast("Liberação confirmada. O novo material será cadastrado.");
       }
       if (editingMaterialId) {
         const index = state.materials.findIndex(item => item.id === editingMaterialId);
