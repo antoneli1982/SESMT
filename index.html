@@ -4738,8 +4738,8 @@
               <input class="input" id="materialSize" required placeholder="Único, P, M, G, 40">
             </div>
             <div class="field">
-              <label for="materialManufacturer">Fabricante <span class="required">*</span></label>
-              <input class="input" id="materialManufacturer" required>
+              <label for="materialManufacturer">Fabricante</label>
+              <input class="input" id="materialManufacturer" placeholder="Opcional">
             </div>
             <div class="field">
               <label for="materialCa">Número do CA</label>
@@ -5090,6 +5090,9 @@
     let cloudWriteQueue = Promise.resolve();
     let cloudStatusElement = null;
     let cloudPersistenceRequested = false;
+    let localStateRevision = 0;
+    let cloudSavedRevision = 0;
+    let cloudDeferredMeta = null;
     const hadLocalStateAtStartup = Boolean(localStorage.getItem(STORAGE_KEY));
 
     function createDemonstrationData() {
@@ -5373,6 +5376,8 @@
 
     let state = loadState();
     let editingMaterialId = null;
+    let editingMaterialOriginal = null;
+    let materialFormDirty = false;
     let editingCollaboratorId = null;
     let withdrawalSelection = [];
     let inventoryActive = false;
@@ -5737,7 +5742,12 @@
     function saveState() {
       normalizeOperationalUppercase(state);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStateRevision += 1;
       scheduleCloudSave();
+    }
+
+    function hasUnsavedLocalChanges() {
+      return localStateRevision > cloudSavedRevision;
     }
 
     let cloudStatusDetail = "";
@@ -5825,6 +5835,11 @@
     async function applyCloudState(meta) {
       const version = String(meta.version || "");
       if (!version || version === cloudLastVersion) return;
+      if (hasUnsavedLocalChanges() || materialFormDirty) {
+        cloudDeferredMeta = meta;
+        setCloudStatus("Alterações locais protegidas", "saving", "A edição deste aparelho será concluída antes de aceitar outra versão da base.");
+        return;
+      }
       setCloudStatus("Atualizando dados", "saving");
       const loaded = normalizeLoadedState(await readCloudState(meta));
       cloudApplyingState = true;
@@ -5849,6 +5864,7 @@
     async function writeCloudState() {
       if (!cloudReady || cloudApplyingState) return;
       setCloudStatus("Salvando na nuvem", "saving");
+      const revisionBeingSaved = localStateRevision;
       const serialized = JSON.stringify(state);
       const chunks = splitCloudState(serialized);
       const version = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -5868,7 +5884,13 @@
         updatedFrom: navigator.userAgent.slice(0, 180)
       });
       cloudLastVersion = version;
-      setCloudStatus("Dados sincronizados", "online");
+      cloudSavedRevision = Math.max(cloudSavedRevision, revisionBeingSaved);
+      cloudDeferredMeta = null;
+      if (hasUnsavedLocalChanges()) {
+        scheduleCloudSave();
+      } else {
+        setCloudStatus("Dados sincronizados", "online");
+      }
       removeOldCloudChunks(version).catch(() => {});
     }
 
@@ -5921,7 +5943,8 @@
         cloudReady = true;
         if (firstSnapshot.exists) {
           await applyCloudState(firstSnapshot.data());
-        } else if (hadLocalStateAtStartup) {
+          if (hasUnsavedLocalChanges()) await writeCloudState();
+        } else if (hadLocalStateAtStartup || hasUnsavedLocalChanges()) {
           await writeCloudState();
           showToast("Base deste computador enviada ao Firebase com sucesso.");
         } else {
@@ -6020,6 +6043,15 @@
       if (material?.size) parts.push(`Tamanho ${material.size}`);
       if (material?.manufacturer) parts.push(`Fabricante ${material.manufacturer}`);
       return parts.join(" · ");
+    }
+
+    function sameRecordId(left, right) {
+      if (left === null || left === undefined || right === null || right === undefined) return false;
+      return String(left) === String(right);
+    }
+
+    function findMaterialById(id) {
+      return (state.materials || []).find(material => sameRecordId(material.id, id)) || null;
     }
 
     function findMaterialDuplicate(candidate, ignoredId = null) {
@@ -6615,9 +6647,9 @@
             <td class="materialNotesCell" data-label="Observações">${escapeHtml(material.notes || "Sem observações")}</td>
             <td data-label="Situação"><button class="pill clickableTag ${status.className}" type="button" data-page-target="materials" data-filter-target="stockFilter" data-filter-value="${status.key}">${status.label}</button></td>
             <td data-label="Ações"><div class="actionsCell">
-              <button class="miniButton" type="button" title="Editar material" aria-label="Editar material" onclick="editMaterial(${material.id})">✎</button>
-              <button class="miniButton" type="button" title="Entrada de estoque" aria-label="Entrada de estoque" onclick="addStock(${material.id})">＋</button>
-              <button class="miniButton" type="button" title="Excluir material" aria-label="Excluir material" onclick="deleteMaterial(${material.id})">×</button>
+              <button class="miniButton" type="button" title="Editar material" aria-label="Editar material" data-material-action="edit" data-material-id="${escapeHtml(material.id)}">✎</button>
+              <button class="miniButton" type="button" title="Entrada de estoque" aria-label="Entrada de estoque" data-material-action="stock" data-material-id="${escapeHtml(material.id)}">＋</button>
+              <button class="miniButton" type="button" title="Excluir material" aria-label="Excluir material" data-material-action="delete" data-material-id="${escapeHtml(material.id)}">×</button>
             </div></td>
           </tr>
         `;
@@ -7323,8 +7355,8 @@
     }
 
     function updateWithdrawalMaterialInfo() {
-      const materialId = Number(document.getElementById("withdrawalMaterial").value);
-      const material = state.materials.find(item => item.id === materialId);
+      const materialId = document.getElementById("withdrawalMaterial").value;
+      const material = findMaterialById(materialId);
       document.getElementById("withdrawalCa").textContent = material ? (material.ca || "Não informado") : "Selecione um EPI";
       document.getElementById("withdrawalLifetime").textContent = material
         ? (hasLifetime(material.lifetime) ? `${Number(material.lifetime)} dias` : "Não informada")
@@ -7336,18 +7368,20 @@
 
     function openMaterialModal(material = null) {
       editingMaterialId = material ? material.id : null;
+      editingMaterialOriginal = material ? { ...material } : null;
+      materialFormDirty = false;
       document.getElementById("materialModalTitle").textContent = material ? "Editar material" : "Novo material";
       document.getElementById("materialForm").reset();
       if (material) {
-        document.getElementById("materialDescription").value = material.description;
-        document.getElementById("materialCode").value = material.code;
+        document.getElementById("materialDescription").value = material.description || "";
+        document.getElementById("materialCode").value = material.code || "";
         document.getElementById("materialSize").value = material.size || "";
         document.getElementById("materialManufacturer").value = material.manufacturer || "";
-        document.getElementById("materialCategory").value = material.category;
-        document.getElementById("materialCa").value = material.ca;
-        document.getElementById("materialCaValidity").value = material.caValidity;
-        document.getElementById("materialLot").value = material.lot;
-        document.getElementById("materialLotValidity").value = material.lotValidity;
+        document.getElementById("materialCategory").value = material.category || "";
+        document.getElementById("materialCa").value = material.ca || "";
+        document.getElementById("materialCaValidity").value = material.caValidity || "";
+        document.getElementById("materialLot").value = material.lot || "";
+        document.getElementById("materialLotValidity").value = material.lotValidity || "";
         document.getElementById("materialStock").value = material.stock ?? "";
         document.getElementById("materialMinimum").value = material.minimum ?? "";
         document.getElementById("materialLifetime").value = hasLifetime(material.lifetime) ? material.lifetime : "";
@@ -7370,18 +7404,43 @@
       document.getElementById("materialModal").classList.remove("open");
       document.body.classList.remove("materialModalOpen");
       editingMaterialId = null;
+      editingMaterialOriginal = null;
+      materialFormDirty = false;
+    }
+
+    function requestCloseMaterialModal() {
+      if (materialFormDirty && !confirm("Existem alterações ainda não salvas. Deseja descartá-las?")) return;
+      const deferredMeta = cloudDeferredMeta;
+      const shouldApplyDeferredState = Boolean(deferredMeta && materialFormDirty && !hasUnsavedLocalChanges());
+      closeMaterialModal();
+      if (shouldApplyDeferredState) {
+        cloudDeferredMeta = null;
+        applyCloudState(deferredMeta).catch(error => {
+          console.error("Falha ao aplicar atualização adiada", error);
+          setCloudStatus("Sem sincronização", "error", describeCloudError(error));
+        });
+      }
     }
 
     window.editMaterial = function(id) {
-      openMaterialModal(state.materials.find(material => material.id === id));
+      const material = findMaterialById(id);
+      if (!material) {
+        showToast("Não foi possível localizar este material. Atualize a tela e tente novamente.", true);
+        return;
+      }
+      openMaterialModal(material);
     };
 
     window.addStock = function(id) {
-      const material = state.materials.find(item => item.id === id);
+      const material = findMaterialById(id);
+      if (!material) {
+        showToast("Não foi possível localizar este material. Nenhum dado foi alterado.", true);
+        return;
+      }
       const value = prompt(`Informe a quantidade recebida para ${materialLabel(material)}:`);
       const quantity = Number(value);
       if (!Number.isInteger(quantity) || quantity <= 0) return;
-      material.stock += quantity;
+      material.stock = Number(material.stock || 0) + quantity;
       state.history.unshift({
         id: Date.now(),
         date: new Date().toISOString(),
@@ -7398,9 +7457,13 @@
     };
 
     window.deleteMaterial = function(id) {
-      const material = state.materials.find(item => item.id === id);
+      const material = findMaterialById(id);
+      if (!material) {
+        showToast("Não foi possível localizar este material. Nenhum dado foi excluído.", true);
+        return;
+      }
       if (!confirm(`Deseja excluir o cadastro de ${materialLabel(material)}? O histórico será preservado.`)) return;
-      state.materials = state.materials.filter(item => item.id !== id);
+      state.materials = state.materials.filter(item => !sameRecordId(item.id, id));
       saveState();
       renderAll();
       showToast("Material excluído. O histórico foi preservado.");
@@ -8843,8 +8906,8 @@
 
         prepared.forEach(entry => {
           if (entry.existing) {
-            const index = state.materials.findIndex(item => item.id === entry.material.id);
-            state.materials[index] = entry.material;
+            const index = state.materials.findIndex(item => sameRecordId(item.id, entry.material.id));
+            if (index >= 0) state.materials.splice(index, 1, { ...state.materials[index], ...entry.material });
           } else {
             state.materials.push(entry.material);
           }
@@ -9427,10 +9490,10 @@
     document.getElementById("collaboratorName").addEventListener("input", event => {
       document.getElementById("collaboratorPhotoInitials").textContent = collaboratorInitials(event.target.value);
     });
-    document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeMaterialModal));
+    document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", requestCloseMaterialModal));
     document.querySelectorAll("[data-close-collaborator]").forEach(button => button.addEventListener("click", closeCollaboratorModal));
     document.getElementById("materialModal").addEventListener("click", event => {
-      if (event.target.id === "materialModal") closeMaterialModal();
+      if (event.target.id === "materialModal") requestCloseMaterialModal();
     });
     document.getElementById("collaboratorModal").addEventListener("click", event => {
       if (event.target.id === "collaboratorModal") closeCollaboratorModal();
@@ -9438,14 +9501,21 @@
 
     document.getElementById("materialForm").addEventListener("submit", async event => {
       event.preventDefault();
-      const wasEditing = Boolean(editingMaterialId);
+      const wasEditing = editingMaterialId !== null && editingMaterialId !== undefined;
+      const currentMaterial = wasEditing ? findMaterialById(editingMaterialId) : null;
+      if (wasEditing && !currentMaterial) {
+        showToast("Este material não está mais disponível na base. Seus campos foram mantidos para conferência.", true);
+        return;
+      }
       const stockValue = document.getElementById("materialStock").value.trim();
       const minimumValue = document.getElementById("materialMinimum").value.trim();
       const material = {
-        id: editingMaterialId || Date.now(),
+        ...(editingMaterialOriginal || {}),
+        ...(currentMaterial || {}),
+        id: wasEditing ? currentMaterial.id : Date.now(),
         description: upperText(document.getElementById("materialDescription").value.trim()),
-        code: editingMaterialId
-          ? upperText(document.getElementById("materialCode").value.trim())
+        code: wasEditing
+          ? upperText(currentMaterial.code || document.getElementById("materialCode").value.trim())
           : nextMaterialCode(),
         size: upperText(document.getElementById("materialSize").value.trim()),
         manufacturer: upperText(document.getElementById("materialManufacturer").value.trim()),
@@ -9462,7 +9532,7 @@
         location: upperText(document.getElementById("materialLocation").value.trim()),
         notes: upperText(document.getElementById("materialNotes").value.trim())
       };
-      const duplicate = findMaterialDuplicate(material, editingMaterialId);
+      const duplicate = findMaterialDuplicate(material, wasEditing ? currentMaterial.id : null);
       if (duplicate) {
         const shouldRelease = await requestMaterialDuplicateRelease(duplicate, material);
         if (!shouldRelease) {
@@ -9473,9 +9543,13 @@
         }
         showToast("Liberação confirmada. O novo material será cadastrado.");
       }
-      if (editingMaterialId) {
-        const index = state.materials.findIndex(item => item.id === editingMaterialId);
-        state.materials[index] = material;
+      if (wasEditing) {
+        const index = state.materials.findIndex(item => sameRecordId(item.id, currentMaterial.id));
+        if (index < 0) {
+          showToast("A atualização foi interrompida porque o registro mudou durante a edição. Os campos continuam abertos.", true);
+          return;
+        }
+        state.materials.splice(index, 1, material);
       } else {
         state.materials.push(material);
         const sequence = Number(String(material.code).match(/(\d+)$/)?.[1]);
@@ -9489,6 +9563,22 @@
       renderAll();
       navigate("materials");
       showToast(wasEditing ? "Material atualizado com sucesso." : "Material cadastrado com sucesso.");
+    });
+
+    document.getElementById("materialForm").addEventListener("input", () => {
+      if (document.getElementById("materialModal").classList.contains("open")) materialFormDirty = true;
+    });
+    document.getElementById("materialForm").addEventListener("change", () => {
+      if (document.getElementById("materialModal").classList.contains("open")) materialFormDirty = true;
+    });
+
+    document.getElementById("materialsTable").addEventListener("click", event => {
+      const button = event.target.closest("[data-material-action]");
+      if (!button) return;
+      const id = button.dataset.materialId;
+      if (button.dataset.materialAction === "edit") window.editMaterial(id);
+      if (button.dataset.materialAction === "stock") window.addStock(id);
+      if (button.dataset.materialAction === "delete") window.deleteMaterial(id);
     });
 
     document.getElementById("collaboratorForm").addEventListener("submit", async event => {
@@ -9821,9 +9911,9 @@
 
     function addSelectedWithdrawalItem(options = {}) {
       const { silentWhenEmpty = false } = options;
-      const id = Number(document.getElementById("withdrawalMaterial").value);
+      const id = document.getElementById("withdrawalMaterial").value;
       const qty = Number(document.getElementById("withdrawalQty").value);
-      const material = state.materials.find(item => item.id === id);
+      const material = findMaterialById(id);
       if (!material && silentWhenEmpty) return true;
       if (!material || !Number.isInteger(qty) || qty <= 0) {
         const typedDescription = document.getElementById("withdrawalMaterialSearch").value.trim();
@@ -9836,7 +9926,7 @@
         if (!material) document.getElementById("withdrawalMaterialSearch").focus();
         return false;
       }
-      const already = withdrawalSelection.filter(item => item.id === id).reduce((sum, item) => sum + item.qty, 0);
+      const already = withdrawalSelection.filter(item => sameRecordId(item.id, id)).reduce((sum, item) => sum + item.qty, 0);
       if (qty + already > Number(material.stock || 0)) {
         showToast(`Retirada acima do saldo. Disponível: ${Number(material.stock || 0)} un. O saldo ficará negativo.`);
       }
@@ -9945,8 +10035,9 @@
       };
 
       withdrawal.items.forEach(entry => {
-        const material = state.materials.find(item => item.id === entry.id);
-        material.stock -= entry.qty;
+        const material = findMaterialById(entry.id);
+        if (!material) return;
+        material.stock = Number(material.stock || 0) - Number(entry.qty || 0);
       });
       state.withdrawals.push(withdrawal);
       state.history.unshift({
@@ -10081,7 +10172,7 @@
 
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") {
-        closeMaterialModal();
+        requestCloseMaterialModal();
         closeCollaboratorModal();
         closeProtectedAction();
         document.getElementById("unitModal").classList.remove("open");
@@ -10135,8 +10226,8 @@
       });
     }
 
-    // Garantia: CA, validade do CA, lote e validade do lote são opcionais.
-    ["materialCa", "materialCaValidity", "materialLot", "materialLotValidity"].forEach(id => {
+    // Garantia: fabricante, CA, validade do CA, lote e validade do lote são opcionais.
+    ["materialManufacturer", "materialCa", "materialCaValidity", "materialLot", "materialLotValidity"].forEach(id => {
       const field = document.getElementById(id);
       if (field) field.removeAttribute("required");
     });
