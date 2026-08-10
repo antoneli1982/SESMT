@@ -4445,8 +4445,9 @@
         <div class="employeeHistoryControls">
           <div class="field employeeHistorySearchField">
             <label for="employeeHistorySearch">Colaborador</label>
-            <input class="input" id="employeeHistorySearch" type="search" list="employeeHistoryOptions" placeholder="Digite nome, chapa ou matrícula" autocomplete="off">
-            <datalist id="employeeHistoryOptions"></datalist>
+            <select class="select" id="employeeHistorySearch" aria-label="Selecionar colaborador para consultar o histórico">
+              <option value="">Selecione um colaborador</option>
+            </select>
           </div>
           <div class="field">
             <label for="employeeHistoryMovement">Movimentação</label>
@@ -7530,31 +7531,6 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    function resolveEmployeeHistoryCollaborator(query) {
-      const normalizedQuery = normalizeColumnName(query);
-      if (!normalizedQuery) return null;
-      const collaborators = [
-        ...(state.collaborators || []),
-        ...(state.inactiveCollaborators || [])
-      ];
-      const exact = collaborators.find(collaborator => {
-        return [
-          collaborator.name,
-          collaborator.vwId,
-          collaborator.companyId
-        ].some(value => normalizeColumnName(value) === normalizedQuery);
-      });
-      if (exact) return exact;
-      const partial = collaborators.filter(collaborator => {
-        return [
-          collaborator.name,
-          collaborator.vwId,
-          collaborator.companyId
-        ].some(value => normalizeColumnName(value).includes(normalizedQuery));
-      });
-      return partial.length === 1 ? partial[0] : null;
-    }
-
     function filteredEmployeeHistoryRows(collaborator) {
       const movement = document.getElementById("employeeHistoryMovement").value;
       const start = document.getElementById("employeeHistoryStart").value;
@@ -7585,25 +7561,23 @@
 
     function renderEmployeeHistory() {
       const search = document.getElementById("employeeHistorySearch");
-      const options = document.getElementById("employeeHistoryOptions");
       const collaborators = [
         ...(state.collaborators || []),
         ...(state.inactiveCollaborators || [])
       ].slice()
         .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
-      options.innerHTML = collaborators.map(collaborator => {
+      search.innerHTML = `<option value="">Selecione um colaborador</option>` + collaborators.map(collaborator => {
         const details = [
           collaborator.vwId ? `Chapa ${collaborator.vwId}` : "",
-          collaborator.companyId ? `Matrícula ${collaborator.companyId}` : ""
+          collaborator.companyId ? `Matrícula ${collaborator.companyId}` : "",
+          collaborator.status === "Demitido" ? "Demitido" : collaborator.inactiveAt ? "Inativo" : ""
         ].filter(Boolean).join(" · ");
-        return `<option value="${escapeHtml(collaborator.name)}">${escapeHtml(details)}</option>`;
+        const label = [collaborator.name || "Sem nome", details].filter(Boolean).join(" — ");
+        return `<option value="${escapeHtml(collaborator.id)}">${escapeHtml(label)}</option>`;
       }).join("");
 
-      let collaborator = collaborators.find(item => String(item.id) === String(employeeHistorySelectedId));
-      if (!collaborator && search.value.trim()) {
-        collaborator = resolveEmployeeHistoryCollaborator(search.value);
-        employeeHistorySelectedId = collaborator?.id || null;
-      }
+      const selectedId = employeeHistorySelectedId ?? "";
+      const collaborator = collaborators.find(item => String(item.id) === String(selectedId));
 
       const sheet = document.getElementById("employeeHistorySheet");
       const exportButton = document.getElementById("exportEmployeeHistory");
@@ -7613,10 +7587,11 @@
         exportButton.disabled = true;
         printButton.disabled = true;
         document.getElementById("employeeHistoryPhotoImage").removeAttribute("src");
+        search.value = "";
         return;
       }
 
-      search.value = collaborator.name;
+      search.value = String(collaborator.id);
       sheet.hidden = false;
       exportButton.disabled = false;
       printButton.disabled = false;
@@ -7683,7 +7658,6 @@
       ].find(item => String(item.id) === String(collaboratorId));
       if (!collaborator) return;
       employeeHistorySelectedId = collaborator.id;
-      document.getElementById("employeeHistorySearch").value = collaborator.name;
       renderEmployeeHistory();
       navigate("employeeHistory");
     };
@@ -9278,15 +9252,8 @@
       renderHistory();
     });
 
-    document.getElementById("employeeHistorySearch").addEventListener("input", event => {
-      const collaborator = resolveEmployeeHistoryCollaborator(event.target.value);
-      employeeHistorySelectedId = collaborator?.id || null;
-      renderEmployeeHistory();
-    });
-
     document.getElementById("employeeHistorySearch").addEventListener("change", event => {
-      const collaborator = resolveEmployeeHistoryCollaborator(event.target.value);
-      employeeHistorySelectedId = collaborator?.id || null;
+      employeeHistorySelectedId = event.target.value || null;
       renderEmployeeHistory();
     });
 
