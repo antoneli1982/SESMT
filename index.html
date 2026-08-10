@@ -5081,6 +5081,7 @@
     const CLOUD_PHOTOS_COLLECTION = "seseCollaboratorPhotos";
     const CLOUD_CHUNK_LENGTH = 180000;
     const CLOUD_SAVE_DELAY = 900;
+    const MANUFACTURER_CLEANUP_MIGRATION = "clear_existing_manufacturers_2026_08_10";
     let cloudDatabase = null;
     let cloudReady = false;
     let cloudApplyingState = false;
@@ -5679,8 +5680,61 @@
           materials: 0,
           withdrawals: 0,
           returns: 0
+        },
+        dataMigrations: {
+          [MANUFACTURER_CLEANUP_MIGRATION]: {
+            completedAt: new Date().toISOString(),
+            clearedMaterialRecords: 0,
+            clearedWithdrawalRecords: 0,
+            cleanedHistoryRecords: 0
+          }
         }
       };
+    }
+
+    function removeManufacturerFromHistoryText(value) {
+      return String(value || "")
+        .replace(/\s*·\s*FABRICANTE\s*:?\s*[^+·]*(?=\s*(?:\+|$))/giu, "")
+        .replace(/\s*\+\s*/g, " + ")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+    }
+
+    function applyManufacturerCleanupMigration(loaded) {
+      if (!loaded || typeof loaded !== "object") return false;
+      if (!loaded.dataMigrations || typeof loaded.dataMigrations !== "object") loaded.dataMigrations = {};
+      if (loaded.dataMigrations[MANUFACTURER_CLEANUP_MIGRATION]) return false;
+
+      let clearedMaterialRecords = 0;
+      let clearedWithdrawalRecords = 0;
+      let cleanedHistoryRecords = 0;
+
+      loaded.materials = (loaded.materials || []).map(material => {
+        if (String(material?.manufacturer || "").trim()) clearedMaterialRecords += 1;
+        return { ...material, manufacturer: "" };
+      });
+
+      loaded.withdrawals = (loaded.withdrawals || []).map(withdrawal => ({
+        ...withdrawal,
+        items: (withdrawal.items || []).map(item => {
+          if (String(item?.manufacturer || "").trim()) clearedWithdrawalRecords += 1;
+          return { ...item, manufacturer: "" };
+        })
+      }));
+
+      loaded.history = (loaded.history || []).map(entry => {
+        const material = removeManufacturerFromHistoryText(entry?.material);
+        if (material !== String(entry?.material || "")) cleanedHistoryRecords += 1;
+        return { ...entry, material };
+      });
+
+      loaded.dataMigrations[MANUFACTURER_CLEANUP_MIGRATION] = {
+        completedAt: new Date().toISOString(),
+        clearedMaterialRecords,
+        clearedWithdrawalRecords,
+        cleanedHistoryRecords
+      };
+      return true;
     }
 
     function dailySecurityPassword(date = new Date()) {
@@ -5733,9 +5787,12 @@
           Number(loaded.nextMaterialSequence) || 1,
           greatestMaterialSequence + 1
         );
+        applyManufacturerCleanupMigration(loaded);
         return loaded;
       } catch {
-        return normalizeOperationalUppercase(cloneSeed());
+        const fallback = normalizeOperationalUppercase(cloneSeed());
+        applyManufacturerCleanupMigration(fallback);
+        return fallback;
       }
     }
 
@@ -5842,13 +5899,20 @@
       }
       setCloudStatus("Atualizando dados", "saving");
       const loaded = normalizeLoadedState(await readCloudState(meta));
+      const manufacturerCleanupApplied = applyManufacturerCleanupMigration(loaded);
       cloudApplyingState = true;
       cloudLastVersion = version;
       state = loaded;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
       cloudApplyingState = false;
-      setCloudStatus("Dados sincronizados", "online");
+      if (manufacturerCleanupApplied) {
+        localStateRevision += 1;
+        await writeCloudState();
+        showToast("Os fabricantes antigos foram removidos dos materiais e do histórico.");
+      } else {
+        setCloudStatus("Dados sincronizados", "online");
+      }
     }
 
     async function removeOldCloudChunks(currentVersion) {
