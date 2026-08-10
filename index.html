@@ -4738,8 +4738,8 @@
               <input class="input" id="materialSize" required placeholder="Único, P, M, G, 40">
             </div>
             <div class="field">
-              <label for="materialManufacturer">Fabricante</label>
-              <input class="input" id="materialManufacturer" placeholder="Opcional">
+              <label for="materialManufacturer">Fabricante (opcional)</label>
+              <input class="input" id="materialManufacturer" placeholder="Pode ficar em branco" aria-required="false" autocomplete="organization">
             </div>
             <div class="field">
               <label for="materialCa">Número do CA</label>
@@ -7367,6 +7367,7 @@
     }
 
     function openMaterialModal(material = null) {
+      ensureMaterialManufacturerOptional();
       editingMaterialId = material ? material.id : null;
       editingMaterialOriginal = material ? { ...material } : null;
       materialFormDirty = false;
@@ -9501,6 +9502,7 @@
 
     document.getElementById("materialForm").addEventListener("submit", async event => {
       event.preventDefault();
+      ensureMaterialManufacturerOptional();
       const wasEditing = editingMaterialId !== null && editingMaterialId !== undefined;
       const currentMaterial = wasEditing ? findMaterialById(editingMaterialId) : null;
       if (wasEditing && !currentMaterial) {
@@ -10226,11 +10228,17 @@
       });
     }
 
-    // Garantia: fabricante, CA, validade do CA, lote e validade do lote são opcionais.
-    ["materialManufacturer", "materialCa", "materialCaValidity", "materialLot", "materialLotValidity"].forEach(id => {
-      const field = document.getElementById(id);
-      if (field) field.removeAttribute("required");
-    });
+    // O fabricante é opcional em cadastro e edição.
+    function ensureMaterialManufacturerOptional() {
+      const field = document.getElementById("materialManufacturer");
+      if (!field) return;
+      field.required = false;
+      field.removeAttribute("required");
+      field.setAttribute("aria-required", "false");
+      field.setCustomValidity("");
+    }
+
+    ensureMaterialManufacturerOptional();
 
     document.getElementById("currentDate").textContent = new Intl.DateTimeFormat("pt-BR", {
       weekday: "long",
