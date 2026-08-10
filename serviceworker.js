@@ -1,4 +1,4 @@
-const CACHE_NAME = "gestaoepi20260731";
+const CACHE_NAME = "gestaoepi20260810pdf1";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -7,7 +7,9 @@ const APP_FILES = [
   "./icons/icon192.png",
   "./icons/icon512.png",
   "./icons/apple180.png",
-  "./icons/maskable512.png"
+  "./icons/maskable512.png",
+  "./vendor/jspdf.umd.min.js",
+  "./vendor/jspdf.plugin.autotable.min.js"
 ];
 
 self.addEventListener("install", event => {
