@@ -1524,6 +1524,91 @@
       font-size: 9px;
     }
 
+    .inventoryCountTable {
+      min-width: 1320px;
+      table-layout: auto;
+    }
+
+    .inventoryCountTable th,
+    .inventoryCountTable td {
+      white-space: normal;
+    }
+
+    .inventoryCountTable th:nth-child(1),
+    .inventoryCountTable td:nth-child(1) {
+      width: 350px;
+      min-width: 350px;
+    }
+
+    .inventoryCountTable th:nth-child(2),
+    .inventoryCountTable td:nth-child(2) {
+      min-width: 135px;
+    }
+
+    .inventoryCountTable th:nth-child(3),
+    .inventoryCountTable td:nth-child(3) {
+      min-width: 160px;
+      overflow-wrap: anywhere;
+    }
+
+    .inventoryCountTable th:nth-child(4),
+    .inventoryCountTable td:nth-child(4),
+    .inventoryCountTable th:nth-child(6),
+    .inventoryCountTable td:nth-child(6) {
+      min-width: 120px;
+    }
+
+    .inventoryCountTable th:nth-child(5),
+    .inventoryCountTable td:nth-child(5) {
+      min-width: 155px;
+    }
+
+    .inventoryCountTable th:nth-child(7),
+    .inventoryCountTable td:nth-child(7) {
+      min-width: 280px;
+    }
+
+    .inventoryCountTable .materialCell {
+      width: 100%;
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .inventoryCountTable .materialCell > div:last-child {
+      min-width: 0;
+    }
+
+    .inventoryCountTable .materialCell strong,
+    .inventoryCountTable .materialCell small {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .inventoryProductCaption {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--blue);
+      font-size: 8px;
+      font-weight: 850;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .inventoryProductName {
+      color: var(--ink);
+      font-size: 11px;
+    }
+
+    .inventoryProductCode {
+      font-weight: 750;
+    }
+
+    .inventoryCountTable .inventoryCount,
+    .inventoryCountTable .inventoryReason {
+      width: 100%;
+    }
+
     .collaboratorHistoryLink {
       display: inline;
       padding: 0;
@@ -3007,6 +3092,11 @@
         overflow-wrap: anywhere;
       }
 
+      .inventoryCountTable td:nth-child(n) {
+        width: 100%;
+        min-width: 0;
+      }
+
       .materialsCatalogTable td::before,
       .inventoryCountTable td::before {
         content: attr(data-label);
@@ -3081,6 +3171,7 @@
 
       .inventoryCountTable .input {
         width: 100%;
+        min-width: 0;
       }
 
       .employeeHistoryControls {
@@ -4137,7 +4228,7 @@
             <button class="primaryButton" id="finishInventory" disabled>Finalizar inventário</button>
           </div>
           <div class="filters">
-            <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar equipamento, código, CA ou local" aria-label="Pesquisar equipamento no inventário">
+            <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar nome do produto, código, CA ou local" aria-label="Pesquisar produto no inventário">
             <select class="select" id="inventoryCategoryFilter" aria-label="Filtrar categoria no inventário">
               <option value="">Todas as categorias</option>
               <option>Proteção da cabeça</option>
@@ -4153,7 +4244,7 @@
             <table class="inventoryCountTable">
               <thead>
                 <tr>
-                  <th>Material</th>
+                  <th>Produto</th>
                   <th>Número do CA</th>
                   <th>Local</th>
                   <th>Saldo esperado</th>
@@ -7022,7 +7113,7 @@
         const differenceColor = difference === null ? "" : (difference === 0 ? "var(--success)" : "var(--danger)");
         return `
         <tr>
-          <td data-label="Material"><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><strong>${escapeHtml(upperText(material.description))}</strong><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>${escapeHtml(material.code)} · Lote ${escapeHtml(material.lot || "Não informado")}</small></div></div></td>
+          <td data-label="Produto"><div class="materialCell"><div class="materialIcon">${escapeHtml(material.code.slice(-2))}</div><div><span class="inventoryProductCaption">Nome do produto</span><strong class="inventoryProductName">${escapeHtml(upperText(material.description || "Não informado"))}</strong><small class="inventoryProductCode">Código: ${escapeHtml(material.code || "Não informado")}</small><small>Tamanho: ${escapeHtml(material.size || "Não informado")} · Fabricante: ${escapeHtml(material.manufacturer || "Não informado")}</small><small>Lote: ${escapeHtml(material.lot || "Não informado")}</small></div></div></td>
           <td data-label="Número do CA"><span class="caValue">CA ${escapeHtml(material.ca || "Não informado")}</span></td>
           <td data-label="Local">${escapeHtml(material.location || "Não informada")}</td>
           <td class="materialStockCell" data-label="Saldo esperado"><strong>${material.stock}</strong></td>
