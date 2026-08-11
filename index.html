@@ -1214,6 +1214,9 @@
       background: var(--surface);
       box-shadow: 0 18px 40px rgba(8, 32, 67, .18);
       overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      scrollbar-gutter: stable;
     }
 
     .searchableFilterList[hidden] {
@@ -1230,6 +1233,8 @@
       background: var(--surface);
       text-align: left;
       cursor: pointer;
+      touch-action: pan-y;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .searchableFilterOption:last-child {
@@ -8063,6 +8068,8 @@
     };
 
     let withdrawalMaterialSuggestionIndex = -1;
+    let withdrawalMaterialTouchGesture = null;
+    let withdrawalMaterialListTouchActive = false;
 
     function withdrawalMaterialMatchesDescription(query) {
       const normalizedQuery = normalizeColumnName(query);
@@ -10919,17 +10926,59 @@
     });
     withdrawalMaterialSearch.addEventListener("blur", () => {
       setTimeout(() => {
+        if (withdrawalMaterialListTouchActive) return;
         if (!document.getElementById("withdrawalMaterialSearchBox").contains(document.activeElement)) {
           closeWithdrawalMaterialSuggestions();
         }
       }, 0);
     });
 
-    document.getElementById("withdrawalMaterialSuggestions").addEventListener("pointerdown", event => {
+    const withdrawalMaterialSuggestions = document.getElementById("withdrawalMaterialSuggestions");
+
+    withdrawalMaterialSuggestions.addEventListener("pointerdown", event => {
       const option = event.target.closest("[data-material-id]");
       if (!option || option.disabled) return;
-      event.preventDefault();
-      selectWithdrawalMaterial(option.dataset.materialId);
+      if (event.pointerType === "mouse") {
+        event.preventDefault();
+        selectWithdrawalMaterial(option.dataset.materialId);
+        return;
+      }
+      withdrawalMaterialListTouchActive = true;
+      withdrawalMaterialTouchGesture = {
+        pointerId: event.pointerId,
+        materialId: option.dataset.materialId,
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false
+      };
+    });
+
+    withdrawalMaterialSuggestions.addEventListener("pointermove", event => {
+      const gesture = withdrawalMaterialTouchGesture;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > 8) {
+        gesture.moved = true;
+      }
+    });
+
+    withdrawalMaterialSuggestions.addEventListener("pointerup", event => {
+      const gesture = withdrawalMaterialTouchGesture;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      const releasedOption = event.target.closest("[data-material-id]");
+      const isSameOption = releasedOption
+        && !releasedOption.disabled
+        && String(releasedOption.dataset.materialId) === String(gesture.materialId);
+      withdrawalMaterialTouchGesture = null;
+      withdrawalMaterialListTouchActive = false;
+      if (!gesture.moved && isSameOption) {
+        event.preventDefault();
+        selectWithdrawalMaterial(gesture.materialId);
+      }
+    });
+
+    withdrawalMaterialSuggestions.addEventListener("pointercancel", () => {
+      withdrawalMaterialTouchGesture = null;
+      withdrawalMaterialListTouchActive = false;
     });
 
     document.getElementById("toggleWithdrawalMaterialSuggestions").addEventListener("click", () => {
