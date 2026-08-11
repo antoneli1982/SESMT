@@ -1276,11 +1276,11 @@
     }
 
     .withdrawalMaterialSearch .input {
-      padding-right: 44px;
+      padding-right: 78px;
     }
 
     .withdrawalMaterialSearch .searchableFilterClear {
-      right: 7px;
+      right: 40px;
     }
 
     .alertFilters .filterClear,
@@ -1462,8 +1462,49 @@
     #materialDescription,
     #materialSearch,
     #inventorySearch,
-    #withdrawalMaterialSearch {
+    #withdrawalMaterialSearch,
+    #stockEntryMaterialSearch {
       text-transform: uppercase;
+    }
+
+    .stockEntryMaterialSearch .input {
+      padding-right: 78px;
+    }
+
+    .stockEntryAuditNotice {
+      margin-top: 16px;
+      padding: 13px 14px;
+      border: 1px solid #b8d4f1;
+      border-radius: 13px;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--blue-soft), #f5fbff);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .stockEntryAuditNotice strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--blue);
+      font-size: 11px;
+    }
+
+    #page-history .auditHistoryTable {
+      min-width: 1760px;
+    }
+
+    .historyBalanceCell {
+      min-width: 112px;
+      white-space: normal;
+      line-height: 1.55;
+    }
+
+    .historyAuditDetails {
+      min-width: 230px;
+      max-width: 340px;
+      color: var(--muted);
+      white-space: normal;
+      line-height: 1.5;
     }
 
     .materialsCatalogTable {
@@ -4011,14 +4052,15 @@
       <nav class="nav">
         <button class="navButton active" data-page="dashboard" data-label="Painel geral" title="Painel geral"><span class="navIcon">01</span>Painel geral</button>
         <button class="navButton" data-page="materials" data-label="Materiais" title="Materiais"><span class="navIcon">02</span>Materiais</button>
-        <button class="navButton" data-page="collaborators" data-label="Colaboradores" title="Colaboradores"><span class="navIcon">03</span>Colaboradores</button>
-        <button class="navButton" data-page="inactiveCollaborators" data-label="Cargos/Colaboradores inativos" title="Cargos/Colaboradores inativos"><span class="navIcon">04</span>Cargos/Colaboradores inativos</button>
-        <button class="navButton" data-page="withdrawal" data-label="Nova retirada" title="Nova retirada"><span class="navIcon">05</span>Nova retirada</button>
-        <button class="navButton" data-page="inventory" data-label="Inventário" title="Inventário"><span class="navIcon">06</span>Inventário</button>
-        <button class="navButton" data-page="alerts" data-count="4" data-label="Alertas" title="Alertas"><span class="navIcon">07</span>Alertas</button>
-        <button class="navButton" data-page="history" data-label="Histórico" title="Histórico"><span class="navIcon">08</span>Histórico</button>
-        <button class="navButton" data-page="employeeHistory" data-label="Histórico do colaborador" title="Histórico do colaborador"><span class="navIcon">09</span>Histórico do colaborador</button>
-        <button class="navButton" data-page="settings" data-label="Configurações" title="Configurações"><span class="navIcon">10</span>Configurações</button>
+        <button class="navButton" data-page="stockEntry" data-label="Entrada de materiais" title="Entrada de materiais"><span class="navIcon">03</span>Entrada de materiais</button>
+        <button class="navButton" data-page="collaborators" data-label="Colaboradores" title="Colaboradores"><span class="navIcon">04</span>Colaboradores</button>
+        <button class="navButton" data-page="inactiveCollaborators" data-label="Cargos/Colaboradores inativos" title="Cargos/Colaboradores inativos"><span class="navIcon">05</span>Cargos/Colaboradores inativos</button>
+        <button class="navButton" data-page="withdrawal" data-label="Nova retirada" title="Nova retirada"><span class="navIcon">06</span>Nova retirada</button>
+        <button class="navButton" data-page="inventory" data-label="Inventário" title="Inventário"><span class="navIcon">07</span>Inventário</button>
+        <button class="navButton" data-page="alerts" data-count="4" data-label="Alertas" title="Alertas"><span class="navIcon">08</span>Alertas</button>
+        <button class="navButton" data-page="history" data-label="Histórico" title="Histórico"><span class="navIcon">09</span>Histórico</button>
+        <button class="navButton" data-page="employeeHistory" data-label="Histórico do colaborador" title="Histórico do colaborador"><span class="navIcon">10</span>Histórico do colaborador</button>
+        <button class="navButton" data-page="settings" data-label="Configurações" title="Configurações"><span class="navIcon">11</span>Configurações</button>
       </nav>
 
       <div class="userCard">
@@ -4171,6 +4213,7 @@
             <button class="ghostButton" id="exportMaterials" type="button">Exportar Excel</button>
             <button class="ghostButton" id="exportMaterialsPdf" type="button">Relatório PDF</button>
             <button class="dangerButton" id="clearAllMaterials" type="button">Limpar tudo</button>
+            <button class="secondaryButton" id="openStockEntry" type="button">＋ Registrar entrada</button>
             <button class="primaryButton" id="newMaterialButton">＋ Novo material</button>
           </div>
         </div>
@@ -4212,6 +4255,79 @@
             </thead>
             <tbody id="materialsTable"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-stockEntry">
+        <div class="pageHeader">
+          <div>
+            <p class="eyebrow" style="color:var(--blue)">Recebimento rastreável</p>
+            <h2>Entrada de materiais</h2>
+            <p>Informe o material e a quantidade recebida. A data, a hora e os saldos serão registrados automaticamente.</p>
+          </div>
+        </div>
+        <div class="contentGrid">
+          <form class="panel" id="stockEntryForm">
+            <h3 class="sectionTitle"><span>1</span> Dados da entrada</h3>
+            <div class="formGrid">
+              <div class="field full">
+                <label for="stockEntryMaterialSearch">Material <span class="required">*</span></label>
+                <div class="searchableFilter stockEntryMaterialSearch" id="stockEntryMaterialSearchBox">
+                  <input class="input" id="stockEntryMaterialSearch" type="search" placeholder="DIGITE A DESCRIÇÃO, O CÓDIGO, O TAMANHO OU O FABRICANTE" autocomplete="off" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="stockEntryMaterialSuggestions">
+                  <button class="searchableFilterClear" id="clearStockEntryMaterialSearch" type="button" title="Limpar material" aria-label="Limpar material pesquisado" hidden>×</button>
+                  <button class="searchableFilterToggle" id="toggleStockEntryMaterialSuggestions" type="button" title="Abrir lista" aria-label="Abrir lista de materiais" aria-haspopup="listbox" aria-expanded="false">▾</button>
+                  <div class="searchableFilterList" id="stockEntryMaterialSuggestions" role="listbox" aria-label="Materiais disponíveis para entrada" hidden></div>
+                  <input id="stockEntryMaterial" type="hidden">
+                </div>
+              </div>
+              <div class="field">
+                <label for="stockEntryQuantity">Quantidade recebida <span class="required">*</span></label>
+                <input class="input" id="stockEntryQuantity" type="number" min="1" step="1" required placeholder="0">
+              </div>
+              <div class="field">
+                <label for="stockEntryOrigin">Origem / fornecedor</label>
+                <input class="input" id="stockEntryOrigin" placeholder="OPCIONAL">
+              </div>
+              <div class="field">
+                <label for="stockEntryDocument">Documento / nota fiscal</label>
+                <input class="input" id="stockEntryDocument" placeholder="OPCIONAL">
+              </div>
+              <div class="field">
+                <label for="stockEntryNotes">Observação</label>
+                <input class="input" id="stockEntryNotes" placeholder="OPCIONAL">
+              </div>
+            </div>
+            <div class="stockEntryAuditNotice">
+              <strong>Registro automático de auditoria</strong>
+              O histórico guardará data e hora, material, quantidade, saldo anterior, saldo posterior, origem, documento, observação e responsável.
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px">
+              <button class="ghostButton" type="reset" id="cancelStockEntry">Limpar</button>
+              <button class="primaryButton" type="submit">Confirmar entrada</button>
+            </div>
+          </form>
+
+          <aside class="panel summaryCard">
+            <div class="panelHeader">
+              <div>
+                <h3>Conferência da entrada</h3>
+                <p>Confira o impacto antes de salvar</p>
+              </div>
+            </div>
+            <div class="summaryList">
+              <div class="summaryLine"><span>Material</span><strong id="stockEntrySummaryMaterial">Não selecionado</strong></div>
+              <div class="summaryLine"><span>Código</span><strong id="stockEntrySummaryCode">Não informado</strong></div>
+              <div class="summaryLine"><span>Saldo atual</span><strong id="stockEntryCurrentStock">0 un.</strong></div>
+              <div class="summaryLine"><span>Quantidade recebida</span><strong id="stockEntrySummaryQuantity">0 un.</strong></div>
+              <div class="summaryLine"><span>Responsável</span><strong id="stockEntryResponsible">Não informado</strong></div>
+              <div class="summaryLine"><span>Data e hora</span><strong id="stockEntryTimestamp">Registrada ao confirmar</strong></div>
+            </div>
+            <div class="summaryTotal">
+              <span>Novo saldo previsto</span>
+              <strong id="stockEntryExpectedStock">0 un.</strong>
+              <small>A atualização ocorrerá somente após confirmar a entrada</small>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -4403,8 +4519,9 @@
                 <div class="field">
                   <label for="withdrawalMaterialSearch">Material <span class="required">*</span></label>
                   <div class="searchableFilter withdrawalMaterialSearch" id="withdrawalMaterialSearchBox">
-                    <input class="input" id="withdrawalMaterialSearch" type="search" placeholder="Digite a descrição do material" autocomplete="off" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="withdrawalMaterialSuggestions">
+                    <input class="input" id="withdrawalMaterialSearch" type="search" placeholder="DIGITE OU ABRA A LISTA DE MATERIAIS" autocomplete="off" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="withdrawalMaterialSuggestions">
                     <button class="searchableFilterClear" id="clearWithdrawalMaterialSearch" type="button" title="Limpar material" aria-label="Limpar material pesquisado" hidden>×</button>
+                    <button class="searchableFilterToggle" id="toggleWithdrawalMaterialSuggestions" type="button" title="Abrir lista" aria-label="Abrir lista de materiais" aria-haspopup="listbox" aria-expanded="false">▾</button>
                     <div class="searchableFilterList" id="withdrawalMaterialSuggestions" role="listbox" aria-label="Materiais encontrados pela descrição" hidden></div>
                     <input id="withdrawalMaterial" type="hidden">
                   </div>
@@ -4620,7 +4737,7 @@
           <div>
             <p class="eyebrow" style="color:var(--blue)">Rastreabilidade completa</p>
             <h2>Histórico</h2>
-            <p>Movimentações com data, responsável, colaborador e comprovante.</p>
+            <p>Cadastros, edições e movimentações com data, hora, responsável e saldos antes e depois.</p>
           </div>
           <div class="pageHeaderActions">
             <button class="ghostButton" id="exportHistory">Exportar CSV</button>
@@ -4659,13 +4776,16 @@
           <button class="ghostButton filterClear" id="clearHistoryFilters" type="button">Limpar filtros</button>
         </div>
         <div class="tableWrap">
-          <table>
+          <table class="auditHistoryTable">
             <thead>
               <tr>
                 <th>Data e hora</th>
                 <th>Tipo</th>
                 <th>Material</th>
                 <th>Quantidade</th>
+                <th>Saldo anterior</th>
+                <th>Saldo posterior</th>
+                <th>Detalhes</th>
                 <th>Colaborador</th>
                 <th>Chapa Volkswagen</th>
                 <th>Matrícula SESÉ</th>
@@ -6302,6 +6422,103 @@
       return parts.join(" · ");
     }
 
+    let auditHistorySequence = 0;
+
+    function nextAuditHistoryId() {
+      auditHistorySequence = (auditHistorySequence + 1) % 1000;
+      return Date.now() * 1000 + auditHistorySequence;
+    }
+
+    const materialAuditFields = [
+      ["description", "Descrição"],
+      ["code", "Código"],
+      ["category", "Categoria"],
+      ["size", "Tamanho"],
+      ["manufacturer", "Fabricante"],
+      ["ca", "Número do CA"],
+      ["caValidity", "Validade do CA"],
+      ["lot", "Lote"],
+      ["lotValidity", "Validade do lote"],
+      ["stock", "Saldo"],
+      ["minimum", "Estoque mínimo"],
+      ["lifetime", "Vida útil em dias"],
+      ["location", "Localização"],
+      ["notes", "Observações"]
+    ];
+
+    function comparableAuditValue(value) {
+      if (value === null || value === undefined || value === "") return "";
+      return String(value).trim();
+    }
+
+    function auditValueLabel(field, value) {
+      if (value === null || value === undefined || value === "") return "NÃO INFORMADO";
+      if (["caValidity", "lotValidity"].includes(field)) return formatDate(String(value));
+      return String(value);
+    }
+
+    function materialChangeDetails(previous, current) {
+      if (!previous || !current) return [];
+      return materialAuditFields.flatMap(([field, label]) => {
+        const before = comparableAuditValue(previous[field]);
+        const after = comparableAuditValue(current[field]);
+        if (before === after) return [];
+        return [`${label}: ${auditValueLabel(field, previous[field])} → ${auditValueLabel(field, current[field])}`];
+      });
+    }
+
+    function isHistoryOutput(item) {
+      const type = normalizeColumnName(item?.type || "");
+      return type.includes("retirada") || type.includes("saida");
+    }
+
+    function historyMovementQuantity(item) {
+      const quantity = Math.abs(Number(item?.qty || 0));
+      return isHistoryOutput(item) ? -quantity : Number(item?.qty || 0);
+    }
+
+    function historyQuantityLabel(item) {
+      const quantity = historyMovementQuantity(item);
+      if (!Number.isFinite(quantity) || quantity === 0) return "0";
+      return `${quantity > 0 ? "+" : ""}${quantity}`;
+    }
+
+    function historyBalanceText(item, field) {
+      if (Array.isArray(item?.stockItems) && item.stockItems.length) {
+        return item.stockItems.map(stockItem => {
+          const reference = stockItem.code || stockItem.material || "Material";
+          const value = stockItem[field];
+          const registered = value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+          return `${reference}: ${registered ? Number(value) : "Não registrado"}`;
+        }).join("\n");
+      }
+      const value = item?.[field];
+      return Number.isFinite(Number(value)) && value !== null && value !== ""
+        ? String(Number(value))
+        : "Não registrado";
+    }
+
+    function historyBalanceLabel(item, field) {
+      return historyBalanceText(item, field).split("\n").map(escapeHtml).join("<br>");
+    }
+
+    function historyDetailsText(item) {
+      if (item?.details) return String(item.details);
+      if (Array.isArray(item?.stockItems) && item.stockItems.length) {
+        return item.stockItems.map(stockItem => {
+          const reference = stockItem.material || stockItem.code || "Material";
+          const before = Number.isFinite(Number(stockItem.stockBefore)) ? Number(stockItem.stockBefore) : "?";
+          const after = Number.isFinite(Number(stockItem.stockAfter)) ? Number(stockItem.stockAfter) : "?";
+          return `${reference}: ${before} → ${after}`;
+        }).join("\n");
+      }
+      return "Sem detalhamento adicional";
+    }
+
+    function historyDetailsLabel(item) {
+      return historyDetailsText(item).split("\n").map(escapeHtml).join("<br>");
+    }
+
     function sameRecordId(left, right) {
       if (left === null || left === undefined || right === null || right === undefined) return false;
       return String(left) === String(right);
@@ -6408,8 +6625,14 @@
       loaded.collaborators = (loaded.collaborators || []).map(collaborator => uppercaseRecordFields(collaborator, collaboratorFields));
       loaded.inactiveCollaborators = (loaded.inactiveCollaborators || []).map(collaborator => uppercaseRecordFields(collaborator, collaboratorFields));
       loaded.history = (loaded.history || []).map(entry => uppercaseRecordFields(entry, [
-        "material", "employee", "employeeVwId", "employeeCompanyId", "employeeCategory", "responsible"
-      ]));
+        "material", "employee", "employeeVwId", "employeeCompanyId", "employeeCategory", "responsible",
+        "details", "source", "document"
+      ])).map(entry => ({
+        ...entry,
+        stockItems: (Array.isArray(entry.stockItems) ? entry.stockItems : []).map(item => uppercaseRecordFields(item, [
+          "material", "code"
+        ]))
+      }));
       loaded.withdrawals = (loaded.withdrawals || []).map(withdrawal => {
         const normalized = uppercaseRecordFields(withdrawal, [
           "employee", "employeeVwId", "employeeCompanyId", "employeeId", "employeeCategory", "area", "shift", "responsible"
@@ -6458,6 +6681,7 @@
       const titles = {
         dashboard: "Painel geral",
         materials: "Materiais",
+        stockEntry: "Entrada de materiais",
         collaborators: "Colaboradores",
         inactiveCollaborators: "Cargos/Colaboradores inativos",
         withdrawal: "Nova retirada",
@@ -6471,6 +6695,7 @@
       closeMobileMenu();
       window.scrollTo({ top: 0, behavior: "smooth" });
       if (page === "withdrawal") resizeCanvas();
+      if (page === "stockEntry") renderStockEntry();
     }
 
     function highlightDataTarget(element) {
@@ -6672,7 +6897,7 @@
               <strong>${escapeHtml(item.type)} · ${escapeHtml(item.material)}</strong>
               <p>${escapeHtml(item.employee)} · ${formatDate(item.date, true)}</p>
             </div>
-            <button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(historyMaterialsForItem(item)[0] || item.material)}">${item.qty > 0 ? "+" : ""}${item.qty}</button>
+            <button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(historyMaterialsForItem(item)[0] || item.material)}">${historyQuantityLabel(item)}</button>
           </div>
         `).join("");
     }
@@ -6912,6 +7137,128 @@
         `;
       }).join("") : `<tr><td colspan="12"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
       populateWithdrawalMaterials();
+    }
+
+    let stockEntryMaterialSuggestionIndex = -1;
+
+    function stockEntryMaterialMatches(query) {
+      const normalizedQuery = normalizeColumnName(query);
+      const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+      return (Array.isArray(state.materials) ? state.materials : [])
+        .map(material => {
+          const description = normalizeColumnName(material.description);
+          const code = normalizeColumnName(material.code);
+          const searchable = normalizeColumnName([
+            material.description,
+            material.code,
+            material.size,
+            material.manufacturer,
+            material.category
+          ].filter(Boolean).join(" "));
+          if (terms.length && !terms.every(term => searchable.includes(term))) return null;
+          let score = 4;
+          if (!normalizedQuery) score = 5;
+          else if (description === normalizedQuery || code === normalizedQuery) score = 0;
+          else if (description.startsWith(normalizedQuery)) score = 1;
+          else if (code.startsWith(normalizedQuery)) score = 2;
+          else if (searchable.split(/\s+/).some(word => word.startsWith(normalizedQuery))) score = 3;
+          return { material, score };
+        })
+        .filter(Boolean)
+        .sort((left, right) => left.score - right.score
+          || String(left.material.description || "").localeCompare(String(right.material.description || ""), "pt-BR")
+          || String(left.material.size || "").localeCompare(String(right.material.size || ""), "pt-BR"))
+        .map(entry => entry.material);
+    }
+
+    function closeStockEntryMaterialSuggestions() {
+      const list = document.getElementById("stockEntryMaterialSuggestions");
+      const input = document.getElementById("stockEntryMaterialSearch");
+      const toggle = document.getElementById("toggleStockEntryMaterialSuggestions");
+      list.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-expanded", "false");
+      stockEntryMaterialSuggestionIndex = -1;
+    }
+
+    function renderStockEntryMaterialSuggestions(forceOpen = false) {
+      const input = document.getElementById("stockEntryMaterialSearch");
+      const list = document.getElementById("stockEntryMaterialSuggestions");
+      const toggle = document.getElementById("toggleStockEntryMaterialSuggestions");
+      const matches = stockEntryMaterialMatches(input.value).slice(0, 80);
+      stockEntryMaterialSuggestionIndex = -1;
+      list.innerHTML = matches.length ? matches.map(material => `
+        <button class="searchableFilterOption" type="button" role="option" data-material-id="${escapeHtml(material.id)}">
+          <strong>${escapeHtml(material.description || "MATERIAL SEM DESCRIÇÃO")}</strong>
+          <small>${escapeHtml(material.code || "SEM CÓDIGO")} · TAMANHO ${escapeHtml(material.size || "NÃO INFORMADO")} · SALDO ${Number(material.stock || 0)} UN.${material.manufacturer ? ` · ${escapeHtml(material.manufacturer)}` : ""}</small>
+        </button>
+      `).join("") : `<div class="searchableFilterEmpty">Nenhum material corresponde ao texto digitado.</div>`;
+      const shouldOpen = forceOpen || document.activeElement === input || document.activeElement === toggle;
+      list.hidden = !shouldOpen;
+      input.setAttribute("aria-expanded", String(shouldOpen));
+      toggle.setAttribute("aria-expanded", String(shouldOpen));
+    }
+
+    function updateStockEntrySummary() {
+      const material = findMaterialById(document.getElementById("stockEntryMaterial").value);
+      const quantity = Number(document.getElementById("stockEntryQuantity").value);
+      const currentStock = material ? Number(material.stock || 0) : 0;
+      const validQuantity = Number.isInteger(quantity) && quantity > 0 ? quantity : 0;
+      document.getElementById("stockEntrySummaryMaterial").textContent = material ? materialLabel(material) : "Não selecionado";
+      document.getElementById("stockEntrySummaryCode").textContent = material?.code || "Não informado";
+      document.getElementById("stockEntryCurrentStock").textContent = `${currentStock.toLocaleString("pt-BR")} un.`;
+      document.getElementById("stockEntrySummaryQuantity").textContent = `${validQuantity.toLocaleString("pt-BR")} un.`;
+      document.getElementById("stockEntryExpectedStock").textContent = `${(currentStock + validQuantity).toLocaleString("pt-BR")} un.`;
+      document.getElementById("stockEntryResponsible").textContent = state.settings.responsible || "Não informado";
+      document.getElementById("stockEntryTimestamp").textContent = formatDate(new Date().toISOString(), true);
+    }
+
+    function selectStockEntryMaterial(materialId) {
+      const material = findMaterialById(materialId);
+      if (!material) return;
+      document.getElementById("stockEntryMaterial").value = material.id;
+      document.getElementById("stockEntryMaterialSearch").value = material.description || material.code || "";
+      document.getElementById("clearStockEntryMaterialSearch").hidden = false;
+      closeStockEntryMaterialSuggestions();
+      updateStockEntrySummary();
+      document.getElementById("stockEntryQuantity").focus();
+    }
+
+    function moveStockEntryMaterialSuggestion(direction) {
+      const options = Array.from(document.querySelectorAll("#stockEntryMaterialSuggestions .searchableFilterOption"));
+      if (!options.length) return;
+      stockEntryMaterialSuggestionIndex = (stockEntryMaterialSuggestionIndex + direction + options.length) % options.length;
+      options.forEach((option, index) => option.classList.toggle("active", index === stockEntryMaterialSuggestionIndex));
+      options[stockEntryMaterialSuggestionIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    function resetStockEntryForm() {
+      document.getElementById("stockEntryForm").reset();
+      document.getElementById("stockEntryMaterial").value = "";
+      document.getElementById("clearStockEntryMaterialSearch").hidden = true;
+      closeStockEntryMaterialSuggestions();
+      updateStockEntrySummary();
+    }
+
+    function renderStockEntry() {
+      const selected = findMaterialById(document.getElementById("stockEntryMaterial").value);
+      if (!selected) {
+        document.getElementById("stockEntryMaterial").value = "";
+        if (!document.getElementById("stockEntryMaterialSearch").value.trim()) {
+          document.getElementById("clearStockEntryMaterialSearch").hidden = true;
+        }
+      }
+      updateStockEntrySummary();
+    }
+
+    function openStockEntry(materialId = null) {
+      resetStockEntryForm();
+      if (materialId !== null && materialId !== undefined) selectStockEntryMaterial(materialId);
+      navigate("stockEntry");
+      requestAnimationFrame(() => {
+        if (materialId !== null && materialId !== undefined) document.getElementById("stockEntryQuantity").focus();
+        else document.getElementById("stockEntryMaterialSearch").focus();
+      });
     }
 
     function clearMaterialFilters() {
@@ -7539,41 +7886,50 @@
     let withdrawalMaterialSuggestionIndex = -1;
 
     function withdrawalMaterialMatchesDescription(query) {
-      const terms = normalizeColumnName(query).split(/\s+/).filter(Boolean);
-      if (!terms.length) return [];
+      const normalizedQuery = normalizeColumnName(query);
+      const terms = normalizedQuery.split(/\s+/).filter(Boolean);
       return (Array.isArray(state.materials) ? state.materials : [])
-        .filter(material => {
+        .map(material => {
           const description = normalizeColumnName(material.description);
-          return terms.every(term => description.includes(term));
+          if (terms.length && !terms.every(term => description.includes(term))) return null;
+          let score = 4;
+          if (!normalizedQuery) score = 5;
+          else if (description === normalizedQuery) score = 0;
+          else if (description.startsWith(normalizedQuery)) score = 1;
+          else if (description.split(/\s+/).some(word => word.startsWith(normalizedQuery))) score = 2;
+          else if (terms.every(term => description.split(/\s+/).some(word => word.startsWith(term)))) score = 3;
+          return { material, score };
         })
-        .sort((a, b) => String(a.description || "").localeCompare(String(b.description || ""), "pt-BR"));
+        .filter(Boolean)
+        .sort((left, right) => left.score - right.score
+          || String(left.material.description || "").localeCompare(String(right.material.description || ""), "pt-BR")
+          || String(left.material.size || "").localeCompare(String(right.material.size || ""), "pt-BR"))
+        .map(entry => entry.material);
     }
 
     function closeWithdrawalMaterialSuggestions() {
       const input = document.getElementById("withdrawalMaterialSearch");
       const list = document.getElementById("withdrawalMaterialSuggestions");
+      const toggle = document.getElementById("toggleWithdrawalMaterialSuggestions");
       withdrawalMaterialSuggestionIndex = -1;
       list.hidden = true;
       list.innerHTML = "";
       input.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-expanded", "false");
       input.removeAttribute("aria-activedescendant");
     }
 
-    function renderWithdrawalMaterialSuggestions() {
+    function renderWithdrawalMaterialSuggestions(forceOpen = false) {
       const input = document.getElementById("withdrawalMaterialSearch");
       const list = document.getElementById("withdrawalMaterialSuggestions");
       const clearButton = document.getElementById("clearWithdrawalMaterialSearch");
+      const toggle = document.getElementById("toggleWithdrawalMaterialSuggestions");
       const query = input.value.trim();
       clearButton.hidden = !query;
       withdrawalMaterialSuggestionIndex = -1;
       input.removeAttribute("aria-activedescendant");
-      if (!query || document.activeElement !== input) {
-        closeWithdrawalMaterialSuggestions();
-        clearButton.hidden = !query;
-        return;
-      }
 
-      const matches = withdrawalMaterialMatchesDescription(query);
+      const matches = withdrawalMaterialMatchesDescription(query).slice(0, 80);
       list.innerHTML = matches.length ? matches.map((material, index) => {
         const caExpired = !notExpired(material.caValidity);
         const status = caExpired
@@ -7588,9 +7944,11 @@
             <small>CA: ${escapeHtml(material.ca || "NÃO INFORMADO")} · ${status}</small>
           </button>
         `;
-      }).join("") : `<div class="searchableFilterEmpty">NENHUM MATERIAL CORRESPONDE À DESCRIÇÃO.</div>`;
-      list.hidden = false;
-      input.setAttribute("aria-expanded", "true");
+      }).join("") : `<div class="searchableFilterEmpty">NENHUM MATERIAL CORRESPONDE AO TEXTO DIGITADO.</div>`;
+      const shouldOpen = forceOpen || document.activeElement === input || document.activeElement === toggle;
+      list.hidden = !shouldOpen;
+      input.setAttribute("aria-expanded", String(shouldOpen));
+      toggle.setAttribute("aria-expanded", String(shouldOpen));
     }
 
     function selectWithdrawalMaterial(materialId) {
@@ -7623,6 +7981,7 @@
     function populateWithdrawalMaterials() {
       const selectedField = document.getElementById("withdrawalMaterial");
       const searchField = document.getElementById("withdrawalMaterialSearch");
+      const toggleButton = document.getElementById("toggleWithdrawalMaterialSuggestions");
       const current = selectedField.value;
       const materials = (Array.isArray(state.materials) ? state.materials : [])
         .slice()
@@ -7632,12 +7991,14 @@
         searchField.value = "";
         searchField.placeholder = "NENHUM EPI CADASTRADO";
         searchField.disabled = true;
+        toggleButton.disabled = true;
         closeWithdrawalMaterialSuggestions();
         updateWithdrawalMaterialInfo();
         return;
       }
       searchField.disabled = false;
-      searchField.placeholder = "DIGITE A DESCRIÇÃO DO MATERIAL";
+      toggleButton.disabled = false;
+      searchField.placeholder = "DIGITE OU ABRA A LISTA DE MATERIAIS";
       const selectedMaterial = materials.find(material => String(material.id) === String(current) && notExpired(material.caValidity));
       if (selectedMaterial) searchField.value = selectedMaterial.description || "";
       else selectedField.value = "";
@@ -7728,23 +8089,7 @@
         showToast("Não foi possível localizar este material. Nenhum dado foi alterado.", true);
         return;
       }
-      const value = prompt(`Informe a quantidade recebida para ${materialLabel(material)}:`);
-      const quantity = Number(value);
-      if (!Number.isInteger(quantity) || quantity <= 0) return;
-      material.stock = Number(material.stock || 0) + quantity;
-      state.history.unshift({
-        id: Date.now(),
-        date: new Date().toISOString(),
-        type: "Entrada",
-        material: materialLabel(material),
-        qty: quantity,
-        employee: "Recebimento de estoque",
-        responsible: state.settings.responsible,
-        signed: false
-      });
-      saveState();
-      renderAll();
-      showToast("Entrada registrada com sucesso.");
+      openStockEntry(material.id);
     };
 
     window.deleteMaterial = function(id) {
@@ -8124,7 +8469,10 @@
           <td>${formatDate(item.date, true)}</td>
           <td><button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyType" data-filter-value="${escapeHtml(item.type)}">${escapeHtml(item.type)}</button></td>
           <td><strong>${escapeHtml(item.material)}</strong></td>
-          <td>${item.qty > 0 ? "+" : ""}${item.qty}</td>
+          <td><strong>${historyQuantityLabel(item)}</strong></td>
+          <td class="historyBalanceCell">${historyBalanceLabel(item, "stockBefore")}</td>
+          <td class="historyBalanceCell">${historyBalanceLabel(item, "stockAfter")}</td>
+          <td class="historyAuditDetails">${historyDetailsLabel(item)}</td>
           <td>${escapeHtml(item.employee)}</td>
           <td>${escapeHtml(resolveHistoryIdentity(item).vwId || "Não informada")}</td>
           <td>${escapeHtml(resolveHistoryIdentity(item).companyId || "Não informada")}</td>
@@ -8132,7 +8480,7 @@
           <td>${escapeHtml(item.responsible)}</td>
           <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Gerar PDF assinado</button>` : "Não aplicável"}</td>
         </tr>
-      `).join("") : `<tr><td colspan="10"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
+      `).join("") : `<tr><td colspan="13"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
 
       const signatureRows = getSignatureHistoryRows().filter(entry => {
         const withdrawal = entry.withdrawal;
@@ -8441,6 +8789,7 @@
     function renderAll() {
       renderDashboard();
       renderMaterials();
+      renderStockEntry();
       renderCollaborators();
       renderInactiveCollaborators();
       renderInventory();
@@ -9198,9 +9547,48 @@
         prepared.forEach(entry => {
           if (entry.existing) {
             const index = state.materials.findIndex(item => sameRecordId(item.id, entry.material.id));
-            if (index >= 0) state.materials.splice(index, 1, { ...state.materials[index], ...entry.material });
+            if (index >= 0) {
+              const previousMaterial = { ...state.materials[index] };
+              const updatedMaterial = { ...state.materials[index], ...entry.material };
+              state.materials.splice(index, 1, updatedMaterial);
+              const changes = materialChangeDetails(previousMaterial, updatedMaterial);
+              if (changes.length) {
+                const stockBefore = Number(previousMaterial.stock || 0);
+                const stockAfter = Number(updatedMaterial.stock || 0);
+                state.history.unshift({
+                  id: nextAuditHistoryId(),
+                  date: new Date().toISOString(),
+                  type: "Material editado",
+                  direction: stockAfter > stockBefore ? "in" : stockAfter < stockBefore ? "out" : "neutral",
+                  material: materialLabel(updatedMaterial),
+                  materialId: updatedMaterial.id,
+                  qty: stockAfter - stockBefore,
+                  stockBefore,
+                  stockAfter,
+                  details: `IMPORTAÇÃO DE PLANILHA · ${changes.join(" · ")}`,
+                  employee: "IMPORTAÇÃO DE PLANILHA",
+                  responsible: state.settings.responsible || "RESPONSÁVEL NÃO INFORMADO",
+                  signed: false
+                });
+              }
+            }
           } else {
             state.materials.push(entry.material);
+            state.history.unshift({
+              id: nextAuditHistoryId(),
+              date: new Date().toISOString(),
+              type: "Novo material",
+              direction: "in",
+              material: materialLabel(entry.material),
+              materialId: entry.material.id,
+              qty: Number(entry.material.stock || 0),
+              stockBefore: 0,
+              stockAfter: Number(entry.material.stock || 0),
+              details: `CADASTRO CRIADO POR IMPORTAÇÃO · CÓDIGO ${entry.material.code || "NÃO INFORMADO"}`,
+              employee: "IMPORTAÇÃO DE PLANILHA",
+              responsible: state.settings.responsible || "RESPONSÁVEL NÃO INFORMADO",
+              signed: false
+            });
           }
         });
         state.nextMaterialSequence = nextSequence;
@@ -9491,10 +9879,24 @@
     }
 
     function exportHistory() {
-      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Colaborador", "Chapa Volkswagen", "Matrícula SESÉ", "Categoria do colaborador", "Responsável", "Assinado"]];
+      const rows = [["Data e hora", "Tipo", "Material", "Quantidade", "Saldo anterior", "Saldo posterior", "Detalhes", "Colaborador", "Chapa Volkswagen", "Matrícula SESÉ", "Categoria do colaborador", "Responsável", "Assinado"]];
       state.history.forEach(item => {
         const identity = resolveHistoryIdentity(item);
-        rows.push([formatDate(item.date, true), item.type, item.material, item.qty, item.employee, identity.vwId, identity.companyId, item.employeeCategory || "", item.responsible, item.signed ? "Sim" : "Não"]);
+        rows.push([
+          formatDate(item.date, true),
+          item.type,
+          item.material,
+          historyMovementQuantity(item),
+          historyBalanceText(item, "stockBefore"),
+          historyBalanceText(item, "stockAfter"),
+          historyDetailsText(item),
+          item.employee,
+          identity.vwId,
+          identity.companyId,
+          item.employeeCategory || "",
+          item.responsible,
+          item.signed ? "Sim" : "Não"
+        ]);
       });
       downloadFile("historico_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
     }
@@ -9795,6 +10197,126 @@
       if (event.target.id === "collaboratorModal") closeCollaboratorModal();
     });
 
+    document.getElementById("openStockEntry").addEventListener("click", () => openStockEntry());
+
+    const stockEntryMaterialSearch = document.getElementById("stockEntryMaterialSearch");
+    stockEntryMaterialSearch.addEventListener("input", () => {
+      document.getElementById("stockEntryMaterial").value = "";
+      document.getElementById("clearStockEntryMaterialSearch").hidden = !stockEntryMaterialSearch.value;
+      updateStockEntrySummary();
+      renderStockEntryMaterialSuggestions(true);
+    });
+    stockEntryMaterialSearch.addEventListener("focus", () => renderStockEntryMaterialSuggestions(true));
+    stockEntryMaterialSearch.addEventListener("keydown", event => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (document.getElementById("stockEntryMaterialSuggestions").hidden) renderStockEntryMaterialSuggestions(true);
+        moveStockEntryMaterialSuggestion(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (document.getElementById("stockEntryMaterialSuggestions").hidden) renderStockEntryMaterialSuggestions(true);
+        moveStockEntryMaterialSuggestion(-1);
+      } else if (event.key === "Enter") {
+        const options = document.querySelectorAll("#stockEntryMaterialSuggestions .searchableFilterOption");
+        const option = stockEntryMaterialSuggestionIndex >= 0
+          ? options[stockEntryMaterialSuggestionIndex]
+          : options.length === 1
+            ? options[0]
+            : null;
+        if (option) {
+          event.preventDefault();
+          selectStockEntryMaterial(option.dataset.materialId);
+        }
+      } else if (event.key === "Escape") {
+        closeStockEntryMaterialSuggestions();
+      }
+    });
+    stockEntryMaterialSearch.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!document.getElementById("stockEntryMaterialSearchBox").contains(document.activeElement)) {
+          closeStockEntryMaterialSuggestions();
+        }
+      }, 0);
+    });
+    document.getElementById("stockEntryMaterialSuggestions").addEventListener("pointerdown", event => {
+      const option = event.target.closest("[data-material-id]");
+      if (!option) return;
+      event.preventDefault();
+      selectStockEntryMaterial(option.dataset.materialId);
+    });
+    document.getElementById("toggleStockEntryMaterialSuggestions").addEventListener("click", () => {
+      const list = document.getElementById("stockEntryMaterialSuggestions");
+      if (list.hidden) {
+        renderStockEntryMaterialSuggestions(true);
+        stockEntryMaterialSearch.focus();
+      } else {
+        closeStockEntryMaterialSuggestions();
+      }
+    });
+    document.getElementById("clearStockEntryMaterialSearch").addEventListener("click", () => {
+      document.getElementById("stockEntryMaterial").value = "";
+      stockEntryMaterialSearch.value = "";
+      document.getElementById("clearStockEntryMaterialSearch").hidden = true;
+      updateStockEntrySummary();
+      renderStockEntryMaterialSuggestions(true);
+      stockEntryMaterialSearch.focus();
+    });
+    document.addEventListener("pointerdown", event => {
+      if (!event.target.closest("#stockEntryMaterialSearchBox")) closeStockEntryMaterialSuggestions();
+    });
+    document.getElementById("stockEntryQuantity").addEventListener("input", updateStockEntrySummary);
+    document.getElementById("cancelStockEntry").addEventListener("click", () => setTimeout(resetStockEntryForm));
+    document.getElementById("stockEntryForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const material = findMaterialById(document.getElementById("stockEntryMaterial").value);
+      const quantity = Number(document.getElementById("stockEntryQuantity").value);
+      if (!material) {
+        showToast("Selecione na lista o material que será recebido.", true);
+        stockEntryMaterialSearch.focus();
+        renderStockEntryMaterialSuggestions(true);
+        return;
+      }
+      if (!Number.isInteger(quantity) || quantity <= 0) {
+        showToast("Informe uma quantidade inteira maior que zero.", true);
+        document.getElementById("stockEntryQuantity").focus();
+        return;
+      }
+      const now = new Date().toISOString();
+      const stockBefore = Number(material.stock || 0);
+      const stockAfter = stockBefore + quantity;
+      const source = upperText(document.getElementById("stockEntryOrigin").value.trim());
+      const documentReference = upperText(document.getElementById("stockEntryDocument").value.trim());
+      const notes = upperText(document.getElementById("stockEntryNotes").value.trim());
+      const detailParts = [
+        source ? `ORIGEM / FORNECEDOR: ${source}` : "",
+        documentReference ? `DOCUMENTO / NOTA FISCAL: ${documentReference}` : "",
+        notes ? `OBSERVAÇÃO: ${notes}` : ""
+      ].filter(Boolean);
+      material.stock = stockAfter;
+      state.history.unshift({
+        id: nextAuditHistoryId(),
+        date: now,
+        type: "Entrada",
+        direction: "in",
+        material: materialLabel(material),
+        materialId: material.id,
+        qty: quantity,
+        stockBefore,
+        stockAfter,
+        source,
+        document: documentReference,
+        details: detailParts.join(" · ") || "ENTRADA DE MATERIAL REGISTRADA",
+        employee: source || "RECEBIMENTO DE MATERIAL",
+        responsible: state.settings.responsible || "RESPONSÁVEL NÃO INFORMADO",
+        signed: false
+      });
+      saveState();
+      renderAll();
+      resetStockEntryForm();
+      navigate("stockEntry");
+      showToast(`Entrada registrada. Novo saldo: ${stockAfter} un.`);
+    });
+
     document.getElementById("materialForm").addEventListener("submit", async event => {
       event.preventDefault();
       ensureMaterialManufacturerOptional();
@@ -9841,18 +10363,54 @@
         showToast("Liberação confirmada. O novo material será cadastrado.");
       }
       if (wasEditing) {
+        const previousMaterial = { ...currentMaterial };
         const index = state.materials.findIndex(item => sameRecordId(item.id, currentMaterial.id));
         if (index < 0) {
           showToast("A atualização foi interrompida porque o registro mudou durante a edição. Os campos continuam abertos.", true);
           return;
         }
         state.materials.splice(index, 1, material);
+        const changes = materialChangeDetails(previousMaterial, material);
+        if (changes.length) {
+          const stockBefore = Number(previousMaterial.stock || 0);
+          const stockAfter = Number(material.stock || 0);
+          state.history.unshift({
+            id: nextAuditHistoryId(),
+            date: new Date().toISOString(),
+            type: "Material editado",
+            direction: stockAfter > stockBefore ? "in" : stockAfter < stockBefore ? "out" : "neutral",
+            material: materialLabel(material),
+            materialId: material.id,
+            qty: stockAfter - stockBefore,
+            stockBefore,
+            stockAfter,
+            details: changes.join(" · "),
+            employee: "EDIÇÃO DO CADASTRO",
+            responsible: state.settings.responsible || "RESPONSÁVEL NÃO INFORMADO",
+            signed: false
+          });
+        }
       } else {
         state.materials.push(material);
         const sequence = Number(String(material.code).match(/(\d+)$/)?.[1]);
         state.nextMaterialSequence = Number.isFinite(sequence)
           ? Math.max(Number(state.nextMaterialSequence) || 1, sequence + 1)
           : Number(state.nextMaterialSequence) || 1;
+        state.history.unshift({
+          id: nextAuditHistoryId(),
+          date: new Date().toISOString(),
+          type: "Novo material",
+          direction: "in",
+          material: materialLabel(material),
+          materialId: material.id,
+          qty: Number(material.stock || 0),
+          stockBefore: 0,
+          stockAfter: Number(material.stock || 0),
+          details: `CADASTRO CRIADO · CÓDIGO ${material.code || "NÃO INFORMADO"} · CATEGORIA ${material.category || "NÃO INFORMADA"}`,
+          employee: "CADASTRO DE MATERIAL",
+          responsible: state.settings.responsible || "RESPONSÁVEL NÃO INFORMADO",
+          signed: false
+        });
       }
       saveState();
       closeMaterialModal();
@@ -10155,17 +10713,17 @@
     withdrawalMaterialSearch.addEventListener("input", () => {
       document.getElementById("withdrawalMaterial").value = "";
       updateWithdrawalMaterialInfo();
-      renderWithdrawalMaterialSuggestions();
+      renderWithdrawalMaterialSuggestions(true);
     });
-    withdrawalMaterialSearch.addEventListener("focus", renderWithdrawalMaterialSuggestions);
+    withdrawalMaterialSearch.addEventListener("focus", () => renderWithdrawalMaterialSuggestions(true));
     withdrawalMaterialSearch.addEventListener("keydown", event => {
       if (event.key === "ArrowDown") {
         event.preventDefault();
-        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions();
+        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions(true);
         moveWithdrawalMaterialSuggestion(1);
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
-        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions();
+        if (document.getElementById("withdrawalMaterialSuggestions").hidden) renderWithdrawalMaterialSuggestions(true);
         moveWithdrawalMaterialSuggestion(-1);
       } else if (event.key === "Enter") {
         event.preventDefault();
@@ -10195,11 +10753,21 @@
       selectWithdrawalMaterial(option.dataset.materialId);
     });
 
+    document.getElementById("toggleWithdrawalMaterialSuggestions").addEventListener("click", () => {
+      const list = document.getElementById("withdrawalMaterialSuggestions");
+      if (list.hidden) {
+        renderWithdrawalMaterialSuggestions(true);
+        withdrawalMaterialSearch.focus();
+      } else {
+        closeWithdrawalMaterialSuggestions();
+      }
+    });
+
     document.getElementById("clearWithdrawalMaterialSearch").addEventListener("click", () => {
       document.getElementById("withdrawalMaterial").value = "";
       withdrawalMaterialSearch.value = "";
-      closeWithdrawalMaterialSuggestions();
       updateWithdrawalMaterialInfo();
+      renderWithdrawalMaterialSuggestions(true);
       withdrawalMaterialSearch.focus();
     });
 
@@ -10271,7 +10839,7 @@
       if (document.getElementById("withdrawalMaterialSearch").value.trim() && !document.getElementById("withdrawalMaterial").value) {
         showToast("Selecione na lista o material correspondente à descrição digitada.", true);
         document.getElementById("withdrawalMaterialSearch").focus();
-        renderWithdrawalMaterialSuggestions();
+        renderWithdrawalMaterialSuggestions(true);
         return;
       }
       if (document.getElementById("withdrawalMaterial").value) {
@@ -10332,18 +10900,36 @@
         lgpdAcknowledgedAt: now.toISOString()
       };
 
+      const withdrawalStockItems = [];
       withdrawal.items.forEach(entry => {
         const material = findMaterialById(entry.id);
         if (!material) return;
-        material.stock = Number(material.stock || 0) - Number(entry.qty || 0);
+        const stockBefore = Number(material.stock || 0);
+        const stockAfter = stockBefore - Number(entry.qty || 0);
+        entry.stockBefore = stockBefore;
+        entry.stockAfter = stockAfter;
+        material.stock = stockAfter;
+        withdrawalStockItems.push({
+          materialId: material.id,
+          code: material.code || "",
+          material: materialLabel(material),
+          qty: Number(entry.qty || 0),
+          stockBefore,
+          stockAfter
+        });
       });
       state.withdrawals.push(withdrawal);
       state.history.unshift({
         id: historyId,
         date: withdrawal.date,
         type: "Retirada",
+        direction: "out",
         material: withdrawal.items.map(item => materialLabel(item)).join(" + "),
         qty: withdrawal.items.reduce((sum, item) => sum + item.qty, 0),
+        stockBefore: withdrawalStockItems.length === 1 ? withdrawalStockItems[0].stockBefore : null,
+        stockAfter: withdrawalStockItems.length === 1 ? withdrawalStockItems[0].stockAfter : null,
+        stockItems: withdrawalStockItems,
+        details: `SAÍDA REGISTRADA PARA ${withdrawal.employee} · ${withdrawal.items.length} ${withdrawal.items.length === 1 ? "TIPO DE MATERIAL" : "TIPOS DE MATERIAL"}`,
         employee: withdrawal.employee,
         employeeVwId: withdrawal.employeeVwId,
         employeeCompanyId: withdrawal.employeeCompanyId,
