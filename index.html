@@ -7175,17 +7175,50 @@
       }));
     }
 
-    function populateWithdrawalCollaborators() {
-      const collaborators = (Array.isArray(state.collaborators) ? state.collaborators : [])
-        .filter(item => item.status !== "Demitido")
-        .sort((a, b) => {
-          const admissionDifference = String(b.admission || "").localeCompare(String(a.admission || ""));
-          return admissionDifference || Number(b.id || 0) - Number(a.id || 0);
-        });
+    function withdrawalCollaboratorMatchScore(item, lookupType, searchValue) {
+      const search = normalizeColumnName(searchValue);
+      if (!search) return 100;
+
+      const searchableValue = lookupType === "vwId"
+        ? item.vwId
+        : lookupType === "name"
+          ? item.name
+          : collaboratorLookupLabel(item);
+      const normalizedValue = normalizeColumnName(searchableValue);
+      if (!normalizedValue) return Number.POSITIVE_INFINITY;
+      if (normalizedValue === search) return 0;
+      if (normalizedValue.startsWith(search)) return 1;
+
+      const searchWords = search.split(/\s+/).filter(Boolean);
+      const valueWords = normalizedValue.split(/\s+/).filter(Boolean);
+      for (let start = 0; start <= valueWords.length - searchWords.length; start += 1) {
+        const consecutiveMatch = searchWords.every((word, index) => valueWords[start + index]?.startsWith(word));
+        if (consecutiveMatch) return 10 + start;
+      }
+
+      return Number.POSITIVE_INFINITY;
+    }
+
+    function populateWithdrawalCollaborators(searchValue = null) {
       const lookupType = document.getElementById("employeeLookupType")?.value || "both";
       const lookup = document.getElementById("employeeLookup");
       const options = document.getElementById("employeeLookupOptions");
       if (!lookup || !options) return;
+      const activeSearch = searchValue === null ? lookup.value : searchValue;
+      const collaborators = (Array.isArray(state.collaborators) ? state.collaborators : [])
+        .filter(item => item.status !== "Demitido")
+        .map(item => ({
+          item,
+          score: withdrawalCollaboratorMatchScore(item, lookupType, activeSearch)
+        }))
+        .filter(entry => Number.isFinite(entry.score))
+        .sort((a, b) => {
+          const scoreDifference = a.score - b.score;
+          if (scoreDifference) return scoreDifference;
+          const nameDifference = String(a.item.name || "").localeCompare(String(b.item.name || ""), "pt-BR", { sensitivity: "base" });
+          return nameDifference || Number(b.item.id || 0) - Number(a.item.id || 0);
+        })
+        .map(entry => entry.item);
       lookup.placeholder = lookupType === "vwId"
         ? "Digite ou selecione a chapa"
         : lookupType === "name"
@@ -10088,6 +10121,7 @@
     document.getElementById("employeeLookup").addEventListener("input", event => {
       const typedValue = normalizeColumnName(event.target.value);
       const lookupType = document.getElementById("employeeLookupType").value;
+      populateWithdrawalCollaborators(event.target.value);
       const candidateOf = item => lookupType === "vwId"
         ? item.vwId
         : lookupType === "name"
