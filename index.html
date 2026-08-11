@@ -1355,6 +1355,7 @@
     }
 
     .tableWrap::-webkit-scrollbar {
+      width: 10px;
       height: 10px;
     }
 
@@ -1511,6 +1512,86 @@
       min-width: 1480px;
     }
 
+    .materialsResultsBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 12px 2px 8px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .materialsResultsBar strong {
+      color: var(--ink);
+      font-size: 10px;
+    }
+
+    .materialsScrollHelp {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-align: right;
+    }
+
+    .materialsScrollHelp::before {
+      content: "↕↔";
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .materialsTableWrap {
+      position: relative;
+      max-height: min(68vh, 760px);
+      overflow: auto;
+      cursor: grab;
+      scrollbar-gutter: stable;
+      overscroll-behavior: contain;
+    }
+
+    .materialsTableWrap:focus-visible {
+      outline: 3px solid rgba(16, 105, 199, .24);
+      outline-offset: 3px;
+    }
+
+    .materialsTableWrap.isDragging {
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    .materialsTableWrap .materialsCatalogTable th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: var(--table-head-bg);
+      box-shadow: 0 1px 0 var(--line);
+    }
+
+    .materialsTableWrap .materialsCatalogTable th:first-child,
+    .materialsTableWrap .materialsCatalogTable td:first-child {
+      position: sticky;
+      left: 0;
+      width: 330px;
+      min-width: 330px;
+      background: var(--table-bg);
+      box-shadow: 10px 0 14px -12px rgba(0, 15, 42, .45);
+    }
+
+    .materialsTableWrap .materialsCatalogTable th:first-child {
+      z-index: 5;
+      background: var(--table-head-bg);
+    }
+
+    .materialsTableWrap .materialsCatalogTable td:first-child {
+      z-index: 2;
+    }
+
+    .materialsTableWrap .materialsCatalogTable tr:hover td:first-child {
+      background: var(--table-hover-bg);
+    }
+
     .materialsCatalogTable th:last-child,
     .materialsCatalogTable td:last-child {
       position: sticky;
@@ -1532,6 +1613,14 @@
     }
 
     .materialsCatalogTable td[colspan] {
+      position: static;
+      width: auto;
+      min-width: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .materialsTableWrap .materialsCatalogTable td[colspan] {
       position: static;
       width: auto;
       min-width: 0;
@@ -3303,6 +3392,23 @@
         table-layout: auto;
       }
 
+      .materialsResultsBar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .materialsScrollHelp {
+        text-align: left;
+      }
+
+      .materialsTableWrap {
+        max-height: none;
+        overflow: visible;
+        cursor: default;
+        scrollbar-gutter: auto;
+      }
+
       .materialsCatalogTable,
       .materialsCatalogTable tbody,
       .materialsCatalogTable tr,
@@ -3386,6 +3492,14 @@
         width: 100%;
         min-width: 0;
         background: transparent;
+        box-shadow: none;
+      }
+
+      .materialsTableWrap .materialsCatalogTable th:first-child,
+      .materialsTableWrap .materialsCatalogTable td:first-child {
+        position: static;
+        width: 100%;
+        min-width: 0;
         box-shadow: none;
       }
 
@@ -4235,7 +4349,11 @@
             <option value="expired">CA vencido</option>
           </select>
         </div>
-        <div class="tableWrap">
+        <div class="materialsResultsBar" aria-live="polite">
+          <strong id="materialsResultCount">0 materiais encontrados</strong>
+          <span class="materialsScrollHelp" id="materialsScrollHelp">Arraste a tabela ou use as barras para localizar qualquer informação</span>
+        </div>
+        <div class="tableWrap materialsTableWrap" id="materialsTableWrap" tabindex="0" role="region" aria-label="Resultados da pesquisa de materiais" aria-describedby="materialsScrollHelp">
           <table class="materialsCatalogTable">
             <thead>
               <tr>
@@ -7113,6 +7231,13 @@
           && (!filter || status.key === filter);
       });
 
+      const totalMaterials = state.materials.length;
+      const resultLabel = materials.length === 1 ? "material encontrado" : "materiais encontrados";
+      const totalLabel = totalMaterials === 1 ? "cadastrado" : "cadastrados";
+      document.getElementById("materialsResultCount").textContent = searchTerms.length || category || filter
+        ? `${materials.length} ${resultLabel} de ${totalMaterials} ${totalLabel}`
+        : `${materials.length} ${resultLabel} — todos os registros estão disponíveis`;
+
       document.getElementById("materialsTable").innerHTML = materials.length ? materials.map(material => {
         const status = materialStatus(material);
         return `
@@ -7137,6 +7262,60 @@
         `;
       }).join("") : `<tr><td colspan="12"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
       populateWithdrawalMaterials();
+    }
+
+    function enableDragToScroll(container) {
+      if (!container) return;
+      let pointerId = null;
+      let startX = 0;
+      let startY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+      let dragged = false;
+
+      container.addEventListener("pointerdown", event => {
+        const interactive = event.target.closest("button, input, select, textarea, a, label");
+        if (event.pointerType !== "mouse" || event.button !== 0 || interactive || window.innerWidth <= 1080) return;
+        pointerId = event.pointerId;
+        dragged = false;
+        startX = event.clientX;
+        startY = event.clientY;
+        startLeft = container.scrollLeft;
+        startTop = container.scrollTop;
+        container.classList.add("isDragging");
+        container.setPointerCapture(pointerId);
+      });
+
+      container.addEventListener("pointermove", event => {
+        if (pointerId !== event.pointerId) return;
+        const movementX = event.clientX - startX;
+        const movementY = event.clientY - startY;
+        if (!dragged && Math.hypot(movementX, movementY) < 4) return;
+        dragged = true;
+        container.scrollLeft = startLeft - movementX;
+        container.scrollTop = startTop - movementY;
+        event.preventDefault();
+      });
+
+      const finishDrag = event => {
+        if (pointerId !== event.pointerId) return;
+        if (container.hasPointerCapture(pointerId)) container.releasePointerCapture(pointerId);
+        pointerId = null;
+        container.classList.remove("isDragging");
+      };
+
+      container.addEventListener("pointerup", finishDrag);
+      container.addEventListener("pointercancel", finishDrag);
+      container.addEventListener("lostpointercapture", () => {
+        pointerId = null;
+        container.classList.remove("isDragging");
+      });
+      container.addEventListener("click", event => {
+        if (!dragged) return;
+        event.preventDefault();
+        event.stopPropagation();
+        dragged = false;
+      }, true);
     }
 
     let stockEntryMaterialSuggestionIndex = -1;
@@ -11134,6 +11313,7 @@
 
     initializeTheme();
     syncSidebarToViewport();
+    enableDragToScroll(document.getElementById("materialsTableWrap"));
     renderAll();
     resizeCanvas();
     initializeCloudSync();
