@@ -2194,6 +2194,38 @@
       background: #fafbfc;
     }
 
+    .withdrawalSelectedMaterial {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 4px;
+      padding: 10px 12px;
+      border: 1px solid #91bff0;
+      border-radius: 11px;
+      background: var(--blue-soft);
+    }
+
+    .withdrawalSelectedMaterial[hidden] {
+      display: none;
+    }
+
+    .withdrawalSelectedMaterial span {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 850;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .withdrawalSelectedMaterial strong {
+      color: var(--blue-strong);
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      text-transform: uppercase;
+    }
+
     .epiDatabaseInfo {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3307,6 +3339,14 @@
 
       .summaryCard {
         position: static;
+      }
+
+      .selectedEpi {
+        grid-template-columns: minmax(100px, .35fr) minmax(170px, .65fr) auto;
+      }
+
+      .selectedEpi .field:first-child {
+        grid-column: 1 / -1;
       }
 
       .collaboratorTable,
@@ -4663,6 +4703,10 @@
                   </select>
                 </div>
                 <button class="miniButton" type="button" aria-label="Adicionar item" id="addWithdrawalItem">＋</button>
+                <div class="withdrawalSelectedMaterial" id="withdrawalSelectedMaterial" aria-live="polite" hidden>
+                  <span>Material selecionado</span>
+                  <strong id="withdrawalSelectedMaterialName"></strong>
+                </div>
               </div>
               <div class="epiDatabaseInfo" aria-live="polite">
                 <div class="epiDatabaseItem">
@@ -8194,6 +8238,13 @@
     function updateWithdrawalMaterialInfo() {
       const materialId = document.getElementById("withdrawalMaterial").value;
       const material = findMaterialById(materialId);
+      const selectedMaterial = document.getElementById("withdrawalSelectedMaterial");
+      const selectedMaterialName = document.getElementById("withdrawalSelectedMaterialName");
+      const materialSearch = document.getElementById("withdrawalMaterialSearch");
+      const fullDescription = material ? (material.description || material.code || "Material sem descrição") : "";
+      selectedMaterialName.textContent = fullDescription;
+      selectedMaterial.hidden = !material;
+      materialSearch.title = fullDescription;
       document.getElementById("withdrawalCa").textContent = material ? (material.ca || "Não informado") : "Selecione um EPI";
       document.getElementById("withdrawalLifetime").textContent = material
         ? (hasLifetime(material.lifetime) ? `${Number(material.lifetime)} dias` : "Não informada")
