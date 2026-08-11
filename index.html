@@ -4380,8 +4380,9 @@
           <input class="input" id="materialSearch" type="search" placeholder="Pesquisar por nome, tamanho ou fabricante" aria-label="Pesquisar materiais por nome, tamanho ou fabricante">
           <select class="select" id="categoryFilter" aria-label="Filtrar categoria">
             <option value="">Todas as categorias</option>
-            <option>Proteção da cabeça</option>
+            <option>Proteção Área Corpo Geral</option>
             <option>Proteção auditiva</option>
+            <option>Proteção da cabeça</option>
             <option>Proteção das mãos</option>
             <option>Proteção dos pés</option>
             <option>Proteção respiratória</option>
@@ -4818,8 +4819,9 @@
             <input class="input" id="inventorySearch" type="search" placeholder="Pesquisar produto, fabricante, código, CA ou local" aria-label="Pesquisar produto no inventário por nome, fabricante, código, CA ou local">
             <select class="select" id="inventoryCategoryFilter" aria-label="Filtrar categoria no inventário">
               <option value="">Todas as categorias</option>
-              <option>Proteção da cabeça</option>
+              <option>Proteção Área Corpo Geral</option>
               <option>Proteção auditiva</option>
+              <option>Proteção da cabeça</option>
               <option>Proteção das mãos</option>
               <option>Proteção dos pés</option>
               <option>Proteção respiratória</option>
@@ -5166,8 +5168,9 @@
               <label for="materialCategory">Categoria <span class="required">*</span></label>
               <select class="select" id="materialCategory" required>
                 <option value="">SELECIONE</option>
-                <option>PROTEÇÃO DA CABEÇA</option>
+                <option>PROTEÇÃO ÁREA CORPO GERAL</option>
                 <option>PROTEÇÃO AUDITIVA</option>
+                <option>PROTEÇÃO DA CABEÇA</option>
                 <option>PROTEÇÃO DAS MÃOS</option>
                 <option>PROTEÇÃO DOS PÉS</option>
                 <option>PROTEÇÃO RESPIRATÓRIA</option>
@@ -7282,7 +7285,7 @@
         const searchable = normalizeColumnName(`${material.description} ${material.size || ""} ${material.manufacturer || ""}`);
         const status = materialStatus(material);
         return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
-          && (!category || material.category === category)
+          && (!category || normalizeColumnName(material.category) === normalizeColumnName(category))
           && (!filter || status.key === filter);
       }).sort(compareMaterialsAlphanumeric);
 
@@ -8423,7 +8426,7 @@
           material.category
         ].filter(Boolean).join(" "));
         return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
-          && (!category || material.category === category);
+          && (!category || normalizeColumnName(material.category) === normalizeColumnName(category));
       }).sort(compareMaterialsAlphanumeric);
     }
 
