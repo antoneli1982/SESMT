@@ -9634,10 +9634,105 @@
       );
     }
 
+    const MATERIAL_SIZE_RANKS = new Map([
+      ["pppp", 10], ["4xp", 10], ["4xs", 10],
+      ["ppp", 20], ["3xp", 20], ["3xs", 20],
+      ["pp", 30], ["xp", 30], ["xs", 30],
+      ["p", 40], ["s", 40],
+      ["m", 50],
+      ["g", 60], ["l", 60],
+      ["gg", 70], ["2g", 70],
+      ["xg", 80], ["eg", 80], ["xl", 80], ["g1", 80],
+      ["xgg", 90], ["xxg", 90], ["egg", 90], ["exg", 90], ["xxl", 90], ["g2", 90],
+      ["xxxg", 100], ["eggg", 100], ["xxxl", 100], ["g3", 100],
+      ["xxxxg", 110], ["xxxxl", 110], ["g4", 110]
+    ]);
+
+    function normalizedMaterialSize(value) {
+      return normalizeColumnName(value)
+        .replace(/^(?:tamanho|tam|numero|num|n)\s+/, "")
+        .trim();
+    }
+
+    function materialSizeKey(value) {
+      const normalized = normalizedMaterialSize(value);
+      if (!normalized || ["nao informado", "sem tamanho", "sem numeracao"].includes(normalized)) {
+        return { family: 9, primary: Number.POSITIVE_INFINITY, secondary: Number.POSITIVE_INFINITY, text: "" };
+      }
+
+      if (MATERIAL_SIZE_RANKS.has(normalized)) {
+        return { family: 0, primary: MATERIAL_SIZE_RANKS.get(normalized), secondary: 0, text: normalized };
+      }
+
+      const numberedLargeSize = normalized.match(/^g\s*(\d+)$/);
+      if (numberedLargeSize) {
+        return { family: 0, primary: 70 + (Number(numberedLargeSize[1]) * 10), secondary: 0, text: normalized };
+      }
+
+      const numericParts = normalized.match(/\d+(?:[.,]\d+)?/g);
+      if (numericParts && /^\d+(?:[.,]\d+)?(?:\s+\d+(?:[.,]\d+)?)*$/.test(normalized)) {
+        return {
+          family: 1,
+          primary: Number(numericParts[0].replace(",", ".")),
+          secondary: numericParts[1] ? Number(numericParts[1].replace(",", ".")) : 0,
+          text: normalized
+        };
+      }
+
+      if (["unico", "unica", "universal", "padrao"].includes(normalized)) {
+        return { family: 8, primary: 0, secondary: 0, text: normalized };
+      }
+
+      return { family: 2, primary: 0, secondary: 0, text: normalized };
+    }
+
+    function compareMaterialSizes(left, right) {
+      const leftKey = materialSizeKey(left);
+      const rightKey = materialSizeKey(right);
+      return leftKey.family - rightKey.family
+        || leftKey.primary - rightKey.primary
+        || leftKey.secondary - rightKey.secondary
+        || compareAlphanumeric(leftKey.text, rightKey.text);
+    }
+
+    function materialSizeFromDescription(description) {
+      const text = String(description ?? "").trim();
+      const declaredSize = text.match(/(?:^|\s|[-–—|/])(?:tamanho|tam|numero|num|n[\u00ba\u00b0.]?)\s*[:.-]?\s*([a-z0-9.,/-]+)\s*$/i);
+      if (declaredSize) return declaredSize[1];
+
+      const finalToken = text.match(/(?:\s|[-–—|/])([a-z]{1,5}\d?)\s*$/i);
+      if (!finalToken) return "";
+      const normalizedToken = normalizedMaterialSize(finalToken[1]);
+      return MATERIAL_SIZE_RANKS.has(normalizedToken) || /^g\s*\d+$/.test(normalizedToken)
+        ? finalToken[1]
+        : "";
+    }
+
+    function materialSortSize(material) {
+      const configuredSize = material?.size;
+      return materialSizeKey(configuredSize).family !== 9
+        ? configuredSize
+        : materialSizeFromDescription(material?.description);
+    }
+
+    function materialDescriptionBase(material) {
+      const description = String(material?.description ?? "").trim();
+      const sortSize = materialSortSize(material);
+      let base = description.replace(/\s*[-–—|/]?\s*(?:tamanho|tam|numero|num|n[\u00ba\u00b0.]?)\s*[:.-]?\s*[a-z0-9.,/-]+\s*$/i, "").trim();
+      if (sortSize) {
+        const escapedSize = String(sortSize).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        if (escapedSize) {
+          base = base.replace(new RegExp(`(?:\\s*[-–—|/]\\s*|\\s+)${escapedSize}\\s*$`, "i"), "").trim();
+        }
+      }
+      return base || description;
+    }
+
     function compareMaterialsAlphanumeric(left, right) {
-      return compareAlphanumeric(left?.description, right?.description)
+      return compareAlphanumeric(materialDescriptionBase(left), materialDescriptionBase(right))
+        || compareMaterialSizes(materialSortSize(left), materialSortSize(right))
+        || compareAlphanumeric(left?.description, right?.description)
         || compareAlphanumeric(left?.code, right?.code)
-        || compareAlphanumeric(left?.size, right?.size)
         || compareAlphanumeric(left?.manufacturer, right?.manufacturer)
         || compareAlphanumeric(left?.id, right?.id);
     }
