@@ -5505,6 +5505,12 @@
     const STORAGE_KEY = "sese_epi_manager_demo_250_v1";
     const THEME_KEY = "sese_epi_theme";
     const SIDEBAR_KEY = "sese_epi_sidebar_collapsed";
+    const ALPHANUMERIC_COLLATOR = new Intl.Collator("pt-BR", {
+      usage: "sort",
+      sensitivity: "base",
+      ignorePunctuation: true,
+      numeric: true
+    });
     const PHOTO_DB_NAME = "sese_epi_collaborator_photos_v1";
     const PHOTO_STORE_NAME = "photos";
     const PHOTO_MAX_DIMENSION = 400;
@@ -7278,7 +7284,7 @@
         return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
           && (!category || material.category === category)
           && (!filter || status.key === filter);
-      });
+      }).sort(compareMaterialsAlphanumeric);
 
       const totalMaterials = state.materials.length;
       const resultLabel = materials.length === 1 ? "material encontrado" : "materiais encontrados";
@@ -7394,8 +7400,7 @@
         })
         .filter(Boolean)
         .sort((left, right) => left.score - right.score
-          || String(left.material.description || "").localeCompare(String(right.material.description || ""), "pt-BR")
-          || String(left.material.size || "").localeCompare(String(right.material.size || ""), "pt-BR"))
+          || compareMaterialsAlphanumeric(left.material, right.material))
         .map(entry => entry.material);
     }
 
@@ -7497,7 +7502,7 @@
 
     function uniqueSorted(values) {
       return Array.from(new Set(values.map(value => String(value || "").trim()).filter(Boolean)))
-        .sort((a, b) => a.localeCompare(b, "pt-BR"));
+        .sort(compareAlphanumeric);
     }
 
     function setDynamicSelectOptions(id, values, emptyLabel) {
@@ -7522,7 +7527,7 @@
           const identifiers = normalizeColumnName(`${item.companyId || ""} ${item.vwId || ""}`);
           return terms.every(term => name.includes(term) || identifiers.includes(term));
         })
-        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+        .sort(compareCollaboratorsAlphanumeric);
     }
 
     function closeCollaboratorNameSuggestions() {
@@ -7616,7 +7621,7 @@
           const otherFiltersMatch = Object.entries(filters).every(([field, value]) => !value || String(item[field] || "") === value);
           return nameMatches && otherFiltersMatch;
         })
-        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+        .sort(compareCollaboratorsAlphanumeric);
       const pageSize = Math.max(1, Number(document.getElementById("collaboratorPageSize").value) || 20);
       const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
       collaboratorCurrentPage = Math.min(Math.max(1, collaboratorCurrentPage), totalPages);
@@ -7686,7 +7691,7 @@
           item.shift,
           item.workstation
         ].join(" ")).includes(search))
-        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+        .sort(compareCollaboratorsAlphanumeric);
       document.getElementById("inactiveCollaboratorTotal").textContent = records.length.toLocaleString("pt-BR");
       document.getElementById("inactiveCollaboratorsTable").innerHTML = filtered.length ? filtered.map(item => `
         <tr>
@@ -7790,8 +7795,7 @@
         .sort((a, b) => {
           const scoreDifference = a.score - b.score;
           if (scoreDifference) return scoreDifference;
-          const nameDifference = String(a.item.name || "").localeCompare(String(b.item.name || ""), "pt-BR", { sensitivity: "base" });
-          return nameDifference || Number(b.item.id || 0) - Number(a.item.id || 0);
+          return compareCollaboratorsAlphanumeric(a.item, b.item);
         })
         .map(entry => entry.item);
       lookup.placeholder = lookupType === "vwId"
@@ -8132,8 +8136,7 @@
         })
         .filter(Boolean)
         .sort((left, right) => left.score - right.score
-          || String(left.material.description || "").localeCompare(String(right.material.description || ""), "pt-BR")
-          || String(left.material.size || "").localeCompare(String(right.material.size || ""), "pt-BR"))
+          || compareMaterialsAlphanumeric(left.material, right.material))
         .map(entry => entry.material);
     }
 
@@ -8215,7 +8218,7 @@
       const current = selectedField.value;
       const materials = (Array.isArray(state.materials) ? state.materials : [])
         .slice()
-        .sort((a, b) => String(a.description || "").localeCompare(String(b.description || ""), "pt-BR"));
+        .sort(compareMaterialsAlphanumeric);
       if (!materials.length) {
         selectedField.value = "";
         searchField.value = "";
@@ -8421,7 +8424,7 @@
         ].filter(Boolean).join(" "));
         return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
           && (!category || material.category === category);
-      });
+      }).sort(compareMaterialsAlphanumeric);
     }
 
     function renderInventory() {
@@ -8545,7 +8548,7 @@
         const select = document.getElementById(id);
         const selected = select.value;
         const options = Array.from(new Set(values.filter(Boolean)))
-          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+          .sort(compareAlphanumeric);
         select.innerHTML = `<option value="">${emptyLabel}</option>` + options
           .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
           .join("");
@@ -8655,7 +8658,7 @@
         const select = document.getElementById(id);
         const selected = select.value;
         const options = Array.from(new Set(values.filter(Boolean)))
-          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+          .sort(compareAlphanumeric);
         select.innerHTML = `<option value="">${emptyLabel}</option>` + options
           .map(value => `<option value="${escapeHtml(value)}">${escapeHtml(formatLabel(value))}</option>`)
           .join("");
@@ -8863,7 +8866,7 @@
         ...(state.collaborators || []),
         ...(state.inactiveCollaborators || [])
       ].slice()
-        .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt-BR"));
+        .sort(compareCollaboratorsAlphanumeric);
       search.innerHTML = `<option value="">Selecione um colaborador</option>` + collaborators.map(collaborator => {
         const details = [
           collaborator.vwId ? `Chapa ${collaborator.vwId}` : "",
@@ -8918,7 +8921,7 @@
       const movementSelect = document.getElementById("employeeHistoryMovement");
       const selectedMovement = movementSelect.value;
       const movementTypes = Array.from(new Set(allRows.map(row => row.type).filter(Boolean)))
-        .sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+        .sort(compareAlphanumeric);
       movementSelect.innerHTML = `<option value="">Todas as movimentações</option>` + movementTypes
         .map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`)
         .join("");
@@ -9619,6 +9622,28 @@
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, " ")
         .trim();
+    }
+
+    function compareAlphanumeric(left, right) {
+      return ALPHANUMERIC_COLLATOR.compare(
+        String(left ?? "").trim(),
+        String(right ?? "").trim()
+      );
+    }
+
+    function compareMaterialsAlphanumeric(left, right) {
+      return compareAlphanumeric(left?.description, right?.description)
+        || compareAlphanumeric(left?.code, right?.code)
+        || compareAlphanumeric(left?.size, right?.size)
+        || compareAlphanumeric(left?.manufacturer, right?.manufacturer)
+        || compareAlphanumeric(left?.id, right?.id);
+    }
+
+    function compareCollaboratorsAlphanumeric(left, right) {
+      return compareAlphanumeric(left?.name, right?.name)
+        || compareAlphanumeric(left?.vwId, right?.vwId)
+        || compareAlphanumeric(left?.companyId, right?.companyId)
+        || compareAlphanumeric(left?.id, right?.id);
     }
 
     function normalizeShift(value) {
