@@ -1,4 +1,4 @@
-const CACHE_NAME = "gestaoepi20260812excelordenado2";
+const CACHE_NAME = "gestaoepi20260812excelordenado3";
 const APP_FILES = [
   "./",
   "./index.html",
