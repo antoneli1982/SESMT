@@ -1,7 +1,9 @@
-const CACHE_NAME = "gestaoepi20260812excelordenado1";
+const CACHE_NAME = "gestaoepi20260812excelordenado2";
 const APP_FILES = [
   "./",
   "./index.html",
+  "./app-base.html",
+  "./excel-patch.js",
   "./manifest.json",
   "./icons/icon32.png",
   "./icons/icon192.png",
