@@ -15,10 +15,10 @@
   <div class="loading" id="loading"><div><strong>Gestão EPI SESÉ</strong><span>Carregando a versão atualizada...</span></div></div>
   <script>
     (async () => {
-      const response = await fetch("./app-base.html?v=20260812-excel-2", { cache: "no-store" });
+      const response = await fetch("./app-base.html?v=20260812-excel-3", { cache: "no-store" });
       if (!response.ok) throw new Error(`Falha ao carregar a aplicação: ${response.status}`);
       let html = await response.text();
-      const patchScript = '<script src="excel-patch.js?v=20260812-excel-2"><\\/script>';
+      const patchScript = '<script src="excel-patch.js?v=20260812-excel-3"><\/script>';
       html = html.replace("</body>", patchScript + "</body>");
       document.open();
       document.write(html);
