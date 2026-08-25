@@ -4628,9 +4628,10 @@ html.darkTheme .treApp .brand-mark{background:none}
         <button class="navButton" type="button" data-tre-view="painel" data-label="Painel de treinamentos" title="Painel de treinamentos"><span class="navIcon">T1</span>Painel de treinamentos</button>
         <button class="navButton" type="button" data-tre-view="registros" data-label="Registros" title="Registros"><span class="navIcon">T2</span>Registros</button>
         <button class="navButton" type="button" data-tre-view="matriz" data-label="Matriz de treinamentos" title="Matriz de treinamentos"><span class="navIcon">T3</span>Matriz de treinamentos</button>
-        <button class="navButton" type="button" data-tre-view="pessoas" data-label="Pessoas" title="Pessoas"><span class="navIcon">T4</span>Pessoas</button>
-        <button class="navButton" type="button" data-tre-view="treinamentos" data-label="Cadastro de treinamentos" title="Cadastro de treinamentos"><span class="navIcon">T5</span>Cadastro de treinamentos</button>
-        <button class="navButton" type="button" data-tre-view="categorias" data-label="Categorias" title="Categorias"><span class="navIcon">T6</span>Categorias</button>
+        <button class="navButton" type="button" data-tre-view="pessoas" data-label="Colaboradores" title="Colaboradores"><span class="navIcon">T4</span>Colaboradores</button>
+        <button class="navButton" type="button" data-tre-view="cargos" data-label="Cargos" title="Cargos e exigências de treinamento"><span class="navIcon">T5</span>Cargos</button>
+        <button class="navButton" type="button" data-tre-view="treinamentos" data-label="Cadastro de treinamentos" title="Cadastro de treinamentos"><span class="navIcon">T6</span>Cadastro de treinamentos</button>
+        <button class="navButton" type="button" data-tre-view="categorias" data-label="Categorias" title="Categorias"><span class="navIcon">T7</span>Categorias</button>
       </nav>
       </div>
 
@@ -5585,6 +5586,7 @@ html.darkTheme .treApp .brand-mark{background:none}
   <section class="view" id="v-registros"></section>
   <section class="view" id="v-matriz"></section>
   <section class="view" id="v-pessoas"></section>
+  <section class="view" id="v-cargos"></section>
   <section class="view" id="v-treinamentos"></section>
   <section class="view" id="v-categorias"></section>
 </div>
@@ -12130,6 +12132,7 @@ const HOJE=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),
 
 let S={
   categorias:[], treinamentos:[], pessoas:[], registros:[],
+  cargosExigencias:{}, // { CARGO_EM_MAIUSCULO: [treinamentoId, ...] } — pré-requisitos por cargo
   listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},
   config:{alertaDias:60, validadePadrao:12, empresa:''}
 };
@@ -12206,6 +12209,28 @@ function statusDe(r){
 const pessoa=id=>S.pessoas.find(p=>p.id===id)||{nome:'—',matricula:'',setor:'',cargo:'',turno:''};
 const trein=id=>S.treinamentos.find(t=>t.id===id)||{nome:'—',categoriaId:'',validadeMeses:''};
 const categ=id=>S.categorias.find(c=>c.id===id)||{nome:'—',cor:'#757575'};
+
+/* ---------- colaboradores unificados (fonte única: cadastro de Colaboradores do EPI) ---------- */
+function pessoaFromCollaborator(c){
+  return {
+    id:'epi_'+c.id,
+    nome:up(c.name||''),
+    matricula:c.companyId||c.vwId||'',
+    setor:up(c.workstation||''),
+    cargo:up(c.role||''),
+    turno:up(c.shift||''),
+    admissao:c.admission||'',
+    email:'',
+    ativo:c.status==='Ativo',
+    _epiId:c.id
+  };
+}
+function syncPessoasFromEpi(){
+  const cols=(typeof state!=='undefined'&&Array.isArray(state.collaborators))?state.collaborators:null;
+  if(!cols||!cols.length)return false; // sem colaboradores do EPI ainda: mantém o cadastro atual (ex.: dados de exemplo)
+  S.pessoas=cols.map(pessoaFromCollaborator);
+  return true;
+}
 /* último registro por pessoa+treinamento */
 function ultimos(){
   const m=new Map();
@@ -12284,16 +12309,17 @@ function confirmar(txt,fn,rotulo){
 
 
 /* =============== NAVEGAÇÃO =============== */
-const VIEWS=[['painel','Painel'],['registros','Registros'],['matriz','Matriz'],['pessoas','Pessoas'],['treinamentos','Treinamentos'],['categorias','Categorias']];
+const VIEWS=[['painel','Painel'],['registros','Registros'],['matriz','Matriz'],['pessoas','Colaboradores'],['cargos','Cargos'],['treinamentos','Treinamentos'],['categorias','Categorias']];
 function renderTabs(){
   const c={registros:S.registros.length,pessoas:S.pessoas.filter(p=>p.ativo!==false).length,treinamentos:S.treinamentos.length,categorias:S.categorias.length};
   $('#tabs').innerHTML=VIEWS.map(([k,l])=>`<button class="tab${UI.view===k?' on':''}" data-v="${k}">${l}${c[k]!==undefined?`<span class="cnt">${c[k]}</span>`:''}</button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{UI.view=b.dataset.v;render();window.scrollTo({top:0});});
 }
 function render(){
+  syncPessoasFromEpi();
   renderTabs();
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+UI.view));
-  ({painel:vPainel,registros:vRegistros,matriz:vMatriz,pessoas:vPessoas,treinamentos:vTreinamentos,categorias:vCategorias})[UI.view]();
+  ({painel:vPainel,registros:vRegistros,matriz:vMatriz,pessoas:vPessoas,cargos:vCargos,treinamentos:vTreinamentos,categorias:vCategorias})[UI.view]();
   $('#railSub').textContent=S.config.empresa?S.config.empresa:'Reciclagens e validades';
   if(typeof treSyncNav==='function')treSyncNav();
 }
@@ -12363,6 +12389,7 @@ function vPainel(){
   const cnt={ok:0,warn:0,late:0,none:0,off:0};
   arr.forEach(x=>cnt[x.st.k]=(cnt[x.st.k]||0)+1);
   const pes=S.pessoas.filter(p=>p.ativo!==false);
+  const pendCargoQtd=pes.filter(p=>pendenciasPessoa(p).length).length;
   const total=arr.length;
   const conf=total?Math.round((cnt.ok/total)*100):0;
   /* pendências por pessoa */
@@ -12391,6 +12418,7 @@ function vPainel(){
     <button class="kpi k-warn" data-go="warn"><div class="kpi-l">A vencer (${S.config.alertaDias} dias)</div><div class="kpi-v">${cnt.warn||0}</div><div class="kpi-s">agendar reciclagem</div></button>
     <button class="kpi k-ok" data-go="ok"><div class="kpi-l">Em dia</div><div class="kpi-v">${cnt.ok||0}</div><div class="kpi-s">validade vigente</div></button>
     <button class="kpi k-none" data-go=""><div class="kpi-l">Conformidade</div><div class="kpi-v">${conf}%</div><div class="kpi-s">${cnt.ok||0} de ${total} em dia</div></button>
+    <button class="kpi k-warn" id="kpiCargos"><div class="kpi-l">Pendências por cargo</div><div class="kpi-v">${pendCargoQtd}</div><div class="kpi-s">colaborador${pendCargoQtd===1?'':'es'} sem exigência do cargo</div></button>
   </div>
 
   <div class="card" style="margin-top:14px">
@@ -12440,6 +12468,7 @@ function vPainel(){
   </div>`;
 
   $('#v-painel').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{UI.fReg.status=b.dataset.go;UI.fReg.periodo='';UI.view='registros';render();});
+  const kpiCargos=$('#kpiCargos');if(kpiCargos)kpiCargos.onclick=()=>{if(typeof window.treGo==='function')window.treGo('cargos');else{UI.view='cargos';render();}};
   $('#v-painel').querySelectorAll('.mesbar').forEach(b=>b.onclick=()=>{
     UI.fReg.status='';UI.fReg.periodo='';UI.fReg.mes=b.dataset.mes;UI.view='registros';render();});
 }
@@ -12590,8 +12619,8 @@ function vPessoas(){
   const cargos=[...new Set(S.pessoas.map(p=>up(p.cargo)).filter(Boolean))].sort();
   const turnos=[...new Set(S.pessoas.map(p=>up(p.turno)).filter(Boolean))].sort();
   $('#v-pessoas').innerHTML=`<div class="card">
-    <div class="card-h"><div class="card-t">Pessoas</div><div class="sp"></div><span class="card-sub">${arr.length} listadas</span>
-      <button class="btn haz" onclick="editarPessoa()">+ Nova pessoa</button></div>
+    <div class="card-h"><div class="card-t">Colaboradores</div><div class="sp"></div><span class="card-sub">${arr.length} listados · cadastro único, sincronizado do EPI</span>
+      <button class="btn haz" onclick="editarPessoa()">+ Novo colaborador</button></div>
     <div class="card-b">
       <div class="filters">
         <div class="fw" style="flex:1 1 200px"><label class="f">Buscar</label><input class="inp" id="p_busca" value="${esc(f.busca)}" placeholder="Nome, matrícula ou cargo"></div>
@@ -12620,12 +12649,125 @@ function vPessoas(){
     window._pid=b.dataset.pid;const p=pessoa(window._pid);
     $('#ddPessoa').innerHTML=`<div class="hd">${esc(p.nome.slice(0,26))}</div>
       <button data-act="pFicha">📄 Ficha e histórico</button>
-      <button data-act="pEditar">✏️ Editar cadastro</button>
       <button data-act="pRegistro">📋 Lançar treinamento</button>
       <button data-act="pFiltrar">🔍 Ver registros desta pessoa</button>
       <div class="sep"></div>
-      <button data-act="pToggle">${p.ativo===false?'✅ Reativar':'🚫 Marcar como inativo'}</button>
-      <button data-act="pExcluir" class="dgr">🗑 Excluir pessoa</button>`;}));
+      <button data-act="pEditar">✏️ Editar cadastro (Colaboradores · EPI)</button>`;}));
+}
+
+/* =============== CARGOS E EXIGÊNCIAS DE TREINAMENTO =============== */
+function cargosConhecidos(){
+  const set=new Set([...(S.listas.cargos||[]),...S.pessoas.map(p=>up(p.cargo))].filter(Boolean));
+  return [...set].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+}
+function exigenciasDe(cargo){
+  const ids=(S.cargosExigencias||{})[up(cargo)]||[];
+  return ids.filter(tid=>S.treinamentos.some(t=>t.id===tid));
+}
+/* treinamentos exigidos pelo cargo da pessoa que estão faltando (nunca feito) ou vencidos */
+function pendenciasPessoa(p){
+  const exig=exigenciasDe(p.cargo);
+  if(!exig.length)return [];
+  const ult=ultimos();
+  return exig.map(tid=>{
+    const r=ult.find(x=>x.pessoaId===p.id&&x.treinamentoId===tid);
+    if(!r)return {treinamentoId:tid,motivo:'nunca'};
+    const st=statusDe(r);
+    if(st.k==='late')return {treinamentoId:tid,motivo:'vencido',st,r};
+    return null;
+  }).filter(Boolean);
+}
+function vCargos(){
+  const cargos=cargosConhecidos();
+  const ativos=S.pessoas.filter(p=>p.ativo!==false);
+  const linhas=cargos.map(cg=>{
+    const pessoasCargo=ativos.filter(p=>up(p.cargo)===cg);
+    const exig=exigenciasDe(cg);
+    const pendPessoas=pessoasCargo.filter(p=>pendenciasPessoa(p).length);
+    return {cg,pessoasCargo,exig,pendPessoas};
+  });
+  const totalPend=linhas.reduce((s,x)=>s+x.pendPessoas.length,0);
+  $('#v-cargos').innerHTML=`<div class="card">
+    <div class="card-h"><div class="card-t">Cargos e treinamentos obrigatórios</div><div class="sp"></div>
+      <span class="card-sub">${cargos.length} cargos${totalPend?` · ${totalPend} colaborador${totalPend>1?'es':''} com pendência`:''}</span>
+      <button class="btn haz" onclick="editarCargoNovo()">+ Cargo</button></div>
+    <div class="card-b"><div class="note">Os cargos são identificados automaticamente a partir do cadastro de Colaboradores (EPI). Defina abaixo quais treinamentos são pré-requisito para cada cargo; a pendência é recalculada a partir dos registros de treinamento de cada pessoa.</div></div>
+    ${cargos.length?`<div class="tw"><table><thead><tr>
+      <th class="nos">Cargo</th><th class="nos num">Colaboradores</th><th class="nos">Treinamentos exigidos</th>
+      <th class="nos num">Pendências</th><th class="nos"></th></tr></thead><tbody>
+      ${linhas.map(({cg,pessoasCargo,exig,pendPessoas})=>`<tr>
+        <td><b>${esc(cg)}</b></td>
+        <td class="num">${pessoasCargo.length}</td>
+        <td>${exig.length?exig.map(tid=>`<span class="tag">${esc(trein(tid).nome)}</span>`).join(' '):'<span class="muted">Nenhum treinamento exigido</span>'}</td>
+        <td class="num">${pendPessoas.length?`<span class="pill p-late">${pendPessoas.length}</span>`:exig.length?'<span class="pill p-ok">Em dia</span>':'<span class="muted">—</span>'}</td>
+        <td class="act"><button class="kb" data-dd="ddCargo" data-cg="${esc(cg)}">⋯</button></td></tr>`).join('')}
+    </tbody></table></div>`:`<div class="empty"><b>Nenhum cargo encontrado</b>Os cargos aparecem automaticamente a partir dos colaboradores cadastrados no EPI.</div>`}
+  </div>`;
+  document.querySelectorAll('[data-dd="ddCargo"]').forEach(b=>b.addEventListener('click',()=>{
+    window._cargo=b.dataset.cg;
+    $('#ddCargo').innerHTML=`<div class="hd">${esc(window._cargo.slice(0,26))}</div>
+      <button data-act="cgEditar">🎓 Definir treinamentos exigidos</button>
+      <button data-act="cgPendencias">⚠️ Ver pendências dos colaboradores</button>
+      <div class="sep"></div>
+      <button data-act="cgLimpar" class="dgr">🗑 Remover exigências deste cargo</button>`;}));
+}
+function editarCargoNovo(){
+  const cargosAtuais=cargosConhecidos();
+  modal('Novo cargo',`
+    <div><label class="f">Nome do cargo *</label><input class="inp" id="cgNome" list="dlCargos" placeholder="Ex.: OPERADOR DE EMPILHADEIRA">
+      <datalist id="dlCargos">${cargosAtuais.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    <div class="note" style="margin-top:11px">Se o cargo já existir entre os colaboradores, ele será apenas selecionado; caso contrário, fica disponível para uso futuro.</div>`,
+    `<div class="sp"></div><button class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" id="cgNovoOk">Continuar</button>`);
+  $('#cgNovoOk').onclick=()=>{
+    const nome=up($('#cgNome').value); if(!nome)return toast('Informe o nome do cargo');
+    addLista('cargos',nome);
+    fecharModal();
+    editarCargoExigencias(nome);
+  };
+}
+function editarCargoExigencias(cargo){
+  if(!S.treinamentos.length){fecharModal();return toast('Cadastre pelo menos um treinamento antes');}
+  const atuais=new Set(exigenciasDe(cargo));
+  const porCateg=[...S.categorias].sort(byName).map(c=>({c,ts:S.treinamentos.filter(t=>t.categoriaId===c.id).sort(byName)})).filter(g=>g.ts.length);
+  const semCateg=S.treinamentos.filter(t=>!t.categoriaId).sort(byName);
+  const linha=t=>`<label style="display:flex;align-items:center;gap:8px;padding:2px 0"><input type="checkbox" class="chk cgx" value="${t.id}" ${atuais.has(t.id)?'checked':''}> ${esc(t.nome)}</label>`;
+  modal(`Treinamentos exigidos — ${cargo}`,`
+    <div class="note">Marque os treinamentos que todo colaborador com o cargo <b>${esc(cargo)}</b> deve possuir.</div>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:14px;max-height:420px;overflow:auto">
+      ${porCateg.map(g=>`<div><label class="f">${esc(g.c.nome)}</label>
+        <div style="display:flex;flex-direction:column">${g.ts.map(linha).join('')}</div></div>`).join('')}
+      ${semCateg.length?`<div><label class="f">Sem categoria</label>
+        <div style="display:flex;flex-direction:column">${semCateg.map(linha).join('')}</div></div>`:''}
+    </div>`,
+    `<div class="sp"></div><button class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" id="cgExigOk">Salvar</button>`,true);
+  $('#cgExigOk').onclick=()=>{
+    const ids=[...document.querySelectorAll('#mod input.cgx:checked')].map(i=>i.value);
+    if(!S.cargosExigencias)S.cargosExigencias={};
+    S.cargosExigencias[up(cargo)]=ids;
+    addLista('cargos',cargo);
+    fecharModal();refresh();toast('Exigências do cargo salvas');
+  };
+}
+function pendenciasCargoModal(cargo){
+  const pessoasCargo=S.pessoas.filter(p=>p.ativo!==false&&up(p.cargo)===up(cargo)).sort(byName);
+  const linhas=pessoasCargo.map(p=>({p,pend:pendenciasPessoa(p)})).filter(x=>x.pend.length);
+  const exig=exigenciasDe(cargo);
+  modal(`Pendências — ${cargo}`,`
+    <div class="note">${!exig.length?'Nenhum treinamento é exigido para este cargo ainda.':linhas.length?`${linhas.length} de ${pessoasCargo.length} colaborador(es) ativo(s) com pendência.`:`Todos os ${pessoasCargo.length} colaborador(es) ativo(s) estão em dia com os treinamentos exigidos.`}</div>
+    ${linhas.length?`<div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto">
+      ${linhas.map(({p,pend})=>`<div style="border:1px solid var(--line);border-radius:6px;padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <b>${esc(p.nome)}</b><span class="muted mono" style="font-size:11px">${esc(p.matricula||'')}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          ${pend.map(x=>x.motivo==='vencido'
+            ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
+            :`<button class="btn sm haz" onclick="fecharModal();editarRegistro(null,'${p.id}','${x.treinamentoId}')">+ Lançar ${esc(trein(x.treinamentoId).nome)}</button>`
+          ).join('')}
+        </div>
+      </div>`).join('')}
+    </div>`:''}`,
+    `<div class="sp"></div><button class="btn pri" onclick="fecharModal()">Fechar</button>`,true);
 }
 
 /* =============== TREINAMENTOS =============== */
@@ -12835,41 +12977,15 @@ function lote(tidPre){
   };
 }
 
-/* =============== FORM: PESSOA =============== */
+/* =============== FORM: PESSOA (redireciona para o cadastro único de Colaboradores do EPI) =============== */
 function editarPessoa(id){
-  const p=S.pessoas.find(x=>x.id===id)||{id:null,nome:'',matricula:'',setor:'',cargo:'',turno:'',admissao:'',email:'',ativo:true};
-  const setores=[...new Set([...(S.listas.setores||[]),...S.pessoas.map(x=>up(x.setor))].filter(Boolean))].sort();
-  const cargos=[...new Set([...(S.listas.cargos||[]),...S.pessoas.map(x=>up(x.cargo))].filter(Boolean))].sort();
-  const turnos=[...new Set([...(S.listas.turnos||[]),...S.pessoas.map(x=>up(x.turno))].filter(Boolean))].sort();
-  modal(id?'Editar pessoa':'Nova pessoa',`
-    <div class="grid g2">
-      <div><label class="f">Nome *</label><input class="inp" id="pNome" value="${esc(p.nome)}"></div>
-      <div><label class="f">Matrícula / chapa</label><input class="inp" id="pMat" value="${esc(p.matricula)}"></div>
-    </div>
-    <div class="grid g3" style="margin-top:11px">
-      <div><label class="f">Setor</label><select class="inp" id="pSet">${opts(setores,up(p.setor),'—')}<option value="__novo">+ Novo setor…</option></select>
-        <input class="inp" id="pSetNovo" style="display:none;margin-top:6px" placeholder="Nome do setor"></div>
-      <div><label class="f">Cargo / função</label><select class="inp" id="pCar">${opts(cargos,up(p.cargo),'—')}<option value="__novo">+ Novo cargo…</option></select>
-        <input class="inp" id="pCarNovo" style="display:none;margin-top:6px" placeholder="Nome do cargo"></div>
-      <div><label class="f">Turno</label><select class="inp" id="pTur">${opts(turnos,up(p.turno),'—')}<option value="__novo">+ Novo turno…</option></select>
-        <input class="inp" id="pTurNovo" style="display:none;margin-top:6px" placeholder="Nome do turno"></div>
-    </div>
-    <div class="grid g3" style="margin-top:11px">
-      <div><label class="f">Admissão</label><input type="date" class="inp" id="pAdm" value="${esc(p.admissao)}"></div>
-      <div><label class="f">E-mail</label><input class="inp" id="pMail" value="${esc(p.email||'')}"></div>
-      <div><label class="f">Status</label><select class="inp" id="pAtivo">${opts([{v:'1',l:'Ativo'},{v:'0',l:'Inativo / desligado'}],p.ativo===false?'0':'1')}</select></div>
-    </div>`,
-    `<div class="sp"></div><button class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" id="pOk">Salvar</button>`);
-  [['pSet','pSetNovo'],['pCar','pCarNovo'],['pTur','pTurNovo']].forEach(([s,n])=>{
-    $('#'+s).addEventListener('change',()=>{const v=$('#'+s).value==='__novo';$('#'+n).style.display=v?'':'none';if(v)$('#'+n).focus();});});
-  $('#pOk').onclick=()=>{
-    const nome=up($('#pNome').value); if(!nome)return toast('Informe o nome');
-    const g=(s,n,lista)=>{const v=$('#'+s).value==='__novo'?up($('#'+n).value):$('#'+s).value;if(v)addLista(lista,v);return v;};
-    const novo={id:p.id||uid(),nome,matricula:up($('#pMat').value),setor:g('pSet','pSetNovo','setores'),cargo:g('pCar','pCarNovo','cargos'),
-      turno:g('pTur','pTurNovo','turnos'),admissao:$('#pAdm').value,email:$('#pMail').value.trim(),ativo:$('#pAtivo').value==='1'};
-    if(p.id)S.pessoas=S.pessoas.map(x=>x.id===p.id?novo:x); else S.pessoas.push(novo);
-    fecharModal();refresh();toast(p.id?'Pessoa atualizada':'Pessoa cadastrada');
-  };
+  const p=id?S.pessoas.find(x=>x.id===id):null;
+  const epiId=p&&p._epiId!=null?p._epiId:null;
+  if(typeof window.treAbrirColaboradorEPI==='function'){
+    window.treAbrirColaboradorEPI(epiId);
+  }else{
+    toast('Cadastre o colaborador na página Colaboradores (EPI)');
+  }
 }
 
 /* =============== FORM: TREINAMENTO =============== */
@@ -12947,6 +13063,7 @@ function fichaPessoa(id){
   const rs=ultimos().filter(r=>r.pessoaId===id).map(r=>({r,t:trein(r.treinamentoId),st:statusDe(r),v:vencimentoDe(r)}))
     .sort((a,b)=>String(a.v||'9999').localeCompare(String(b.v||'9999')));
   const faltando=S.treinamentos.filter(t=>t.obrigatorio&&!rs.some(x=>x.r.treinamentoId===t.id));
+  const pendCargo=pendenciasPessoa(p);
   modal(p.nome,`
     <div class="grid g4">
       <div><label class="f">Matrícula</label><div class="mono">${esc(p.matricula||'—')}</div></div>
@@ -12962,6 +13079,11 @@ function fichaPessoa(id){
         <td class="mono"><b>${br(x.v)}</b></td><td><span class="pill ${x.st.cls}">${x.st.t}</span></td>
         <td class="act"><button class="btn sm" onclick="fecharModal();editarRegistro('${x.r.id}')">Editar</button></td></tr>`).join('')}
     </tbody></table></div>`:'<div class="muted">Nenhum treinamento registrado.</div>'}</div>
+    ${pendCargo.length?`<div style="margin-top:12px"><label class="f">Pendências do cargo · ${esc(p.cargo||'—')} (${pendCargo.length})</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${pendCargo.map(x=>x.motivo==='vencido'
+        ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
+        :`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${x.treinamentoId}')">+ ${esc(trein(x.treinamentoId).nome)}</button>`
+      ).join('')}</div></div>`:''}
     ${faltando.length?`<div style="margin-top:12px"><label class="f">Obrigatórios não realizados (${faltando.length})</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${faltando.map(t=>`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${t.id}')">+ ${esc(t.nome)}</button>`).join('')}</div></div>`:''}`,
     `<button class="btn" onclick="fecharModal();editarPessoa('${id}')">✏️ Editar cadastro</button>
@@ -13010,7 +13132,7 @@ function acao(a){
     case 'imprimir':return treImprimir();
     case 'sincronizar':return treForcarSync();
     case 'demo':return confirmar('Carregar dados de exemplo? Isso substitui os dados atuais.',()=>{demo();refresh();toast('Dados de exemplo carregados');},'Carregar');
-    case 'limpar':return confirmar('Apagar <b>todos</b> os dados desta ferramenta? A ação não pode ser desfeita.',()=>{S={categorias:[],treinamentos:[],pessoas:[],registros:[],listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},config:{alertaDias:60,validadePadrao:12,empresa:''}};UI.view='painel';refresh();toast('Dados apagados');});
+    case 'limpar':return confirmar('Apagar <b>todos</b> os dados desta ferramenta? A ação não pode ser desfeita.',()=>{S={categorias:[],treinamentos:[],pessoas:[],registros:[],cargosExigencias:{},listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},config:{alertaDias:60,validadePadrao:12,empresa:''}};UI.view='painel';refresh();toast('Dados apagados');});
     /* linha de registro */
     case 'rEditar':return editarRegistro(window._rid);
     case 'rRenovar':return renovarRegistro(window._rid);
@@ -13024,9 +13146,6 @@ function acao(a){
     case 'pEditar':return editarPessoa(window._pid);
     case 'pRegistro':return editarRegistro(null,window._pid);
     case 'pFiltrar':{UI.fReg.pessoa=window._pid;UI.fReg.somenteAtivos='';UI.view='registros';return render();}
-    case 'pToggle':{S.pessoas=S.pessoas.map(p=>p.id===window._pid?{...p,ativo:p.ativo===false}:p);refresh();return toast('Status alterado');}
-    case 'pExcluir':{const p=pessoa(window._pid);const n=S.registros.filter(r=>r.pessoaId===window._pid).length;
-      return confirmar(`Excluir <b>${esc(p.nome)}</b>${n?` e seus <b>${n}</b> registros de treinamento`:''}?`,()=>{S.pessoas=S.pessoas.filter(x=>x.id!==window._pid);S.registros=S.registros.filter(r=>r.pessoaId!==window._pid);refresh();toast('Pessoa excluída');});}
     /* treinamento */
     case 'tEditar':return editarTreinamento(window._tid);
     case 'tLote':return lote(window._tid);
@@ -13042,6 +13161,12 @@ function acao(a){
       return confirmar(`Excluir a categoria <b>${esc(c.nome)}</b>?${n?` Os <b>${n}</b> treinamentos ficarão sem categoria.`:''}`,()=>{
         S.categorias=S.categorias.filter(x=>x.id!==window._cid);
         S.treinamentos=S.treinamentos.map(t=>t.categoriaId===window._cid?{...t,categoriaId:''}:t);refresh();toast('Categoria excluída');});}
+    /* cargo */
+    case 'cgEditar':return editarCargoExigencias(window._cargo);
+    case 'cgPendencias':return pendenciasCargoModal(window._cargo);
+    case 'cgLimpar':{const cg=window._cargo;
+      return confirmar(`Remover as exigências de treinamento cadastradas para <b>${esc(cg)}</b>? Os colaboradores com esse cargo continuam listados normalmente.`,()=>{
+        if(S.cargosExigencias)delete S.cargosExigencias[up(cg)];refresh();toast('Exigências removidas');});}
     /* massa */
     case 'mSelTodos':{linhas().forEach(x=>UI.selReg.add(x.r.id));render();return toast(UI.selReg.size+' selecionados');}
     case 'mSelNada':{UI.selReg.clear();render();return;}
@@ -13332,13 +13457,21 @@ function demo(){
     const base=new Date(hj.getFullYear(),hj.getMonth()-Math.abs(off),1+((i+j)%27));
     regs.push({id:uid(),pessoaId:p.id,treinamentoId:t.id,dataRealizado:ymd(base),validadeMeses:'',instrutor:['SENAI','SESI','INTERNO','CONSULTORIA EXTERNA'][(i+j)%4],local:'',certificado:'',nota:'APROVADO',obs:''});
   });});
-  S={categorias:cats,treinamentos:tre,pessoas:pes,registros:regs,
+  const cargosExigencias={
+    'OPERADOR':[tre[0].id,tre[4].id],
+    'CONFERENTE':[tre[4].id,tre[6].id],
+    'LÍDER DE TURNO':[tre[4].id,tre[3].id,tre[7].id],
+    'TÉCNICO':[tre[3].id,tre[4].id],
+    'ANALISTA':[tre[4].id]
+  };
+  S={categorias:cats,treinamentos:tre,pessoas:pes,registros:regs,cargosExigencias,
      listas:{setores,cargos,turnos,instrutores:['SENAI','SESI','INTERNO','CONSULTORIA EXTERNA']},
      config:{alertaDias:60,validadePadrao:12,empresa:''}};
 }
 
 /* =============== INÍCIO =============== */
 if(!load())demo();
+syncPessoasFromEpi();
 render();
 window.addEventListener('beforeunload',save);
 
@@ -13354,7 +13487,8 @@ window.addEventListener('beforeunload',save);
         painel: "Painel de treinamentos",
         registros: "Registros de treinamento",
         matriz: "Matriz de treinamentos",
-        pessoas: "Pessoas",
+        pessoas: "Colaboradores",
+        cargos: "Cargos e exigências de treinamento",
         treinamentos: "Cadastro de treinamentos",
         categorias: "Categorias de treinamento"
       };
@@ -13410,6 +13544,19 @@ window.addEventListener('beforeunload',save);
         const cleanup = () => document.body.classList.remove("treinamentoPrint");
         window.addEventListener("afterprint", cleanup, { once: true });
         setTimeout(() => { window.print(); setTimeout(cleanup, 800); }, 80);
+      };
+
+      /* o cadastro de nomes é único (EPI); o módulo Treinamentos abre o cadastro
+         de Colaboradores do EPI para incluir, editar ou desativar uma pessoa */
+      window.treAbrirColaboradorEPI = function treAbrirColaboradorEPI(epiId) {
+        setModule("epi", false);
+        navigate("collaborators");
+        const collaborator = epiId != null && typeof state !== "undefined"
+          ? (state.collaborators || []).find(item => item.id === epiId)
+          : null;
+        if (typeof openCollaboratorModal === "function") {
+          setTimeout(() => openCollaboratorModal(collaborator || null), 30);
+        }
       };
 
       document.querySelectorAll(".moduleButton").forEach(button => {
