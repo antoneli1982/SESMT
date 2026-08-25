@@ -12228,7 +12228,27 @@ function pessoaFromCollaborator(c){
 function syncPessoasFromEpi(){
   const cols=(typeof state!=='undefined'&&Array.isArray(state.collaborators))?state.collaborators:null;
   if(!cols||!cols.length)return false; // sem colaboradores do EPI ainda: mantém o cadastro atual (ex.: dados de exemplo)
-  S.pessoas=cols.map(pessoaFromCollaborator);
+  const novos=cols.map(pessoaFromCollaborator);
+  const porMatricula=new Map(novos.filter(n=>n.matricula).map(n=>[up(n.matricula),n]));
+  const porNome=new Map(novos.map(n=>[norm(n.nome),n]));
+  const remap={};
+  const extras=[];
+  (S.pessoas||[]).forEach(old=>{
+    if(!old||!old.id)return;
+    if(String(old.id).indexOf('epi_')===0)return; // já veio do EPI numa sincronização anterior
+    const mat=up(old.matricula||'');
+    const nome=norm(old.nome||'');
+    const match=(mat&&porMatricula.get(mat))||(nome&&porNome.get(nome));
+    if(match){
+      if(match.id!==old.id)remap[old.id]=match.id;
+    }else{
+      extras.push(old); // sem correspondência ainda no EPI: mantém para não perder os registros de treinamento já lançados
+    }
+  });
+  if(Object.keys(remap).length){
+    S.registros=S.registros.map(r=>remap[r.pessoaId]?{...r,pessoaId:remap[r.pessoaId]}:r);
+  }
+  S.pessoas=[...novos,...extras];
   return true;
 }
 /* último registro por pessoa+treinamento */
