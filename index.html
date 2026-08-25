@@ -5985,6 +5985,7 @@ html.darkTheme .treApp .brand-mark{background:none}
 </div>
 <div class="dd-menu" id="ddLinha"></div>
 <div class="dd-menu" id="ddPessoa"></div>
+<div class="dd-menu" id="ddCargo"></div>
 <div class="dd-menu" id="ddTrein"></div>
 <div class="dd-menu" id="ddCat"></div>
 <div class="dd-menu" id="ddAcoes">
@@ -12681,19 +12682,22 @@ function cargosConhecidos(){
   return [...set].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 }
 function exigenciasDe(cargo){
-  const ids=(S.cargosExigencias||{})[up(cargo)]||[];
-  return ids.filter(tid=>S.treinamentos.some(t=>t.id===tid));
+  const raw=(S.cargosExigencias||{})[up(cargo)]||[];
+  return raw
+    .map(it=>typeof it==='string'?{treinamentoId:it,prazoDias:'',observacoes:''}:it)
+    .filter(it=>it&&it.treinamentoId&&S.treinamentos.some(t=>t.id===it.treinamentoId));
 }
 /* treinamentos exigidos pelo cargo da pessoa que estão faltando (nunca feito) ou vencidos */
 function pendenciasPessoa(p){
   const exig=exigenciasDe(p.cargo);
   if(!exig.length)return [];
   const ult=ultimos();
-  return exig.map(tid=>{
+  return exig.map(ex=>{
+    const tid=ex.treinamentoId;
     const r=ult.find(x=>x.pessoaId===p.id&&x.treinamentoId===tid);
-    if(!r)return {treinamentoId:tid,motivo:'nunca'};
+    if(!r)return {treinamentoId:tid,motivo:'nunca',prazoDias:ex.prazoDias,observacoes:ex.observacoes};
     const st=statusDe(r);
-    if(st.k==='late')return {treinamentoId:tid,motivo:'vencido',st,r};
+    if(st.k==='late')return {treinamentoId:tid,motivo:'vencido',st,r,prazoDias:ex.prazoDias,observacoes:ex.observacoes};
     return null;
   }).filter(Boolean);
 }
@@ -12718,7 +12722,7 @@ function vCargos(){
       ${linhas.map(({cg,pessoasCargo,exig,pendPessoas})=>`<tr>
         <td><b>${esc(cg)}</b></td>
         <td class="num">${pessoasCargo.length}</td>
-        <td>${exig.length?exig.map(tid=>`<span class="tag">${esc(trein(tid).nome)}</span>`).join(' '):'<span class="muted">Nenhum treinamento exigido</span>'}</td>
+        <td>${exig.length?exig.map(ex=>`<span class="tag" title="${esc([ex.prazoDias?`Prazo: ${ex.prazoDias} dias`:'',ex.observacoes||''].filter(Boolean).join(' · '))}">${esc(trein(ex.treinamentoId).nome)}</span>`).join(' '):'<span class="muted">Nenhum treinamento exigido</span>'}</td>
         <td class="num">${pendPessoas.length?`<span class="pill p-late">${pendPessoas.length}</span>`:exig.length?'<span class="pill p-ok">Em dia</span>':'<span class="muted">—</span>'}</td>
         <td class="act"><button class="kb" data-dd="ddCargo" data-cg="${esc(cg)}">⋯</button></td></tr>`).join('')}
     </tbody></table></div>`:`<div class="empty"><b>Nenhum cargo encontrado</b>Os cargos aparecem automaticamente a partir dos colaboradores cadastrados no EPI.</div>`}
@@ -12747,26 +12751,48 @@ function editarCargoNovo(){
 }
 function editarCargoExigencias(cargo){
   if(!S.treinamentos.length){fecharModal();return toast('Cadastre pelo menos um treinamento antes');}
-  const atuais=new Set(exigenciasDe(cargo));
-  const porCateg=[...S.categorias].sort(byName).map(c=>({c,ts:S.treinamentos.filter(t=>t.categoriaId===c.id).sort(byName)})).filter(g=>g.ts.length);
-  const semCateg=S.treinamentos.filter(t=>!t.categoriaId).sort(byName);
-  const linha=t=>`<label style="display:flex;align-items:center;gap:8px;padding:2px 0"><input type="checkbox" class="chk cgx" value="${t.id}" ${atuais.has(t.id)?'checked':''}> ${esc(t.nome)}</label>`;
+  let itens=exigenciasDe(cargo).map(x=>({...x}));
+  const redesenhar=()=>{
+    const usados=new Set(itens.map(x=>x.treinamentoId));
+    const disponiveis=[...S.treinamentos].sort(byName).filter(t=>!usados.has(t.id));
+    const lista=$('#cgLista');
+    if(!lista)return;
+    lista.innerHTML=itens.length?`<div class="tw" style="border:1px solid var(--line);border-radius:6px;max-height:280px">
+      <table><thead><tr><th class="nos">Treinamento</th><th class="nos" style="width:130px">Prazo (dias)</th><th class="nos">Observações</th><th class="nos" style="width:34px"></th></tr></thead>
+      <tbody>${itens.map((it,i)=>`<tr>
+        <td><b>${esc(trein(it.treinamentoId).nome)}</b></td>
+        <td><input type="number" min="0" class="inp cgxPrazo" data-i="${i}" value="${esc(it.prazoDias??'')}" placeholder="—"></td>
+        <td><input class="inp cgxObs" data-i="${i}" value="${esc(it.observacoes||'')}" placeholder="Opcional"></td>
+        <td class="act"><button class="kb dgr" type="button" data-rm="${i}" title="Remover">✕</button></td>
+      </tr>`).join('')}</tbody></table></div>`
+      :`<div class="empty"><b>Nenhum treinamento exigido ainda</b>Adicione abaixo os treinamentos exigidos para este cargo.</div>`;
+    lista.querySelectorAll('.cgxPrazo').forEach(inp=>inp.addEventListener('input',()=>{itens[+inp.dataset.i].prazoDias=inp.value===''?'':Math.max(0,+inp.value||0);}));
+    lista.querySelectorAll('.cgxObs').forEach(inp=>inp.addEventListener('input',()=>{itens[+inp.dataset.i].observacoes=inp.value;}));
+    lista.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{itens.splice(+b.dataset.rm,1);redesenhar();}));
+    const sel=$('#cgAddTrein'),add=$('#cgAddBtn');
+    if(sel){sel.innerHTML=opts(disponiveis.map(t=>({v:t.id,l:t.nome})),'',disponiveis.length?'Selecione o treinamento':'Todos os treinamentos já foram adicionados');sel.disabled=!disponiveis.length;}
+    if(add)add.disabled=!disponiveis.length;
+  };
   modal(`Treinamentos exigidos — ${cargo}`,`
-    <div class="note">Marque os treinamentos que todo colaborador com o cargo <b>${esc(cargo)}</b> deve possuir.</div>
-    <div style="margin-top:12px;display:flex;flex-direction:column;gap:14px;max-height:420px;overflow:auto">
-      ${porCateg.map(g=>`<div><label class="f">${esc(g.c.nome)}</label>
-        <div style="display:flex;flex-direction:column">${g.ts.map(linha).join('')}</div></div>`).join('')}
-      ${semCateg.length?`<div><label class="f">Sem categoria</label>
-        <div style="display:flex;flex-direction:column">${semCateg.map(linha).join('')}</div></div>`:''}
+    <div class="note">Defina os treinamentos que todo colaborador com o cargo <b>${esc(cargo)}</b> deve possuir. O prazo (em dias) e as observações são opcionais.</div>
+    <div id="cgLista" style="margin-top:12px"></div>
+    <div class="grid g3" style="margin-top:12px;align-items:end">
+      <div style="grid-column:span 2"><label class="f">Adicionar treinamento</label><select class="inp" id="cgAddTrein"></select></div>
+      <div><button class="btn pri" id="cgAddBtn" type="button">+ Adicionar</button></div>
     </div>`,
     `<div class="sp"></div><button class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" id="cgExigOk">Salvar</button>`,true);
+  $('#cgAddBtn').onclick=()=>{
+    const tid=$('#cgAddTrein').value; if(!tid)return;
+    itens.push({treinamentoId:tid,prazoDias:'',observacoes:''});
+    redesenhar();
+  };
   $('#cgExigOk').onclick=()=>{
-    const ids=[...document.querySelectorAll('#mod input.cgx:checked')].map(i=>i.value);
     if(!S.cargosExigencias)S.cargosExigencias={};
-    S.cargosExigencias[up(cargo)]=ids;
+    S.cargosExigencias[up(cargo)]=itens.filter(it=>it.treinamentoId);
     addLista('cargos',cargo);
     fecharModal();refresh();toast('Exigências do cargo salvas');
   };
+  redesenhar();
 }
 function pendenciasCargoModal(cargo){
   const pessoasCargo=S.pessoas.filter(p=>p.ativo!==false&&up(p.cargo)===up(cargo)).sort(byName);
@@ -12779,11 +12805,14 @@ function pendenciasCargoModal(cargo){
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
           <b>${esc(p.nome)}</b><span class="muted mono" style="font-size:11px">${esc(p.matricula||'')}</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-          ${pend.map(x=>x.motivo==='vencido'
-            ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
-            :`<button class="btn sm haz" onclick="fecharModal();editarRegistro(null,'${p.id}','${x.treinamentoId}')">+ Lançar ${esc(trein(x.treinamentoId).nome)}</button>`
-          ).join('')}
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+          ${pend.map(x=>`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${x.motivo==='vencido'
+              ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
+              :`<button class="btn sm haz" onclick="fecharModal();editarRegistro(null,'${p.id}','${x.treinamentoId}')">+ Lançar ${esc(trein(x.treinamentoId).nome)}</button>`}
+            ${x.prazoDias?`<span class="muted mono" style="font-size:11px">Prazo: ${esc(String(x.prazoDias))} dias</span>`:''}
+            ${x.observacoes?`<span class="muted" style="font-size:11px">${esc(x.observacoes)}</span>`:''}
+          </div>`).join('')}
         </div>
       </div>`).join('')}
     </div>`:''}`,
@@ -13100,10 +13129,13 @@ function fichaPessoa(id){
         <td class="act"><button class="btn sm" onclick="fecharModal();editarRegistro('${x.r.id}')">Editar</button></td></tr>`).join('')}
     </tbody></table></div>`:'<div class="muted">Nenhum treinamento registrado.</div>'}</div>
     ${pendCargo.length?`<div style="margin-top:12px"><label class="f">Pendências do cargo · ${esc(p.cargo||'—')} (${pendCargo.length})</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${pendCargo.map(x=>x.motivo==='vencido'
-        ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
-        :`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${x.treinamentoId}')">+ ${esc(trein(x.treinamentoId).nome)}</button>`
-      ).join('')}</div></div>`:''}
+      <div style="display:flex;flex-direction:column;gap:6px">${pendCargo.map(x=>`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        ${x.motivo==='vencido'
+          ?`<button class="btn sm dgr" onclick="fecharModal();renovarRegistro('${x.r.id}')">⏰ Renovar ${esc(trein(x.treinamentoId).nome)}</button>`
+          :`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${x.treinamentoId}')">+ ${esc(trein(x.treinamentoId).nome)}</button>`}
+        ${x.prazoDias?`<span class="muted mono" style="font-size:11px">Prazo: ${esc(String(x.prazoDias))} dias</span>`:''}
+        ${x.observacoes?`<span class="muted" style="font-size:11px">${esc(x.observacoes)}</span>`:''}
+      </div>`).join('')}</div></div>`:''}
     ${faltando.length?`<div style="margin-top:12px"><label class="f">Obrigatórios não realizados (${faltando.length})</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${faltando.map(t=>`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${t.id}')">+ ${esc(t.nome)}</button>`).join('')}</div></div>`:''}`,
     `<button class="btn" onclick="fecharModal();editarPessoa('${id}')">✏️ Editar cadastro</button>
@@ -13477,12 +13509,13 @@ function demo(){
     const base=new Date(hj.getFullYear(),hj.getMonth()-Math.abs(off),1+((i+j)%27));
     regs.push({id:uid(),pessoaId:p.id,treinamentoId:t.id,dataRealizado:ymd(base),validadeMeses:'',instrutor:['SENAI','SESI','INTERNO','CONSULTORIA EXTERNA'][(i+j)%4],local:'',certificado:'',nota:'APROVADO',obs:''});
   });});
+  const ex=(tid,prazoDias,observacoes)=>({treinamentoId:tid,prazoDias:prazoDias||'',observacoes:observacoes||''});
   const cargosExigencias={
-    'OPERADOR':[tre[0].id,tre[4].id],
-    'CONFERENTE':[tre[4].id,tre[6].id],
-    'LÍDER DE TURNO':[tre[4].id,tre[3].id,tre[7].id],
-    'TÉCNICO':[tre[3].id,tre[4].id],
-    'ANALISTA':[tre[4].id]
+    'OPERADOR':[ex(tre[0].id,30,'Obrigatório antes de operar a empilhadeira sozinho'),ex(tre[4].id,15)],
+    'CONFERENTE':[ex(tre[4].id,15),ex(tre[6].id,30)],
+    'LÍDER DE TURNO':[ex(tre[4].id,15),ex(tre[3].id,45,'Somente para líderes com acesso a painéis elétricos'),ex(tre[7].id,30)],
+    'TÉCNICO':[ex(tre[3].id,45),ex(tre[4].id,15)],
+    'ANALISTA':[ex(tre[4].id,15)]
   };
   S={categorias:cats,treinamentos:tre,pessoas:pes,registros:regs,cargosExigencias,
      listas:{setores,cargos,turnos,instrutores:['SENAI','SESI','INTERNO','CONSULTORIA EXTERNA']},
