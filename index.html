@@ -4188,6 +4188,283 @@
         height: 24px;
       }
     }
+
+    /* ==========================================================
+       SUGESTÃO DE COMPRAS — relatório por consumo acumulado
+       ========================================================== */
+    .purchaseSuggestionModal {
+      width: min(1180px, 100%);
+      display: flex;
+      flex-direction: column;
+      height: min(880px, calc(100vh - 36px));
+      height: min(880px, calc(100dvh - 36px));
+      max-height: none;
+      overflow: hidden;
+    }
+
+    .purchaseSuggestionModal .modalHeader {
+      flex: 0 0 auto;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .purchaseSuggestionSubtitle {
+      margin: 5px 0 0;
+      max-width: 720px;
+      font-size: 10.5px;
+      line-height: 1.5;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionBody {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .purchaseSuggestionControls {
+      display: grid;
+      grid-template-columns: 200px minmax(200px, 1fr) 240px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .purchaseSuggestionCheck {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--canvas);
+      font-size: 10.5px;
+      font-weight: 750;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .purchaseSuggestionCheck input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+    }
+
+    .purchaseSuggestionStats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 10px;
+    }
+
+    .purchaseStat {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--canvas);
+    }
+
+    .purchaseStat span {
+      display: block;
+      font-size: 8.5px;
+      font-weight: 850;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .purchaseStat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    .purchaseStat small {
+      display: block;
+      margin-top: 2px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .purchaseStat.danger strong {
+      color: var(--danger);
+    }
+
+    .purchaseStat.warning strong {
+      color: var(--warning);
+    }
+
+    .purchaseStat.blue strong {
+      color: var(--blue);
+    }
+
+    .purchaseSuggestionTableWrap {
+      max-height: 46vh;
+      overflow: auto;
+    }
+
+    .purchaseSuggestionTable {
+      width: 100%;
+      min-width: 1010px;
+      border-collapse: collapse;
+      font-size: 11px;
+      background: var(--table-bg);
+    }
+
+    .purchaseSuggestionTable th:first-child,
+    .purchaseSuggestionTable td:first-child {
+      width: 34px;
+      text-align: center;
+    }
+
+    .purchaseSuggestionTable th:nth-child(2),
+    .purchaseSuggestionTable td:nth-child(2) {
+      min-width: 240px;
+    }
+
+    .purchaseSuggestionTable th:nth-child(3),
+    .purchaseSuggestionTable td:nth-child(3) {
+      min-width: 118px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionTable th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      background: var(--table-head-bg);
+      text-align: left;
+      font-size: 8.5px;
+      font-weight: 850;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: normal;
+      line-height: 1.35;
+    }
+
+    .purchaseSuggestionTable th:nth-child(n+4) {
+      width: 84px;
+      text-align: center;
+    }
+
+    .purchaseSuggestionTable th:last-child,
+    .purchaseSuggestionTable td:last-child {
+      width: 96px;
+      text-align: center;
+    }
+
+    .purchaseSuggestionTable td {
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      color: var(--ink);
+    }
+
+    .purchaseSuggestionTable tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .purchaseSuggestionTable tbody tr:hover td {
+      background: var(--table-hover-bg);
+    }
+
+    .purchaseSuggestionTable .numeric {
+      text-align: center;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .purchaseSuggestionTable .numeric.strongValue {
+      font-weight: 850;
+    }
+
+    .purchaseSuggestionTable .suggestionCell {
+      text-align: center;
+      white-space: nowrap;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .purchaseSuggestionTable .suggestionCell.zero {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionMaterial strong {
+      display: block;
+      font-size: 11.5px;
+      line-height: 1.3;
+    }
+
+    .purchaseSuggestionMaterial small {
+      display: block;
+      margin-top: 2px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionNote {
+      margin: 0;
+      padding: 11px 13px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: var(--canvas);
+      font-size: 9.8px;
+      line-height: 1.65;
+      font-weight: 650;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionNote strong {
+      color: var(--ink);
+    }
+
+    .purchaseSuggestionEmpty {
+      padding: 26px 12px;
+      text-align: center;
+      font-weight: 750;
+      color: var(--muted);
+    }
+
+    .purchaseSuggestionResultCount {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .purchaseSuggestionModal {
+        width: 100%;
+        height: calc(100vh - 20px);
+        height: calc(100dvh - 20px);
+        border-radius: 18px;
+      }
+
+      .purchaseSuggestionControls {
+        grid-template-columns: 1fr;
+      }
+
+      .purchaseSuggestionTableWrap {
+        max-height: 52vh;
+      }
+    }
   </style>
 
   <style id="treinamentoStyles">
@@ -4784,6 +5061,7 @@ html.darkTheme .treApp .brand-mark{background:none}
             <button class="ghostButton" id="importMaterials" type="button">Importar Excel</button>
             <button class="ghostButton" id="exportMaterials" type="button">Exportar Excel</button>
             <button class="ghostButton" id="exportStockReportExcel" type="button">Relatório Excel</button>
+            <button class="ghostButton" id="openPurchaseSuggestion" type="button">Sugestão de compras</button>
             <button class="dangerButton" id="clearAllMaterials" type="button">Limpar tudo</button>
             <button class="secondaryButton" id="openStockEntry" type="button">＋ Registrar entrada</button>
             <button class="primaryButton" id="newMaterialButton">＋ Novo material</button>
@@ -5940,6 +6218,69 @@ html.darkTheme .treApp .brand-mark{background:none}
       <div class="modalFooter">
         <button class="ghostButton" id="openGeneratedStockPdf" type="button">Abrir e conferir</button>
         <button class="primaryButton" id="saveGeneratedStockPdf" type="button">Escolher onde salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modalBackdrop" id="purchaseSuggestionModal" role="dialog" aria-modal="true" aria-labelledby="purchaseSuggestionTitle">
+    <div class="modal purchaseSuggestionModal">
+      <div class="modalHeader">
+        <div>
+          <h3 id="purchaseSuggestionTitle">Sugestão de compras por consumo acumulado</h3>
+          <p class="purchaseSuggestionSubtitle" id="purchaseSuggestionPeriod">Calculando o consumo acumulado...</p>
+        </div>
+        <button class="iconButton" id="closePurchaseSuggestion" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="modalBody purchaseSuggestionBody">
+        <div class="purchaseSuggestionControls">
+          <div class="field">
+            <label for="purchaseCoverageMonths">Meses de cobertura desejada</label>
+            <input class="input" id="purchaseCoverageMonths" type="number" min="1" max="24" step="1" value="3" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="purchaseSuggestionSearch">Pesquisar material</label>
+            <input class="input" id="purchaseSuggestionSearch" type="search" placeholder="NOME, CÓDIGO, TAMANHO, FABRICANTE OU CATEGORIA" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="purchaseSuggestionFilter">Exibição</label>
+            <select class="select" id="purchaseSuggestionFilter">
+              <option value="needed">Somente itens a comprar</option>
+              <option value="all">Todos os materiais</option>
+              <option value="critical">Somente compra imediata</option>
+              <option value="noConsumption">Somente sem consumo registrado</option>
+            </select>
+          </div>
+          <label class="purchaseSuggestionCheck" for="purchaseUseMinimum">
+            <input id="purchaseUseMinimum" type="checkbox" checked>
+            <span>Nunca sugerir quantidade que deixe o saldo abaixo do estoque mínimo cadastrado</span>
+          </label>
+        </div>
+        <div class="purchaseSuggestionStats" id="purchaseSuggestionStats"></div>
+        <div class="purchaseSuggestionResultCount" id="purchaseSuggestionResultCount" aria-live="polite"></div>
+        <div class="tableWrap purchaseSuggestionTableWrap" tabindex="0" role="region" aria-label="Sugestão de compras por material">
+          <table class="purchaseSuggestionTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Material</th>
+                <th>Categoria</th>
+                <th style="text-align:center">Consumo acumulado</th>
+                <th style="text-align:center">Média mensal</th>
+                <th style="text-align:center">Saldo atual</th>
+                <th style="text-align:center">Estoque mínimo</th>
+                <th style="text-align:center">Cobertura do saldo</th>
+                <th style="text-align:center">Necessidade</th>
+                <th style="text-align:center">Sugestão de compra</th>
+                <th style="text-align:center">Prioridade</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseSuggestionTable"></tbody>
+          </table>
+        </div>
+        <p class="purchaseSuggestionNote" id="purchaseSuggestionNote"></p>
+      </div>
+      <div class="modalFooter">
+        <button class="ghostButton" id="closePurchaseSuggestionFooter" type="button">Fechar</button>
       </div>
     </div>
   </div>
@@ -9531,6 +9872,292 @@ html.darkTheme .treApp .brand-mark{background:none}
       document.getElementById("unitResponsible").value = state.settings.responsible;
     }
 
+    /* ==========================================================
+       SUGESTÃO DE COMPRAS — relatório por consumo acumulado
+       Base: todas as retiradas registradas no histórico.
+       Fórmula: (média mensal de consumo x meses de cobertura) - saldo atual,
+       com o estoque mínimo cadastrado funcionando como piso opcional.
+       ========================================================== */
+    const PURCHASE_DAYS_IN_MONTH = 30.44;
+
+    const purchaseIntegerFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+    const purchaseDecimalFormatter = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+    function formatPurchaseInteger(value) {
+      return purchaseIntegerFormatter.format(Math.round(Number(value) || 0));
+    }
+
+    function formatPurchaseDecimal(value) {
+      return purchaseDecimalFormatter.format(Number(value) || 0);
+    }
+
+    function parsePurchaseDate(rawDate) {
+      if (!rawDate) return null;
+      const text = String(rawDate);
+      const parsed = new Date(text.includes("T") ? text : `${text}T12:00:00`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function findMaterialForConsumption(item) {
+      if (!item) return null;
+      const direct = findMaterialById(item.id);
+      if (direct) return direct;
+      const materials = state.materials || [];
+      if (item.code) {
+        const byCode = materials.find(material => normalizeColumnName(material.code) === normalizeColumnName(item.code));
+        if (byCode) return byCode;
+      }
+      if (!item.description) return null;
+      return materials.find(material => {
+        return normalizeColumnName(material.description) === normalizeColumnName(item.description)
+          && normalizeColumnName(material.size) === normalizeColumnName(item.size)
+          && normalizeColumnName(material.manufacturer) === normalizeColumnName(item.manufacturer);
+      }) || null;
+    }
+
+    function buildAccumulatedConsumptionIndex() {
+      const consumption = new Map();
+      let earliest = null;
+      let latest = null;
+      let totalUnits = 0;
+      let withdrawalCount = 0;
+      let orphanUnits = 0;
+      const orphanKeys = new Set();
+
+      (state.withdrawals || []).forEach(withdrawal => {
+        const date = parsePurchaseDate(withdrawal?.date);
+        const items = Array.isArray(withdrawal?.items) ? withdrawal.items : [];
+        let countedWithdrawal = false;
+        items.forEach(item => {
+          const qty = Number(item?.qty || 0);
+          if (!Number.isFinite(qty) || qty <= 0) return;
+          totalUnits += qty;
+          if (!countedWithdrawal) {
+            withdrawalCount += 1;
+            countedWithdrawal = true;
+          }
+          if (date) {
+            if (!earliest || date < earliest) earliest = date;
+            if (!latest || date > latest) latest = date;
+          }
+          const material = findMaterialForConsumption(item);
+          if (!material) {
+            orphanUnits += qty;
+            orphanKeys.add(normalizeColumnName(item?.description || item?.code || "material removido"));
+            return;
+          }
+          const key = String(material.id);
+          const entry = consumption.get(key) || { total: 0, deliveries: 0, first: null, last: null };
+          entry.total += qty;
+          entry.deliveries += 1;
+          if (date) {
+            if (!entry.first || date < entry.first) entry.first = date;
+            if (!entry.last || date > entry.last) entry.last = date;
+          }
+          consumption.set(key, entry);
+        });
+      });
+
+      return {
+        consumption,
+        earliest,
+        latest,
+        totalUnits,
+        withdrawalCount,
+        orphanUnits,
+        orphanCount: orphanKeys.size
+      };
+    }
+
+    function purchaseCoverageMonthsValue() {
+      const field = document.getElementById("purchaseCoverageMonths");
+      const raw = Number(field?.value);
+      if (!Number.isFinite(raw) || raw <= 0) return 3;
+      return Math.min(24, Math.max(1, Math.round(raw)));
+    }
+
+    function purchasePriorityFor(context) {
+      const { suggested, stock, minimum, monthlyAverage, coverage, coverageMonths } = context;
+      if (suggested <= 0) return { key: "ok", label: "Sem necessidade", rank: 5, className: "" };
+      if (monthlyAverage <= 0) return { key: "noConsumption", label: "Repor mínimo", rank: 4, className: "warning" };
+      if (stock <= 0) return { key: "critical", label: "Compra imediata", rank: 0, className: "danger" };
+      if (coverage !== null && coverage < 0.5) return { key: "critical", label: "Compra imediata", rank: 0, className: "danger" };
+      if ((minimum !== null && stock <= minimum) || (coverage !== null && coverage < 1)) {
+        return { key: "high", label: "Alta", rank: 1, className: "danger" };
+      }
+      if (coverage !== null && coverage < coverageMonths) return { key: "medium", label: "Programar", rank: 2, className: "warning" };
+      return { key: "low", label: "Complementar", rank: 3, className: "warning" };
+    }
+
+    function buildPurchaseSuggestionReport() {
+      const coverageMonths = purchaseCoverageMonthsValue();
+      const useMinimum = document.getElementById("purchaseUseMinimum")?.checked !== false;
+      const index = buildAccumulatedConsumptionIndex();
+      const now = new Date();
+      const spanDays = index.earliest ? Math.max(1, (now - index.earliest) / 86400000) : 0;
+      const historyMonths = index.earliest ? Math.max(1, spanDays / PURCHASE_DAYS_IN_MONTH) : 0;
+
+      const rows = sortedStockReportMaterials().map(material => {
+        const entry = index.consumption.get(String(material.id)) || { total: 0, deliveries: 0, first: null, last: null };
+        const consumed = Number(entry.total) || 0;
+        const monthlyAverage = historyMonths > 0 ? consumed / historyMonths : 0;
+        const stock = Number(material.stock) || 0;
+        const minimum = hasConfiguredMinimum(material) ? Number(material.minimum) : null;
+        const need = monthlyAverage * coverageMonths;
+        const target = useMinimum && minimum !== null ? Math.max(need, minimum) : need;
+        const suggested = Math.max(0, Math.ceil(target - stock));
+        const coverage = monthlyAverage > 0 ? stock / monthlyAverage : null;
+        const priority = purchasePriorityFor({ suggested, stock, minimum, monthlyAverage, coverage, coverageMonths });
+        return {
+          material,
+          consumed,
+          deliveries: entry.deliveries,
+          lastWithdrawal: entry.last,
+          monthlyAverage,
+          stock,
+          minimum,
+          need,
+          target,
+          suggested,
+          coverage,
+          priority
+        };
+      }).sort((left, right) => {
+        return left.priority.rank - right.priority.rank
+          || right.suggested - left.suggested
+          || compareMaterialsAlphanumeric(left.material, right.material);
+      });
+
+      const toBuy = rows.filter(row => row.suggested > 0);
+      return {
+        rows,
+        toBuy,
+        coverageMonths,
+        useMinimum,
+        historyMonths,
+        earliest: index.earliest,
+        latest: index.latest,
+        totalUnits: index.totalUnits,
+        withdrawalCount: index.withdrawalCount,
+        orphanUnits: index.orphanUnits,
+        orphanCount: index.orphanCount,
+        suggestedUnits: toBuy.reduce((sum, row) => sum + row.suggested, 0),
+        immediateCount: rows.filter(row => row.priority.key === "critical").length,
+        withoutConsumption: rows.filter(row => row.monthlyAverage <= 0).length
+      };
+    }
+
+    function purchaseCoverageText(row, coverageMonths) {
+      if (row.coverage === null) return "Sem consumo";
+      if (row.coverage >= 99) return "+99 meses";
+      const label = `${formatPurchaseDecimal(row.coverage)} ${row.coverage === 1 ? "mês" : "meses"}`;
+      return row.coverage < coverageMonths ? `<strong style="color:var(--danger)">${label}</strong>` : label;
+    }
+
+    function renderPurchaseSuggestion() {
+      const tableBody = document.getElementById("purchaseSuggestionTable");
+      if (!tableBody) return;
+
+      const report = buildPurchaseSuggestionReport();
+      const searchTerm = normalizeColumnName(document.getElementById("purchaseSuggestionSearch")?.value || "");
+      const filterMode = document.getElementById("purchaseSuggestionFilter")?.value || "needed";
+
+      const visibleRows = report.rows.filter(row => {
+        if (filterMode === "needed" && row.suggested <= 0) return false;
+        if (filterMode === "critical" && row.priority.key !== "critical") return false;
+        if (filterMode === "noConsumption" && row.monthlyAverage > 0) return false;
+        if (!searchTerm) return true;
+        const haystack = normalizeColumnName([
+          row.material.description,
+          row.material.code,
+          row.material.size,
+          row.material.manufacturer,
+          row.material.category,
+          row.material.location
+        ].filter(Boolean).join(" "));
+        return haystack.includes(searchTerm);
+      });
+
+      document.getElementById("purchaseSuggestionPeriod").innerHTML = report.earliest
+        ? `Consumo acumulado de <strong>${formatPurchaseInteger(report.totalUnits)}</strong> unidades entregues em <strong>${formatPurchaseInteger(report.withdrawalCount)}</strong> retiradas, de ${escapeHtml(formatDate(report.earliest.toISOString()))} até ${escapeHtml(formatDate((report.latest || new Date()).toISOString()))} — histórico de ${formatPurchaseDecimal(report.historyMonths)} meses. Cobertura desejada: ${report.coverageMonths} ${report.coverageMonths === 1 ? "mês" : "meses"}.`
+        : "Nenhuma retirada registrada no histórico. A sugestão considera apenas o estoque mínimo cadastrado.";
+
+      const stats = [
+        { label: "Itens a comprar", value: formatPurchaseInteger(report.toBuy.length), hint: `de ${formatPurchaseInteger(report.rows.length)} materiais`, className: "blue" },
+        { label: "Unidades sugeridas", value: formatPurchaseInteger(report.suggestedUnits), hint: "total do pedido", className: "blue" },
+        { label: "Compra imediata", value: formatPurchaseInteger(report.immediateCount), hint: "saldo zerado ou insuficiente", className: "danger" },
+        { label: "Sem consumo", value: formatPurchaseInteger(report.withoutConsumption), hint: "nenhuma retirada no histórico", className: "warning" },
+        { label: "Histórico analisado", value: `${formatPurchaseDecimal(report.historyMonths)}`, hint: "meses de consumo", className: "" }
+      ];
+      document.getElementById("purchaseSuggestionStats").innerHTML = stats.map(stat => `
+        <div class="purchaseStat ${stat.className}">
+          <span>${escapeHtml(stat.label)}</span>
+          <strong>${stat.value}</strong>
+          <small>${escapeHtml(stat.hint)}</small>
+        </div>
+      `).join("");
+
+      document.getElementById("purchaseSuggestionResultCount").textContent = visibleRows.length === 1
+        ? "1 material listado"
+        : `${formatPurchaseInteger(visibleRows.length)} materiais listados`;
+
+      tableBody.innerHTML = visibleRows.length ? visibleRows.map((row, index) => {
+        const material = row.material;
+        const details = [material.code, material.size ? `Tam. ${material.size}` : "", material.manufacturer].filter(Boolean).join(" · ");
+        const lastText = row.lastWithdrawal ? `Última saída: ${formatDate(row.lastWithdrawal.toISOString())}` : "Nunca retirado";
+        return `
+          <tr>
+            <td class="numeric">${index + 1}</td>
+            <td class="purchaseSuggestionMaterial">
+              <strong>${escapeHtml(upperText(material.description || "Material sem descrição"))}</strong>
+              <small>${escapeHtml(details || "Sem código")} · ${escapeHtml(lastText)}</small>
+            </td>
+            <td>${escapeHtml(material.category || "—")}</td>
+            <td class="numeric">${formatPurchaseInteger(row.consumed)}</td>
+            <td class="numeric">${formatPurchaseDecimal(row.monthlyAverage)}</td>
+            <td class="numeric strongValue">${formatPurchaseInteger(row.stock)}</td>
+            <td class="numeric">${row.minimum === null ? "—" : formatPurchaseInteger(row.minimum)}</td>
+            <td class="numeric">${purchaseCoverageText(row, report.coverageMonths)}</td>
+            <td class="numeric">${formatPurchaseInteger(Math.ceil(row.target))}</td>
+            <td class="suggestionCell ${row.suggested > 0 ? "" : "zero"}">${row.suggested > 0 ? formatPurchaseInteger(row.suggested) : "—"}</td>
+            <td><span class="pill ${row.priority.className}">${escapeHtml(row.priority.label)}</span></td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="11" class="purchaseSuggestionEmpty">Nenhum material atende aos filtros selecionados.</td></tr>`;
+
+      const orphanNote = report.orphanCount
+        ? ` Foram desconsideradas ${formatPurchaseInteger(report.orphanUnits)} unidades de ${formatPurchaseInteger(report.orphanCount)} ${report.orphanCount === 1 ? "item que não está mais" : "itens que não estão mais"} no catálogo.`
+        : "";
+      document.getElementById("purchaseSuggestionNote").innerHTML = `
+        <strong>Como o cálculo é feito:</strong> a média mensal é o consumo acumulado de todas as retiradas dividido pelos ${formatPurchaseDecimal(report.historyMonths)} meses de histórico.
+        A necessidade é a média mensal multiplicada pelos ${report.coverageMonths} ${report.coverageMonths === 1 ? "mês" : "meses"} de cobertura, e a sugestão de compra é a necessidade menos o saldo atual, arredondada para cima.
+        ${report.useMinimum ? "O estoque mínimo cadastrado está sendo usado como piso, então itens sem consumo ainda podem aparecer para repor o mínimo." : "O estoque mínimo cadastrado não está sendo usado como piso — a sugestão segue apenas o ritmo de consumo."}
+        ${orphanNote}
+      `;
+    }
+
+    function openPurchaseSuggestionModal() {
+      const modal = document.getElementById("purchaseSuggestionModal");
+      if (!modal) return;
+      renderPurchaseSuggestion();
+      modal.classList.add("open");
+      document.body.classList.add("materialModalOpen");
+      setTimeout(() => document.getElementById("purchaseCoverageMonths")?.focus(), 80);
+    }
+
+    function closePurchaseSuggestionModal() {
+      const modal = document.getElementById("purchaseSuggestionModal");
+      if (!modal || !modal.classList.contains("open")) return;
+      modal.classList.remove("open");
+      if (!document.getElementById("materialModal")?.classList.contains("open")) {
+        document.body.classList.remove("materialModalOpen");
+      }
+    }
+
+    function refreshPurchaseSuggestionIfOpen() {
+      if (document.getElementById("purchaseSuggestionModal")?.classList.contains("open")) renderPurchaseSuggestion();
+    }
+
     function renderAll() {
       renderDashboard();
       renderMaterials();
@@ -9543,6 +10170,7 @@ html.darkTheme .treApp .brand-mark{background:none}
       renderEmployeeHistory();
       renderSettings();
       renderWithdrawalSelection();
+      refreshPurchaseSuggestionIfOpen();
     }
 
     let pendingProtectedAction = "";
@@ -11965,6 +12593,21 @@ html.darkTheme .treApp .brand-mark{background:none}
     });
     document.getElementById("exportMaterials").addEventListener("click", exportMaterials);
     document.getElementById("exportStockReportExcel").addEventListener("click", exportStockReportExcel);
+    document.getElementById("openPurchaseSuggestion").addEventListener("click", openPurchaseSuggestionModal);
+    document.getElementById("closePurchaseSuggestion").addEventListener("click", closePurchaseSuggestionModal);
+    document.getElementById("closePurchaseSuggestionFooter").addEventListener("click", closePurchaseSuggestionModal);
+    document.getElementById("purchaseSuggestionModal").addEventListener("click", event => {
+      if (event.target.id === "purchaseSuggestionModal") closePurchaseSuggestionModal();
+    });
+    document.getElementById("purchaseCoverageMonths").addEventListener("input", renderPurchaseSuggestion);
+    document.getElementById("purchaseCoverageMonths").addEventListener("change", () => {
+      const field = document.getElementById("purchaseCoverageMonths");
+      field.value = purchaseCoverageMonthsValue();
+      renderPurchaseSuggestion();
+    });
+    document.getElementById("purchaseUseMinimum").addEventListener("change", renderPurchaseSuggestion);
+    document.getElementById("purchaseSuggestionFilter").addEventListener("change", renderPurchaseSuggestion);
+    document.getElementById("purchaseSuggestionSearch").addEventListener("input", renderPurchaseSuggestion);
     document.getElementById("openGeneratedStockPdf").addEventListener("click", openGeneratedStockPdf);
     document.getElementById("saveGeneratedStockPdf").addEventListener("click", saveGeneratedStockPdf);
     document.getElementById("closeStockPdfReady").addEventListener("click", closeStockPdfReadyModal);
@@ -12008,6 +12651,7 @@ html.darkTheme .treApp .brand-mark{background:none}
         requestCloseMaterialModal();
         closeCollaboratorModal();
         closeProtectedAction();
+        closePurchaseSuggestionModal();
         document.getElementById("unitModal").classList.remove("open");
         closeMobileMenu();
       }
