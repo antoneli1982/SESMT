@@ -4328,6 +4328,21 @@
       align-self: center;
     }
 
+    .purchaseSuggestionFooter {
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .purchaseFooterActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    #stockPdfReadyModal {
+      z-index: 60;
+    }
+
     .purchaseGroupRow td {
       padding: 9px 10px;
       border-bottom: 1px solid var(--line);
@@ -6595,7 +6610,11 @@ html.darkTheme .treApp .brand-mark{background:none}
         </div>
         <p class="purchaseSuggestionNote" id="purchaseSuggestionNote"></p>
       </div>
-      <div class="modalFooter">
+      <div class="modalFooter purchaseSuggestionFooter">
+        <div class="purchaseFooterActions">
+          <button class="ghostButton" id="exportPurchaseSuggestionExcel" type="button">Exportar Excel</button>
+          <button class="secondaryButton" id="exportPurchaseSuggestionPdf" type="button">Imprimir / PDF</button>
+        </div>
         <button class="ghostButton" id="closePurchaseSuggestionFooter" type="button">Fechar</button>
       </div>
     </div>
@@ -10539,6 +10558,13 @@ html.darkTheme .treApp .brand-mark{background:none}
         `;
       }).join("") : `<tr><td colspan="11" class="purchaseSuggestionEmpty">Nenhum material atende aos filtros selecionados.</td></tr>`;
 
+      purchaseSuggestionSnapshot = {
+        report,
+        visibleRows,
+        grouped: groupByCategory,
+        filters: purchaseActiveFiltersText()
+      };
+
       const orphanNote = report.orphanCount
         ? ` Foram desconsideradas ${formatPurchaseInteger(report.orphanUnits)} unidades de ${formatPurchaseInteger(report.orphanCount)} ${report.orphanCount === 1 ? "item que não está mais" : "itens que não estão mais"} no catálogo.`
         : "";
@@ -10548,6 +10574,483 @@ html.darkTheme .treApp .brand-mark{background:none}
         ${report.useMinimum ? "O estoque mínimo cadastrado está sendo usado como piso, então itens sem consumo ainda podem aparecer para repor o mínimo." : "O estoque mínimo cadastrado não está sendo usado como piso — a sugestão segue apenas o ritmo de consumo."}
         ${orphanNote}
       `;
+    }
+
+    /* ---------- Exportações da sugestão de compras ---------- */
+    let purchaseSuggestionSnapshot = null;
+
+    function purchaseActiveFiltersText() {
+      const parts = [];
+      const filterMode = document.getElementById("purchaseSuggestionFilter")?.value || "needed";
+      parts.push(filterMode === "needed" ? "Somente itens a comprar" : "Todos os materiais");
+      const chip = document.querySelector(`.purchaseChip[data-category="${purchaseCategoryFilter}"]`);
+      if (purchaseCategoryFilter && chip) parts.push(`Grupo: ${chip.textContent.replace(/\s+/g, " ").trim()}`);
+      const prioritySelect = document.getElementById("purchaseSuggestionPriority");
+      if (prioritySelect?.value) parts.push(`Prioridade: ${prioritySelect.options[prioritySelect.selectedIndex].textContent}`);
+      const manufacturerSelect = document.getElementById("purchaseSuggestionManufacturer");
+      if (manufacturerSelect?.value) parts.push(`Fabricante: ${manufacturerSelect.options[manufacturerSelect.selectedIndex].textContent}`);
+      const sizeSelect = document.getElementById("purchaseSuggestionSize");
+      if (sizeSelect?.value) parts.push(`Tamanho: ${sizeSelect.options[sizeSelect.selectedIndex].textContent}`);
+      const search = document.getElementById("purchaseSuggestionSearch")?.value.trim();
+      if (search) parts.push(`Pesquisa: "${search}"`);
+      return parts.join(" · ");
+    }
+
+    function purchaseExportCoverage(row) {
+      if (row.coverage === null) return "Sem consumo";
+      if (row.coverage >= 99) return "+99";
+      return formatPurchaseDecimal(row.coverage);
+    }
+
+    function purchaseCategoryTotals(rows) {
+      const groups = new Map();
+      rows.forEach(row => {
+        const label = String(row.material.category || "").trim() || "Sem categoria";
+        const key = normalizeColumnName(label);
+        const group = groups.get(key) || { label: upperText(label), items: 0, toBuy: 0, units: 0, stock: 0, consumed: 0 };
+        group.items += 1;
+        group.consumed += row.consumed;
+        group.stock += row.stock;
+        if (row.suggested > 0) {
+          group.toBuy += 1;
+          group.units += row.suggested;
+        }
+        groups.set(key, group);
+      });
+      return [...groups.values()].sort((left, right) => compareAlphanumeric(left.label, right.label));
+    }
+
+    function requirePurchaseSnapshot() {
+      if (!purchaseSuggestionSnapshot) renderPurchaseSuggestion();
+      return purchaseSuggestionSnapshot;
+    }
+
+    function exportPurchaseSuggestionExcel() {
+      if (typeof XLSX === "undefined") {
+        showToast("Não foi possível carregar o recurso de Excel.", true);
+        return;
+      }
+      const snapshot = requirePurchaseSnapshot();
+      if (!snapshot || !snapshot.visibleRows.length) {
+        showToast("Nenhum material listado para exportar.", true);
+        return;
+      }
+
+      const { report, visibleRows } = snapshot;
+      const generatedAt = new Date().toLocaleString("pt-BR");
+      const totalUnits = visibleRows.reduce((sum, row) => sum + row.suggested, 0);
+      const toBuy = visibleRows.filter(row => row.suggested > 0).length;
+      const immediate = visibleRows.filter(row => row.priority.key === "critical").length;
+
+      const rows = [
+        ["RELATÓRIO DE SUGESTÃO DE COMPRAS POR CONSUMO ACUMULADO", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+        ["Unidade", state.settings.unit || "Gestão de EPI", "", "", "", "", "", "Emissão", generatedAt, "", "", "", "", ""],
+        ["Endereço", state.settings.address || "Não informado", "", "", "", "", "", "Responsável", state.settings.responsible || "Não informado", "", "", "", "", ""],
+        ["Período do consumo", report.earliest
+          ? `${formatDate(report.earliest.toISOString())} a ${formatDate((report.latest || new Date()).toISOString())} (${formatPurchaseDecimal(report.historyMonths)} meses)`
+          : "Sem retiradas registradas", "", "", "", "", "", "Cobertura desejada", `${report.coverageMonths} ${report.coverageMonths === 1 ? "mês" : "meses"}`, "", "", "", "", ""],
+        ["Filtros aplicados", snapshot.filters || "Nenhum", "", "", "", "", "", "Piso de estoque mínimo", report.useMinimum ? "Sim" : "Não", "", "", "", "", ""],
+        [],
+        ["MATERIAIS LISTADOS", visibleRows.length, "ITENS A COMPRAR", toBuy, "UNIDADES SUGERIDAS", totalUnits, "COMPRA IMEDIATA", immediate, "", "", "", "", "", ""],
+        [],
+        ["#", "Código", "Descrição", "Categoria", "Tamanho", "Fabricante", "Consumo acumulado", "Média mensal", "Saldo atual", "Estoque mínimo", "Cobertura (meses)", "Necessidade", "Sugestão de compra", "Prioridade"]
+      ];
+
+      visibleRows.forEach((row, index) => rows.push([
+        index + 1,
+        row.material.code || "",
+        upperText(row.material.description || ""),
+        row.material.category || "",
+        row.material.size || "",
+        row.material.manufacturer || "",
+        row.consumed,
+        Number(row.monthlyAverage.toFixed(2)),
+        row.stock,
+        row.minimum === null ? "" : row.minimum,
+        purchaseExportCoverage(row),
+        Math.ceil(row.target),
+        row.suggested,
+        row.priority.label
+      ]));
+
+      rows.push(["", "", "", "", "", "", "", "", "", "", "", "TOTAL GERAL SUGERIDO", totalUnits, ""]);
+
+      const sheet = XLSX.utils.aoa_to_sheet(rows);
+      const headerRowIndex = 8;
+      const lastRowIndex = rows.length - 1;
+      sheet["!merges"] = [
+        XLSX.utils.decode_range("A1:N1"),
+        XLSX.utils.decode_range("B2:G2"),
+        XLSX.utils.decode_range("I2:N2"),
+        XLSX.utils.decode_range("B3:G3"),
+        XLSX.utils.decode_range("I3:N3"),
+        XLSX.utils.decode_range("B4:G4"),
+        XLSX.utils.decode_range("I4:N4"),
+        XLSX.utils.decode_range("B5:G5"),
+        XLSX.utils.decode_range("I5:N5")
+      ];
+      sheet["!autofilter"] = {
+        ref: XLSX.utils.encode_range({ r: headerRowIndex, c: 0 }, { r: Math.max(headerRowIndex, lastRowIndex - 1), c: 13 })
+      };
+      sheet["!freeze"] = { xSplit: 0, ySplit: headerRowIndex + 1 };
+      sheet["!cols"] = [
+        { wch: 6 }, { wch: 14 }, { wch: 42 }, { wch: 28 }, { wch: 12 }, { wch: 20 },
+        { wch: 19 }, { wch: 14 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 14 },
+        { wch: 20 }, { wch: 20 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "SUGESTÃO DE COMPRAS");
+
+      const groupRows = [
+        ["RESUMO POR GRUPO DE PROTEÇÃO", "", "", "", ""],
+        [],
+        ["Grupo de proteção", "Materiais", "Itens a comprar", "Unidades sugeridas", "Consumo acumulado"]
+      ];
+      const totals = purchaseCategoryTotals(visibleRows);
+      totals.forEach(group => groupRows.push([group.label, group.items, group.toBuy, group.units, group.consumed]));
+      groupRows.push([
+        "TOTAL",
+        totals.reduce((sum, group) => sum + group.items, 0),
+        totals.reduce((sum, group) => sum + group.toBuy, 0),
+        totals.reduce((sum, group) => sum + group.units, 0),
+        totals.reduce((sum, group) => sum + group.consumed, 0)
+      ]);
+      const groupSheet = XLSX.utils.aoa_to_sheet(groupRows);
+      groupSheet["!merges"] = [XLSX.utils.decode_range("A1:E1")];
+      groupSheet["!freeze"] = { xSplit: 0, ySplit: 3 };
+      groupSheet["!cols"] = [{ wch: 34 }, { wch: 12 }, { wch: 18 }, { wch: 20 }, { wch: 20 }];
+      XLSX.utils.book_append_sheet(workbook, groupSheet, "RESUMO POR GRUPO");
+
+      XLSX.writeFile(workbook, `sugestao_compras_epi_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("Planilha de sugestão de compras exportada.");
+    }
+
+    function generatePurchaseSuggestionPdf(snapshot) {
+      const JsPdfConstructor = window.jspdf?.jsPDF;
+      if (!JsPdfConstructor) throw new Error("Biblioteca jsPDF indisponível.");
+      const documentPdf = new JsPdfConstructor({ orientation: "landscape", unit: "mm", format: "a4", compress: true, putOnlyUsedFonts: true });
+      if (typeof documentPdf.autoTable !== "function") throw new Error("Recurso de tabela PDF indisponível.");
+
+      const { report, visibleRows, grouped } = snapshot;
+      const reportBlue = [0, 35, 90];
+      const white = [255, 255, 255];
+      const softBlue = [232, 240, 255];
+      const pageWidth = documentPdf.internal.pageSize.getWidth();
+      const pageHeight = documentPdf.internal.pageSize.getHeight();
+      const generatedAt = new Date().toLocaleString("pt-BR");
+      const totalUnits = visibleRows.reduce((sum, row) => sum + row.suggested, 0);
+      const toBuy = visibleRows.filter(row => row.suggested > 0).length;
+      const immediate = visibleRows.filter(row => row.priority.key === "critical").length;
+
+      documentPdf.setFillColor(...white);
+      documentPdf.rect(0, 0, pageWidth, pageHeight, "F");
+      documentPdf.setTextColor(...reportBlue);
+      documentPdf.setDrawColor(...reportBlue);
+      documentPdf.setFont("helvetica", "bold");
+      documentPdf.setFontSize(14);
+      documentPdf.text("SUGESTÃO DE COMPRAS POR CONSUMO ACUMULADO", 10, 11);
+      documentPdf.setFont("helvetica", "normal");
+      documentPdf.setFontSize(7);
+      documentPdf.text([state.settings.unit || "Gestão de EPI", state.settings.address || ""].filter(Boolean).join(" - "), 10, 16);
+      documentPdf.text(`Emissão: ${generatedAt}`, pageWidth - 10, 11, { align: "right" });
+      documentPdf.text(`Responsável: ${state.settings.responsible || "Não informado"}`, pageWidth - 10, 16, { align: "right" });
+
+      const periodText = report.earliest
+        ? `Consumo de ${formatDate(report.earliest.toISOString())} a ${formatDate((report.latest || new Date()).toISOString())} (${formatPurchaseDecimal(report.historyMonths)} meses) - cobertura desejada: ${report.coverageMonths} ${report.coverageMonths === 1 ? "mes" : "meses"}`
+        : "Sem retiradas registradas no historico";
+      documentPdf.text(documentPdf.splitTextToSize(periodText, pageWidth - 20), 10, 20.5);
+      const filtersText = `Filtros: ${snapshot.filters || "Nenhum"}${report.useMinimum ? " · Estoque mínimo usado como piso" : ""}`;
+      documentPdf.text(documentPdf.splitTextToSize(filtersText, pageWidth - 20), 10, 24);
+
+      const summaryItems = [
+        ["MATERIAIS LISTADOS", String(visibleRows.length)],
+        ["ITENS A COMPRAR", String(toBuy)],
+        ["UNIDADES SUGERIDAS", String(totalUnits)],
+        ["COMPRA IMEDIATA", String(immediate)],
+        ["HISTÓRICO ANALISADO", `${formatPurchaseDecimal(report.historyMonths)} meses`]
+      ];
+      const summaryY = 27;
+      const summaryHeight = 12;
+      const summaryWidth = (pageWidth - 20) / summaryItems.length;
+      summaryItems.forEach(([label, value], index) => {
+        const x = 10 + (summaryWidth * index);
+        documentPdf.setFillColor(...white);
+        documentPdf.setDrawColor(...reportBlue);
+        documentPdf.rect(x, summaryY, summaryWidth, summaryHeight, "FD");
+        documentPdf.setFont("helvetica", "bold");
+        documentPdf.setFontSize(5.6);
+        documentPdf.text(label, x + 2.2, summaryY + 4.2);
+        documentPdf.setFontSize(9.5);
+        documentPdf.text(value, x + 2.2, summaryY + 9.6);
+      });
+
+      const head = grouped
+        ? [["#", "Código", "Descrição", "Tam.", "Consumo", "Média/mês", "Saldo", "Mín.", "Cobertura", "Necess.", "Sugestão", "Prioridade"]]
+        : [["#", "Código", "Descrição", "Categoria", "Tam.", "Consumo", "Média/mês", "Saldo", "Mín.", "Cobertura", "Necess.", "Sugestão", "Prioridade"]];
+      const columnCount = head[0].length;
+
+      const body = [];
+      let currentCategory = null;
+      visibleRows.forEach((row, index) => {
+        if (grouped) {
+          const label = String(row.material.category || "").trim() || "Sem categoria";
+          const key = normalizeColumnName(label);
+          if (key !== currentCategory) {
+            currentCategory = key;
+            const groupRows = visibleRows.filter(item => normalizeColumnName(item.material.category || "sem categoria") === key);
+            const groupUnits = groupRows.reduce((sum, item) => sum + item.suggested, 0);
+            body.push([{
+              content: `${upperText(label)}  -  ${groupRows.length} ${groupRows.length === 1 ? "item" : "itens"} · ${groupUnits} un. sugeridas`,
+              colSpan: columnCount,
+              styles: { fontStyle: "bold", fillColor: softBlue, textColor: reportBlue, halign: "left" }
+            }]);
+          }
+        }
+        const base = [
+          String(index + 1),
+          String(row.material.code || ""),
+          upperText(row.material.description || ""),
+          String(row.material.size || "-"),
+          formatPurchaseInteger(row.consumed),
+          formatPurchaseDecimal(row.monthlyAverage),
+          formatPurchaseInteger(row.stock),
+          row.minimum === null ? "-" : formatPurchaseInteger(row.minimum),
+          purchaseExportCoverage(row),
+          formatPurchaseInteger(Math.ceil(row.target)),
+          row.suggested > 0 ? formatPurchaseInteger(row.suggested) : "-",
+          row.priority.label
+        ];
+        if (!grouped) base.splice(3, 0, String(row.material.category || "-"));
+        body.push(base);
+      });
+
+      const widths = grouped
+        ? [8, 20, 74, 14, 19, 19, 16, 15, 21, 19, 22, 28]
+        : [8, 20, 56, 32, 13, 18, 18, 15, 14, 20, 18, 20, 25];
+      const columnStyles = {};
+      widths.forEach((width, index) => {
+        columnStyles[index] = { cellWidth: width };
+        if (index >= widths.length - 9) columnStyles[index].halign = "center";
+      });
+      columnStyles[0].halign = "center";
+      columnStyles[1].halign = "left";
+      columnStyles[2].halign = "left";
+      columnStyles[widths.length - 2].fontStyle = "bold";
+      columnStyles[widths.length - 1].halign = "center";
+
+      documentPdf.autoTable({
+        startY: 42,
+        head,
+        body,
+        foot: [[
+          { content: "TOTAL GERAL SUGERIDO", colSpan: columnCount - 2, styles: { halign: "right", fontStyle: "bold" } },
+          { content: String(totalUnits), styles: { halign: "center", fontStyle: "bold" } },
+          ""
+        ]],
+        theme: "grid",
+        showHead: "everyPage",
+        showFoot: "lastPage",
+        rowPageBreak: "avoid",
+        margin: { top: 10, right: 10, bottom: 14, left: 10 },
+        styles: {
+          font: "helvetica",
+          fontSize: 6.2,
+          cellPadding: 1.2,
+          overflow: "linebreak",
+          valign: "middle",
+          textColor: reportBlue,
+          fillColor: white,
+          lineColor: reportBlue,
+          lineWidth: .1
+        },
+        headStyles: { textColor: reportBlue, fillColor: white, fontStyle: "bold", halign: "center" },
+        bodyStyles: { textColor: reportBlue, fillColor: white },
+        alternateRowStyles: { textColor: reportBlue, fillColor: white },
+        footStyles: { textColor: reportBlue, fillColor: white, fontStyle: "bold" },
+        columnStyles
+      });
+
+      const totals = purchaseCategoryTotals(visibleRows);
+      if (totals.length > 1) {
+        documentPdf.autoTable({
+          startY: (documentPdf.lastAutoTable?.finalY || 42) + 6,
+          head: [["RESUMO POR GRUPO DE PROTEÇÃO", "Materiais", "Itens a comprar", "Unidades sugeridas", "Consumo acumulado"]],
+          body: totals.map(group => [
+            group.label,
+            formatPurchaseInteger(group.items),
+            formatPurchaseInteger(group.toBuy),
+            formatPurchaseInteger(group.units),
+            formatPurchaseInteger(group.consumed)
+          ]),
+          theme: "grid",
+          rowPageBreak: "avoid",
+          margin: { top: 10, right: 10, bottom: 14, left: 10 },
+          styles: {
+            font: "helvetica",
+            fontSize: 6.4,
+            cellPadding: 1.4,
+            textColor: reportBlue,
+            fillColor: white,
+            lineColor: reportBlue,
+            lineWidth: .1
+          },
+          headStyles: { textColor: reportBlue, fillColor: white, fontStyle: "bold" },
+          columnStyles: {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 24, halign: "center" },
+            2: { cellWidth: 30, halign: "center" },
+            3: { cellWidth: 34, halign: "center" },
+            4: { cellWidth: 34, halign: "center" }
+          }
+        });
+      }
+
+      const totalPages = documentPdf.getNumberOfPages();
+      for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+        documentPdf.setPage(pageNumber);
+        documentPdf.setDrawColor(...reportBlue);
+        documentPdf.setTextColor(...reportBlue);
+        documentPdf.setLineWidth(.1);
+        documentPdf.line(10, pageHeight - 9, pageWidth - 10, pageHeight - 9);
+        documentPdf.setFont("helvetica", "normal");
+        documentPdf.setFontSize(6);
+        documentPdf.text("Sugestão calculada pelo consumo acumulado das retiradas registradas na Gestão de EPI.", 10, pageHeight - 5);
+        documentPdf.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - 10, pageHeight - 5, { align: "right" });
+      }
+
+      return documentPdf;
+    }
+
+    function buildPurchaseSuggestionPrintReport(snapshot) {
+      const { report, visibleRows } = snapshot;
+      const generatedAt = new Date().toLocaleString("pt-BR");
+      const totalUnits = visibleRows.reduce((sum, row) => sum + row.suggested, 0);
+      const toBuy = visibleRows.filter(row => row.suggested > 0).length;
+      const reportBlue = "#00235a";
+      const cell = `padding:3px 4px;border:1px solid ${reportBlue};vertical-align:top;word-break:break-word;color:${reportBlue};background:#ffffff`;
+      const head = `padding:4px;border:1px solid ${reportBlue};background:#ffffff;color:${reportBlue};font-weight:800;text-align:center`;
+
+      const rows = visibleRows.length ? visibleRows.map((row, index) => `
+        <tr>
+          <td style="${cell};text-align:center">${index + 1}</td>
+          <td style="${cell}">${escapeHtml(row.material.code || "")}</td>
+          <td style="${cell}"><strong>${escapeHtml(upperText(row.material.description || ""))}</strong></td>
+          <td style="${cell}">${escapeHtml(row.material.category || "—")}</td>
+          <td style="${cell};text-align:center">${escapeHtml(row.material.size || "—")}</td>
+          <td style="${cell};text-align:center">${formatPurchaseInteger(row.consumed)}</td>
+          <td style="${cell};text-align:center">${formatPurchaseDecimal(row.monthlyAverage)}</td>
+          <td style="${cell};text-align:center">${formatPurchaseInteger(row.stock)}</td>
+          <td style="${cell};text-align:center">${row.minimum === null ? "—" : formatPurchaseInteger(row.minimum)}</td>
+          <td style="${cell};text-align:center">${escapeHtml(purchaseExportCoverage(row))}</td>
+          <td style="${cell};text-align:center">${formatPurchaseInteger(Math.ceil(row.target))}</td>
+          <td style="${cell};text-align:center;font-weight:900">${row.suggested > 0 ? formatPurchaseInteger(row.suggested) : "—"}</td>
+          <td style="${cell};text-align:center">${escapeHtml(row.priority.label)}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="13" style="${cell};text-align:center;padding:14px">Nenhum material listado.</td></tr>`;
+
+      return `
+        <div style="font-size:8px;color:${reportBlue};background:#ffffff">
+          <div style="border:1px solid ${reportBlue};margin-bottom:8px;background:#ffffff">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid ${reportBlue}">
+              <div>
+                <div style="font-size:13px;font-weight:900">SUGESTÃO DE COMPRAS POR CONSUMO ACUMULADO</div>
+                <div style="font-size:8px;margin-top:2px">${escapeHtml(state.settings.unit || "Gestão de EPI")}${state.settings.address ? " · " + escapeHtml(state.settings.address) : ""}</div>
+              </div>
+              <div style="text-align:right;font-size:8px">
+                <div><strong>Emissão:</strong> ${escapeHtml(generatedAt)}</div>
+                <div><strong>Responsável:</strong> ${escapeHtml(state.settings.responsible || "Não informado")}</div>
+              </div>
+            </div>
+            <div style="padding:6px 10px;border-bottom:1px solid ${reportBlue};font-size:7px">
+              ${report.earliest
+                ? `Consumo de ${escapeHtml(formatDate(report.earliest.toISOString()))} a ${escapeHtml(formatDate((report.latest || new Date()).toISOString()))} (${formatPurchaseDecimal(report.historyMonths)} meses) · Cobertura desejada: ${report.coverageMonths} ${report.coverageMonths === 1 ? "mês" : "meses"}`
+                : "Sem retiradas registradas no histórico"}
+              · Filtros: ${escapeHtml(snapshot.filters || "Nenhum")}
+            </div>
+            <div style="display:flex;flex-wrap:wrap">
+              <div style="flex:1;min-width:80px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:6.5px;font-weight:800">MATERIAIS LISTADOS</div><div style="font-size:12px;font-weight:900">${formatPurchaseInteger(visibleRows.length)}</div></div>
+              <div style="flex:1;min-width:80px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:6.5px;font-weight:800">ITENS A COMPRAR</div><div style="font-size:12px;font-weight:900">${formatPurchaseInteger(toBuy)}</div></div>
+              <div style="flex:1;min-width:80px;padding:6px 10px;border-right:1px solid ${reportBlue}"><div style="font-size:6.5px;font-weight:800">UNIDADES SUGERIDAS</div><div style="font-size:12px;font-weight:900">${formatPurchaseInteger(totalUnits)}</div></div>
+              <div style="flex:1;min-width:80px;padding:6px 10px"><div style="font-size:6.5px;font-weight:800">HISTÓRICO ANALISADO</div><div style="font-size:12px;font-weight:900">${formatPurchaseDecimal(report.historyMonths)} meses</div></div>
+            </div>
+          </div>
+
+          <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:7px">
+            <colgroup>
+              <col style="width:3.5%"><col style="width:8%"><col style="width:21%"><col style="width:12%"><col style="width:5.5%">
+              <col style="width:7%"><col style="width:7%"><col style="width:6%"><col style="width:6%"><col style="width:7%">
+              <col style="width:6.5%"><col style="width:7%"><col style="width:9%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="${head}">#</th>
+                <th style="${head}">Código</th>
+                <th style="${head}">Descrição</th>
+                <th style="${head}">Categoria</th>
+                <th style="${head}">Tam.</th>
+                <th style="${head}">Consumo</th>
+                <th style="${head}">Média/mês</th>
+                <th style="${head}">Saldo</th>
+                <th style="${head}">Mín.</th>
+                <th style="${head}">Cobertura</th>
+                <th style="${head}">Necess.</th>
+                <th style="${head}">Sugestão</th>
+                <th style="${head}">Prioridade</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="11" style="${cell};text-align:right;font-weight:900">TOTAL GERAL SUGERIDO</td>
+                <td style="${cell};text-align:center;font-weight:900">${formatPurchaseInteger(totalUnits)}</td>
+                <td style="${cell}"></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="margin-top:8px;font-size:6px">Sugestão calculada pelo consumo acumulado das retiradas registradas na Gestão de EPI.</div>
+        </div>
+      `;
+    }
+
+    function printPurchaseSuggestionReport(snapshot) {
+      const previousTitle = document.title;
+      document.getElementById("printTerm").innerHTML = "";
+      document.getElementById("printReport").innerHTML = buildPurchaseSuggestionPrintReport(snapshot);
+      document.title = `sugestao_compras_epi_${new Date().toISOString().slice(0, 10)}`;
+      const restore = () => {
+        document.title = previousTitle;
+        document.getElementById("printReport").innerHTML = "";
+        window.removeEventListener("afterprint", restore);
+      };
+      window.addEventListener("afterprint", restore);
+      setTimeout(() => window.print(), 120);
+    }
+
+    async function exportPurchaseSuggestionPdf() {
+      const snapshot = requirePurchaseSnapshot();
+      if (!snapshot || !snapshot.visibleRows.length) {
+        showToast("Nenhum material listado para gerar o PDF.", true);
+        return;
+      }
+      const button = document.getElementById("exportPurchaseSuggestionPdf");
+      const originalLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Gerando PDF...";
+      try {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const documentPdf = generatePurchaseSuggestionPdf(snapshot);
+        const filename = `sugestao_compras_epi_${new Date().toISOString().slice(0, 10)}.pdf`;
+        showStockPdfReadyModal(documentPdf.output("blob"), filename);
+        showToast("PDF da sugestão de compras gerado.");
+      } catch (error) {
+        console.warn("PDF por biblioteca indisponível, usando a impressão do navegador", error);
+        printPurchaseSuggestionReport(snapshot);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
     }
 
     function clearPurchaseSuggestionFilters() {
@@ -13043,6 +13546,8 @@ html.darkTheme .treApp .brand-mark{background:none}
       renderPurchaseSuggestion();
     });
     document.getElementById("clearPurchaseSuggestionFilters").addEventListener("click", clearPurchaseSuggestionFilters);
+    document.getElementById("exportPurchaseSuggestionExcel").addEventListener("click", exportPurchaseSuggestionExcel);
+    document.getElementById("exportPurchaseSuggestionPdf").addEventListener("click", exportPurchaseSuggestionPdf);
     document.getElementById("openGeneratedStockPdf").addEventListener("click", openGeneratedStockPdf);
     document.getElementById("saveGeneratedStockPdf").addEventListener("click", saveGeneratedStockPdf);
     document.getElementById("closeStockPdfReady").addEventListener("click", closeStockPdfReadyModal);
