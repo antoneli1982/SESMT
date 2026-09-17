@@ -1547,6 +1547,232 @@
       font-weight: 900;
     }
 
+
+    .materialUsageAnalytics {
+      margin: 0 0 18px;
+      padding: 20px;
+    }
+
+    .materialUsageHeader {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .materialUsageHeader h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -.025em;
+    }
+
+    .materialUsageHeader p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .materialUsagePeriodControls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(145px, 1fr)) auto;
+      align-items: end;
+      gap: 9px;
+      min-width: min(100%, 440px);
+    }
+
+    .materialUsagePeriodControls .field label {
+      margin-bottom: 5px;
+    }
+
+    .materialUsageStats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .materialUsageStat {
+      min-width: 0;
+      padding: 14px 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .materialUsageStat span,
+    .materialUsageStat strong,
+    .materialUsageStat small {
+      display: block;
+    }
+
+    .materialUsageStat span {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 850;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .materialUsageStat strong {
+      margin-top: 6px;
+      color: var(--ink);
+      font-size: 24px;
+      letter-spacing: -.045em;
+      overflow-wrap: anywhere;
+    }
+
+    .materialUsageStat small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 8px;
+      line-height: 1.45;
+    }
+
+    .materialUsageStat.primary {
+      border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
+      background: linear-gradient(145deg, var(--blue-soft), var(--surface));
+    }
+
+    .materialUsageStat.primary strong {
+      color: var(--blue);
+    }
+
+    .materialUsageContext {
+      margin: 0 0 14px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--blue-soft) 38%, var(--surface));
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .materialUsageContext strong {
+      color: var(--ink);
+    }
+
+    .materialUsageGrid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+      gap: 12px;
+    }
+
+    .materialUsageSubpanel {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 94%, var(--blue-soft));
+    }
+
+    .materialUsageSubpanelHeader {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+
+    .materialUsageSubpanelHeader strong {
+      color: var(--ink);
+      font-size: 11px;
+    }
+
+    .materialUsageSubpanelHeader span {
+      color: var(--muted);
+      font-size: 8px;
+      text-align: right;
+    }
+
+    .materialUsageRows {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .materialUsageRow {
+      display: grid;
+      grid-template-columns: minmax(70px, auto) minmax(110px, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .materialUsageRowLabel {
+      min-width: 0;
+      color: var(--ink);
+      font-size: 9px;
+      font-weight: 750;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .materialUsageTrack {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--blue-soft);
+    }
+
+    .materialUsageFill {
+      display: block;
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .materialUsageRowValue {
+      min-width: 62px;
+      color: var(--ink);
+      text-align: right;
+      font-size: 9px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .materialUsageEmpty {
+      padding: 20px 10px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .materialUsageStats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .materialUsageHeader {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .materialUsagePeriodControls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        min-width: 0;
+        width: 100%;
+      }
+
+      .materialUsagePeriodControls > button {
+        grid-column: 1 / -1;
+      }
+
+      .materialUsageStats,
+      .materialUsageGrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .materialsTableWrap {
       position: relative;
       max-height: min(68vh, 760px);
@@ -5384,6 +5610,75 @@ html.darkTheme .treApp .brand-mark{background:none}
             <option value="expired">CA vencido</option>
           </select>
         </div>
+        <article class="panel materialUsageAnalytics" id="materialUsageAnalytics">
+          <div class="materialUsageHeader">
+            <div>
+              <h3>Estatísticas de uso dos materiais</h3>
+              <p>O uso considera as quantidades registradas como retirada. Deixe a pesquisa vazia para analisar todos os materiais ou pesquise um item para refinar os dados.</p>
+            </div>
+            <div class="materialUsagePeriodControls">
+              <div class="field">
+                <label for="materialUsageStart">Período inicial</label>
+                <input class="input" id="materialUsageStart" type="date">
+              </div>
+              <div class="field">
+                <label for="materialUsageEnd">Período final</label>
+                <input class="input" id="materialUsageEnd" type="date">
+              </div>
+              <button class="ghostButton" id="materialUsageAllTime" type="button">Todo o histórico</button>
+            </div>
+          </div>
+
+          <div class="materialUsageStats">
+            <div class="materialUsageStat">
+              <span>Consumo global</span>
+              <strong id="materialUsageGlobal">0 un.</strong>
+              <small id="materialUsageGlobalCaption">Todos os materiais no período</small>
+            </div>
+            <div class="materialUsageStat primary">
+              <span>Consumo filtrado</span>
+              <strong id="materialUsageFiltered">0 un.</strong>
+              <small id="materialUsageFilteredCaption">Resultado do campo de pesquisa</small>
+            </div>
+            <div class="materialUsageStat">
+              <span>Média mensal</span>
+              <strong id="materialUsageMonthlyAverage">0 un.</strong>
+              <small id="materialUsageMonthsCaption">Média do resultado filtrado</small>
+            </div>
+            <div class="materialUsageStat">
+              <span>Materiais utilizados</span>
+              <strong id="materialUsageDistinct">0</strong>
+              <small>Itens diferentes com retirada</small>
+            </div>
+            <div class="materialUsageStat">
+              <span>Participação no global</span>
+              <strong id="materialUsageShare">0%</strong>
+              <small>Parcela do consumo global do período</small>
+            </div>
+          </div>
+
+          <div class="materialUsageContext" id="materialUsageContext">
+            <strong>Escopo:</strong> todos os materiais e todo o histórico disponível.
+          </div>
+
+          <div class="materialUsageGrid">
+            <div class="materialUsageSubpanel">
+              <div class="materialUsageSubpanelHeader">
+                <strong>Uso por período</strong>
+                <span id="materialUsageTrendCaption">Evolução das retiradas</span>
+              </div>
+              <div class="materialUsageRows" id="materialUsageTrend"></div>
+            </div>
+            <div class="materialUsageSubpanel">
+              <div class="materialUsageSubpanelHeader">
+                <strong>Ranking de uso</strong>
+                <span>Materiais com maior consumo no recorte</span>
+              </div>
+              <div class="materialUsageRows" id="materialUsageRanking"></div>
+            </div>
+          </div>
+        </article>
+
         <div class="materialsResultsBar" aria-live="polite">
           <strong id="materialsResultCount">0 materiais encontrados</strong>
           <span class="materialsScrollHelp" id="materialsScrollHelp">Arraste a tabela ou use as barras para localizar qualquer informação</span>
@@ -8121,6 +8416,12 @@ html.darkTheme .treApp .brand-mark{background:none}
           entries.push({
             date: withdrawal.date,
             material: materialLabel(item),
+            materialId: item.id ?? "",
+            code: item.code || "",
+            description: item.description || "",
+            size: item.size || "",
+            manufacturer: item.manufacturer || "",
+            category: item.category || "",
             qty: Number(item.qty || 0),
             historyId: withdrawal.historyId
           });
@@ -8131,11 +8432,239 @@ html.darkTheme .treApp .brand-mark{background:none}
         entries.push({
           date: item.date,
           material: item.material || "EPI não informado",
+          materialId: "",
+          code: "",
+          description: item.material || "",
+          size: "",
+          manufacturer: "",
+          category: "",
           qty: Number(item.qty || 0),
           historyId: item.id
         });
       });
       return entries;
+    }
+
+    function parseMaterialUsageDate(value, endOfDay = false) {
+      const normalized = String(value || "").trim();
+      if (!normalized) return null;
+      const parts = normalized.split("-").map(Number);
+      if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2], endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0);
+    }
+
+    function materialUsageBounds(entries) {
+      let start = parseMaterialUsageDate(document.getElementById("materialUsageStart")?.value);
+      let end = parseMaterialUsageDate(document.getElementById("materialUsageEnd")?.value, true);
+      if (start && end && start > end) {
+        const originalStart = start;
+        start = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 0, 0, 0, 0);
+        end = new Date(originalStart.getFullYear(), originalStart.getMonth(), originalStart.getDate(), 23, 59, 59, 999);
+      }
+      const validDates = entries
+        .map(entry => new Date(entry.date))
+        .filter(date => !Number.isNaN(date.getTime()))
+        .sort((left, right) => left - right);
+      const dataStart = validDates[0] || new Date();
+      const dataEnd = validDates[validDates.length - 1] || new Date();
+      return {
+        start,
+        end,
+        effectiveStart: start || dataStart,
+        effectiveEnd: end || dataEnd
+      };
+    }
+
+    function materialUsageInRange(entry, bounds) {
+      const date = new Date(entry.date);
+      if (Number.isNaN(date.getTime())) return false;
+      if (bounds.start && date < bounds.start) return false;
+      if (bounds.end && date > bounds.end) return false;
+      return true;
+    }
+
+    function currentMaterialUsageCatalogFilter() {
+      const searchValue = document.getElementById("materialSearch")?.value || "";
+      const searchTerms = normalizeColumnName(searchValue).split(/\s+/).filter(Boolean);
+      const category = document.getElementById("categoryFilter")?.value || "";
+      const stockFilter = document.getElementById("stockFilter")?.value || "";
+      const filteredMaterials = (state.materials || []).filter(material => {
+        const searchable = normalizeColumnName(`${material.description || ""} ${material.code || ""} ${material.size || ""} ${material.manufacturer || ""} ${material.category || ""}`);
+        const status = materialStatus(material);
+        return (!searchTerms.length || searchTerms.every(term => searchable.includes(term)))
+          && (!category || normalizeColumnName(material.category) === normalizeColumnName(category))
+          && (!stockFilter || status.key === stockFilter);
+      });
+      return {
+        searchValue,
+        searchTerms,
+        category,
+        stockFilter,
+        active: Boolean(searchTerms.length || category || stockFilter),
+        ids: new Set(filteredMaterials.map(material => String(material.id))),
+        codes: new Set(filteredMaterials.map(material => normalizeColumnName(material.code)).filter(Boolean)),
+        materials: filteredMaterials
+      };
+    }
+
+    function materialUsageEntryMatchesCatalog(entry, catalogFilter) {
+      if (!catalogFilter.active) return true;
+      if (entry.materialId !== "" && entry.materialId !== null && entry.materialId !== undefined) {
+        if (catalogFilter.ids.has(String(entry.materialId))) return true;
+      }
+      const entryCode = normalizeColumnName(entry.code || "");
+      if (entryCode && catalogFilter.codes.has(entryCode)) return true;
+      const entryText = normalizeColumnName(`${entry.material || ""} ${entry.description || ""} ${entry.size || ""} ${entry.manufacturer || ""} ${entry.category || ""} ${entry.code || ""}`);
+      return catalogFilter.materials.some(material => {
+        const description = normalizeColumnName(material.description || "");
+        const code = normalizeColumnName(material.code || "");
+        const size = normalizeColumnName(material.size || "");
+        return (description && entryText.includes(description))
+          || (code && entryText.includes(code))
+          || (description && size && entryText.includes(`${description} tamanho ${size}`));
+      });
+    }
+
+    function materialUsageMonthsBetween(start, end) {
+      if (!(start instanceof Date) || !(end instanceof Date) || Number.isNaN(start) || Number.isNaN(end)) return 1;
+      const first = new Date(start.getFullYear(), start.getMonth(), 1);
+      const last = new Date(end.getFullYear(), end.getMonth(), 1);
+      return Math.max(1, (last.getFullYear() - first.getFullYear()) * 12 + last.getMonth() - first.getMonth() + 1);
+    }
+
+    function materialUsagePeriodLabel(bounds) {
+      const start = bounds.effectiveStart;
+      const end = bounds.effectiveEnd;
+      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "Sem período disponível";
+      return `${start.toLocaleDateString("pt-BR")} a ${end.toLocaleDateString("pt-BR")}`;
+    }
+
+    function materialUsageBucketMode(start, end) {
+      const days = Math.max(1, Math.round((end - start) / 86400000));
+      if (days <= 31) return "day";
+      if (days <= 730) return "month";
+      return "year";
+    }
+
+    function materialUsageBucketKey(date, mode) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      if (mode === "day") return `${year}-${month}-${day}`;
+      if (mode === "month") return `${year}-${month}`;
+      return String(year);
+    }
+
+    function materialUsageBucketLabel(date, mode) {
+      if (mode === "day") return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      if (mode === "month") return new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit" }).format(date).replace(" de ", "/").replace(".", "");
+      return String(date.getFullYear());
+    }
+
+    function buildMaterialUsageBuckets(entries, start, end) {
+      const mode = materialUsageBucketMode(start, end);
+      const buckets = [];
+      let cursor = mode === "day"
+        ? new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        : mode === "month"
+          ? new Date(start.getFullYear(), start.getMonth(), 1)
+          : new Date(start.getFullYear(), 0, 1);
+      const last = mode === "day"
+        ? new Date(end.getFullYear(), end.getMonth(), end.getDate())
+        : mode === "month"
+          ? new Date(end.getFullYear(), end.getMonth(), 1)
+          : new Date(end.getFullYear(), 0, 1);
+      let guard = 0;
+      while (cursor <= last && guard < 400) {
+        const date = new Date(cursor);
+        buckets.push({ key: materialUsageBucketKey(date, mode), label: materialUsageBucketLabel(date, mode), qty: 0 });
+        if (mode === "day") cursor.setDate(cursor.getDate() + 1);
+        else if (mode === "month") cursor.setMonth(cursor.getMonth() + 1);
+        else cursor.setFullYear(cursor.getFullYear() + 1);
+        guard += 1;
+      }
+      const bucketMap = new Map(buckets.map(bucket => [bucket.key, bucket]));
+      entries.forEach(entry => {
+        const date = new Date(entry.date);
+        const bucket = bucketMap.get(materialUsageBucketKey(date, mode));
+        if (bucket) bucket.qty += Number(entry.qty || 0);
+      });
+      return { mode, buckets };
+    }
+
+    function renderMaterialUsageStats() {
+      const globalEntries = getConsumptionEntries();
+      const bounds = materialUsageBounds(globalEntries);
+      const periodEntries = globalEntries.filter(entry => materialUsageInRange(entry, bounds));
+      const catalogFilter = currentMaterialUsageCatalogFilter();
+      const filteredEntries = periodEntries.filter(entry => materialUsageEntryMatchesCatalog(entry, catalogFilter));
+      const globalTotal = periodEntries.reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
+      const filteredTotal = filteredEntries.reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
+      const monthCount = materialUsageMonthsBetween(bounds.effectiveStart, bounds.effectiveEnd);
+      const monthlyAverage = filteredTotal / monthCount;
+      const distinctMaterials = new Set(filteredEntries.map(entry => {
+        return String(entry.materialId || entry.code || normalizeColumnName(entry.material || entry.description || "sem-material"));
+      })).size;
+      const share = globalTotal > 0 ? filteredTotal / globalTotal * 100 : 0;
+
+      const globalElement = document.getElementById("materialUsageGlobal");
+      if (!globalElement) return;
+      globalElement.textContent = `${globalTotal.toLocaleString("pt-BR")} un.`;
+      document.getElementById("materialUsageFiltered").textContent = `${filteredTotal.toLocaleString("pt-BR")} un.`;
+      document.getElementById("materialUsageMonthlyAverage").textContent = `${monthlyAverage.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} un.`;
+      document.getElementById("materialUsageDistinct").textContent = distinctMaterials.toLocaleString("pt-BR");
+      document.getElementById("materialUsageShare").textContent = `${share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+      document.getElementById("materialUsageMonthsCaption").textContent = `Média em ${monthCount} ${monthCount === 1 ? "mês" : "meses"}`;
+
+      const periodLabel = materialUsagePeriodLabel(bounds);
+      document.getElementById("materialUsageGlobalCaption").textContent = `Todos os materiais · ${periodLabel}`;
+      document.getElementById("materialUsageFilteredCaption").textContent = catalogFilter.active ? "Resultado dos filtros do catálogo" : "Sem refino: igual ao consumo global";
+
+      const activeFilters = [];
+      if (catalogFilter.searchValue.trim()) activeFilters.push(`pesquisa “${catalogFilter.searchValue.trim()}”`);
+      if (catalogFilter.category) activeFilters.push(`categoria ${catalogFilter.category}`);
+      if (catalogFilter.stockFilter) {
+        const stockLabels = { normal: "estoque normal", critical: "estoque crítico", expired: "CA vencido" };
+        activeFilters.push(`situação ${stockLabels[catalogFilter.stockFilter] || catalogFilter.stockFilter}`);
+      }
+      document.getElementById("materialUsageContext").innerHTML = `<strong>Escopo:</strong> ${periodLabel}. ${activeFilters.length ? `Refino por ${escapeHtml(activeFilters.join(" · "))}.` : "Sem filtro de material: todos os itens entram na análise."} Uso = quantidade registrada nas retiradas.`;
+
+      let effectiveStart = bounds.effectiveStart;
+      let effectiveEnd = bounds.effectiveEnd;
+      if (effectiveStart > effectiveEnd) [effectiveStart, effectiveEnd] = [effectiveEnd, effectiveStart];
+      const trend = buildMaterialUsageBuckets(filteredEntries, effectiveStart, effectiveEnd);
+      const trendMax = Math.max(1, ...trend.buckets.map(bucket => bucket.qty));
+      const trendCaption = trend.mode === "day" ? "Consumo diário" : trend.mode === "month" ? "Consumo mensal" : "Consumo anual";
+      document.getElementById("materialUsageTrendCaption").textContent = trendCaption;
+      document.getElementById("materialUsageTrend").innerHTML = trend.buckets.length
+        ? trend.buckets.map(bucket => `
+          <div class="materialUsageRow" title="${escapeHtml(bucket.label)}: ${bucket.qty.toLocaleString("pt-BR")} unidades">
+            <span class="materialUsageRowLabel">${escapeHtml(bucket.label)}</span>
+            <div class="materialUsageTrack"><span class="materialUsageFill" style="width:${bucket.qty ? Math.max(2, bucket.qty / trendMax * 100) : 0}%"></span></div>
+            <span class="materialUsageRowValue">${bucket.qty.toLocaleString("pt-BR")} un.</span>
+          </div>
+        `).join("")
+        : `<div class="materialUsageEmpty">Sem retiradas registradas neste período.</div>`;
+
+      const byMaterial = filteredEntries.reduce((map, entry) => {
+        const label = entry.material || entry.description || "Material não identificado";
+        const key = normalizeColumnName(entry.code || label);
+        const current = map.get(key) || { label, qty: 0 };
+        current.qty += Number(entry.qty || 0);
+        map.set(key, current);
+        return map;
+      }, new Map());
+      const ranking = Array.from(byMaterial.values()).sort((left, right) => right.qty - left.qty || compareAlphanumeric(left.label, right.label)).slice(0, 12);
+      const rankingMax = Math.max(1, ...ranking.map(row => row.qty));
+      document.getElementById("materialUsageRanking").innerHTML = ranking.length
+        ? ranking.map((row, index) => `
+          <div class="materialUsageRow" title="${escapeHtml(row.label)}: ${row.qty.toLocaleString("pt-BR")} unidades">
+            <span class="materialUsageRowLabel">${index + 1}. ${escapeHtml(row.label)}</span>
+            <div class="materialUsageTrack"><span class="materialUsageFill" style="width:${Math.max(2, row.qty / rankingMax * 100)}%"></span></div>
+            <span class="materialUsageRowValue">${row.qty.toLocaleString("pt-BR")} un.</span>
+          </div>
+        `).join("")
+        : `<div class="materialUsageEmpty">Nenhum material consumido no recorte selecionado.</div>`;
     }
 
     function matchesConsumptionPeriod(entry, period) {
@@ -8498,6 +9027,7 @@ html.darkTheme .treApp .brand-mark{background:none}
         `;
       }).join("") : `<tr><td colspan="12"><div class="emptyState"><strong>Nenhum material encontrado</strong>Ajuste os filtros ou cadastre um novo item.</div></td></tr>`;
       populateWithdrawalMaterials();
+      renderMaterialUsageStats();
     }
 
     function enableDragToScroll(container) {
@@ -12995,6 +13525,17 @@ html.darkTheme .treApp .brand-mark{background:none}
       document.getElementById(id).addEventListener("input", renderMaterials);
     });
 
+
+    ["materialUsageStart", "materialUsageEnd"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderMaterialUsageStats);
+    });
+
+    document.getElementById("materialUsageAllTime").addEventListener("click", () => {
+      document.getElementById("materialUsageStart").value = "";
+      document.getElementById("materialUsageEnd").value = "";
+      renderMaterialUsageStats();
+    });
+
     ["collaboratorIdFilter", "collaboratorRoleFilter", "collaboratorShiftFilter", "collaboratorWorkstationFilter", "collaboratorManagerFilter"].forEach(id => {
       document.getElementById(id).addEventListener("change", () => {
         collaboratorCurrentPage = 1;
@@ -13718,6 +14259,7 @@ const HOJE=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),
 let S={
   categorias:[], treinamentos:[], pessoas:[], registros:[],
   cargosExigencias:{}, // { CARGO_EM_MAIUSCULO: [treinamentoId, ...] } — pré-requisitos por cargo
+  pessoaObrigatorios:{}, // { pessoaId: {add:[treinamentoId], remove:[treinamentoId]} } — ajustes individuais sobre o padrão global
   listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},
   config:{alertaDias:60, validadePadrao:12, empresa:''}
 };
@@ -14107,6 +14649,7 @@ function listaMini(arr,tipo){
 function vRegistros(){
   let arr=linhas();
   if(UI.fReg.mes)arr=arr.filter(x=>x.venc&&x.venc.slice(0,7)===UI.fReg.mes);
+  const pendObrig=pendentesObrigatoriosRegistros();
   const cols=[['pessoa','Pessoa'],['trein','Treinamento'],['cat','Categoria'],['setor','Setor'],['real','Realizado'],['venc','Vencimento']];
   const seta=k=>UI.fReg.ordem===k?`<span class="ar">${UI.fReg.dir>0?'▲':'▼'}</span>`:'';
   $('#v-registros').innerHTML=`
@@ -14119,6 +14662,12 @@ function vRegistros(){
       <button class="btn haz" onclick="editarRegistro()">+ Novo registro</button>
     </div>
     <div class="card-b" style="padding-bottom:12px">${barraFiltros(UI.fReg,'r_')}</div>
+    ${pendObrig.length?`<div class="card-b" style="padding-top:0">
+      <div class="note" style="margin-bottom:8px"><b>Obrigatórios não realizados (${pendObrig.length})</b> · também fazem parte do histórico de pendências e podem ser editados individualmente.</div>
+      <div class="tw" style="max-height:280px"><table><thead><tr><th>Pessoa</th><th>Treinamento obrigatório</th><th>Categoria</th><th class="nos"></th></tr></thead><tbody>
+        ${pendObrig.map(x=>`<tr><td><b>${esc(x.p.nome)}</b><div class="muted" style="font-size:11px">${esc(x.p.matricula||'')}${x.p.cargo?' · '+esc(x.p.cargo):''}</div></td><td>${esc(x.t.nome)}</td><td>${esc(x.cat.nome)}</td><td class="act"><button class="btn sm haz" onclick="editarRegistro(null,'${x.p.id}','${x.t.id}')">+ Lançar</button><button class="btn sm" onclick="editarObrigatoriosPessoa('${x.p.id}')">✏️ Editar obrigatórios</button></td></tr>`).join('')}
+      </tbody></table></div>
+    </div>`:''}
     ${arr.length?`<div class="tw"><table>
       <thead><tr>
         <th class="nos" style="width:30px"><input type="checkbox" class="chk" id="selAll"></th>
@@ -14238,13 +14787,15 @@ function vPessoas(){
     </div>
     ${arr.length?`<div class="tw"><table><thead><tr>
       <th class="nos">Nome</th><th class="nos">Matrícula</th><th class="nos">Setor</th><th class="nos">Cargo</th><th class="nos">Turno</th><th class="nos">Admissão</th>
-      <th class="nos num">Trein.</th><th class="nos">Situação</th><th class="nos"></th></tr></thead><tbody>
+      <th class="nos num">Trein.</th><th class="nos">Obrig. não realizados</th><th class="nos">Situação</th><th class="nos"></th></tr></thead><tbody>
       ${arr.map(p=>{const rs=ult.filter(r=>r.pessoaId===p.id).map(statusDe);
+        const faltObrig=obrigatoriosNaoRealizadosPessoa(p);
         const late=rs.filter(s=>s.k==='late').length,warn=rs.filter(s=>s.k==='warn').length;
         return `<tr>
         <td><b>${esc(p.nome)}</b>${p.ativo===false?' <span class="tag">INATIVO</span>':''}</td>
         <td class="mono">${esc(p.matricula||'—')}</td><td>${esc(p.setor||'—')}</td><td>${esc(p.cargo||'—')}</td><td>${esc(p.turno||'—')}</td>
         <td class="mono">${br(p.admissao)}</td><td class="num">${rs.length}</td>
+        <td><button class="btn sm ${faltObrig.length?'dgr':''}" type="button" onclick="editarObrigatoriosPessoa('${p.id}')">${faltObrig.length?`${faltObrig.length} pendente${faltObrig.length>1?'s':''}`:'0 pendentes'} · editar</button></td>
         <td>${late?`<span class="pill p-late">${late} vencido${late>1?'s':''}</span>`:warn?`<span class="pill p-warn">${warn} a vencer</span>`:rs.length?'<span class="pill p-ok">Em dia</span>':'<span class="pill p-none">Sem registro</span>'}</td>
         <td class="act"><button class="kb" data-dd="ddPessoa" data-pid="${p.id}">⋯</button></td></tr>`}).join('')}
     </tbody></table></div>`:`<div class="empty"><b>Nenhuma pessoa</b>Cadastre pessoas ou importe uma planilha.</div>`}
@@ -14256,6 +14807,7 @@ function vPessoas(){
       <button data-act="pFicha">📄 Ficha e histórico</button>
       <button data-act="pRegistro">📋 Lançar treinamento</button>
       <button data-act="pFiltrar">🔍 Ver registros desta pessoa</button>
+      <button data-act="pObrig">⚙️ Editar obrigatórios não realizados</button>
       <div class="sep"></div>
       <button data-act="pEditar">✏️ Editar cadastro (Colaboradores · EPI)</button>`;}));
 }
@@ -14284,6 +14836,127 @@ function pendenciasPessoa(p){
     if(st.k==='late')return {treinamentoId:tid,motivo:'vencido',st,r,prazoDias:ex.prazoDias,observacoes:ex.observacoes};
     return null;
   }).filter(Boolean);
+}
+
+/* ---------- obrigatoriedade individual de treinamentos ---------- */
+function obrigatoriosGlobaisIds(){
+  return S.treinamentos.filter(t=>t.obrigatorio).map(t=>t.id);
+}
+function ajusteObrigatoriosPessoa(pid){
+  const raw=(S.pessoaObrigatorios||{})[pid];
+  if(Array.isArray(raw)){
+    const base=new Set(obrigatoriosGlobaisIds());
+    const alvo=new Set(raw);
+    return {
+      add:[...alvo].filter(id=>!base.has(id)),
+      remove:[...base].filter(id=>!alvo.has(id))
+    };
+  }
+  return {
+    add:Array.isArray(raw?.add)?raw.add:[],
+    remove:Array.isArray(raw?.remove)?raw.remove:[]
+  };
+}
+function obrigatoriosPessoaIds(pOrId){
+  const p=typeof pOrId==='string'?pessoa(pOrId):pOrId;
+  if(!p||!p.id)return [];
+  const ids=new Set(obrigatoriosGlobaisIds());
+  const aj=ajusteObrigatoriosPessoa(p.id);
+  aj.remove.forEach(id=>ids.delete(id));
+  aj.add.forEach(id=>ids.add(id));
+  return [...ids].filter(id=>S.treinamentos.some(t=>t.id===id));
+}
+function treinamentoObrigatorioPessoa(pid,tid){
+  return obrigatoriosPessoaIds(pid).includes(tid);
+}
+function setObrigatoriosPessoaLista(pid,selecionados){
+  if(!S.pessoaObrigatorios)S.pessoaObrigatorios={};
+  const base=new Set(obrigatoriosGlobaisIds());
+  const alvo=new Set((selecionados||[]).filter(id=>S.treinamentos.some(t=>t.id===id)));
+  const add=[...alvo].filter(id=>!base.has(id));
+  const remove=[...base].filter(id=>!alvo.has(id));
+  if(!add.length&&!remove.length)delete S.pessoaObrigatorios[pid];
+  else S.pessoaObrigatorios[pid]={add,remove};
+}
+function setTreinamentoObrigatorioPessoa(pid,tid,ativo){
+  const ids=new Set(obrigatoriosPessoaIds(pid));
+  ativo?ids.add(tid):ids.delete(tid);
+  setObrigatoriosPessoaLista(pid,[...ids]);
+}
+function obrigatoriosNaoRealizadosPessoa(pOrId){
+  const p=typeof pOrId==='string'?pessoa(pOrId):pOrId;
+  if(!p||!p.id)return [];
+  const feitos=new Set(ultimos().filter(r=>r.pessoaId===p.id).map(r=>r.treinamentoId));
+  return obrigatoriosPessoaIds(p).filter(id=>!feitos.has(id)).map(id=>trein(id));
+}
+function reabrirContextoObrigatorios(pid,retorno){
+  if(!retorno)return;
+  setTimeout(()=>{
+    if(retorno==='ficha')fichaPessoa(pid);
+    else if(String(retorno).startsWith('hist:'))histModal(pid,String(retorno).slice(5));
+  },40);
+}
+function editarObrigatoriosPessoa(pid,retorno){
+  const p=pessoa(pid);
+  if(!p||!p.id)return toast('Colaborador não encontrado');
+  const atuais=new Set(obrigatoriosPessoaIds(p));
+  const treinos=[...S.treinamentos].sort(byName);
+  modal(`Obrigatórios — ${p.nome}`,`
+    <div class="note">Marque exatamente os treinamentos que devem ser obrigatórios para este colaborador. A alteração é <b>individual</b> e não muda a exigência dos demais.</div>
+    <div style="margin-top:12px;max-height:470px;overflow:auto;border:1px solid var(--line);border-radius:8px">
+      ${treinos.length?treinos.map(t=>{const feito=ultimos().some(r=>r.pessoaId===pid&&r.treinamentoId===t.id);const c=categ(t.categoriaId);return `
+        <label style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer">
+          <input class="chk opPessoaTrein" type="checkbox" value="${esc(t.id)}" ${atuais.has(t.id)?'checked':''}>
+          <span><b>${esc(t.nome)}</b><span class="muted" style="display:block;font-size:11px">${esc(c.nome)}${t.obrigatorio?' · padrão global obrigatório':' · padrão global opcional'}</span></span>
+          <span class="pill ${feito?'p-ok':'p-none'}">${feito?'JÁ REALIZADO':'NÃO REALIZADO'}</span>
+        </label>`;}).join(''):`<div class="empty"><b>Nenhum treinamento cadastrado</b>Cadastre treinamentos primeiro.</div>`}
+    </div>`,
+    `<button class="btn" id="opPessoaPadrao">Usar padrão global</button><div class="sp"></div><button class="btn" onclick="fecharModal();reabrirContextoObrigatorios('${pid}','${esc(retorno||'')}')">Cancelar</button><button class="btn pri" id="opPessoaSalvar">Salvar obrigatórios</button>`,true);
+  $('#opPessoaPadrao').onclick=()=>{
+    if(S.pessoaObrigatorios)delete S.pessoaObrigatorios[pid];
+    fecharModal();refresh();toast('Obrigatórios restaurados ao padrão global');reabrirContextoObrigatorios(pid,retorno);
+  };
+  $('#opPessoaSalvar').onclick=()=>{
+    const selecionados=[...document.querySelectorAll('.opPessoaTrein:checked')].map(el=>el.value);
+    setObrigatoriosPessoaLista(pid,selecionados);
+    fecharModal();refresh();toast('Obrigatórios do colaborador atualizados');reabrirContextoObrigatorios(pid,retorno);
+  };
+}
+function editarObrigatoriedadeTreinamento(tid){
+  const t=trein(tid);
+  const pessoasAtivas=[...S.pessoas].filter(p=>p.ativo!==false).sort(byName);
+  modal(`Obrigatoriedade — ${t.nome}`,`
+    <div class="note">Defina para quais colaboradores este treinamento é obrigatório. As marcações abaixo alteram apenas a obrigatoriedade individual; o campo <b>${t.obrigatorio?'Obrigatório global':'Opcional global'}</b> do treinamento continua preservado.</div>
+    <div style="margin-top:12px;max-height:470px;overflow:auto;border:1px solid var(--line);border-radius:8px">
+      ${pessoasAtivas.length?pessoasAtivas.map(p=>{const requerido=treinamentoObrigatorioPessoa(p.id,tid);const feito=ultimos().some(r=>r.pessoaId===p.id&&r.treinamentoId===tid);return `
+        <label style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer">
+          <input class="chk opTreinPessoa" type="checkbox" data-pid="${esc(p.id)}" ${requerido?'checked':''}>
+          <span><b>${esc(p.nome)}</b><span class="muted" style="display:block;font-size:11px">${esc(p.matricula||'Sem matrícula')}${p.cargo?' · '+esc(p.cargo):''}</span></span>
+          <span class="pill ${feito?'p-ok':'p-none'}">${feito?'REALIZADO':'NÃO REALIZADO'}</span>
+        </label>`;}).join(''):`<div class="empty"><b>Nenhum colaborador ativo</b></div>`}
+    </div>`,
+    `<div class="sp"></div><button class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" id="opTreinSalvar">Salvar</button>`,true);
+  $('#opTreinSalvar').onclick=()=>{
+    document.querySelectorAll('.opTreinPessoa').forEach(el=>setTreinamentoObrigatorioPessoa(el.dataset.pid,tid,el.checked));
+    fecharModal();refresh();toast('Obrigatoriedade por colaborador atualizada');
+  };
+}
+function pendentesObrigatoriosRegistros(){
+  const f=UI.fReg;
+  if(f.status||f.periodo)return [];
+  const out=[];
+  S.pessoas.filter(p=>f.somenteAtivos==='1'?p.ativo!==false:true).forEach(p=>{
+    obrigatoriosNaoRealizadosPessoa(p).forEach(t=>out.push({p,t,cat:categ(t.categoriaId)}));
+  });
+  let arr=out;
+  if(f.cat)arr=arr.filter(x=>x.t.categoriaId===f.cat);
+  if(f.trein)arr=arr.filter(x=>x.t.id===f.trein);
+  if(f.pessoa)arr=arr.filter(x=>x.p.id===f.pessoa);
+  if(f.setor)arr=arr.filter(x=>up(x.p.setor)===f.setor);
+  if(f.cargo)arr=arr.filter(x=>up(x.p.cargo)===f.cargo);
+  if(f.turno)arr=arr.filter(x=>up(x.p.turno)===f.turno);
+  if(f.busca){const q=norm(f.busca);arr=arr.filter(x=>norm(x.p.nome+' '+x.p.matricula+' '+x.t.nome+' '+x.cat.nome).includes(q));}
+  return arr.sort((a,b)=>byName(a.p,b.p)||byName(a.t,b.t));
 }
 function vCargos(){
   const cargos=cargosConhecidos();
@@ -14422,8 +15095,9 @@ function vTreinamentos(){
     </div></div>
     ${arr.length?`<div class="tw"><table><thead><tr>
       <th class="nos">Treinamento</th><th class="nos">Categoria</th><th class="nos num">Validade</th><th class="nos num">Carga</th>
-      <th class="nos">Obrigatório</th><th class="nos num">Pessoas</th><th class="nos">Situação</th><th class="nos"></th></tr></thead><tbody>
+      <th class="nos">Obrigatório</th><th class="nos">Obrig. não realizados</th><th class="nos num">Pessoas</th><th class="nos">Situação</th><th class="nos"></th></tr></thead><tbody>
       ${arr.map(t=>{const rs=ult.filter(r=>r.treinamentoId===t.id).map(statusDe);
+        const pendObrig=S.pessoas.filter(p=>p.ativo!==false&&treinamentoObrigatorioPessoa(p.id,t.id)&&!ult.some(r=>r.pessoaId===p.id&&r.treinamentoId===t.id));
         const late=rs.filter(s=>s.k==='late').length,warn=rs.filter(s=>s.k==='warn').length,ok=rs.filter(s=>s.k==='ok').length;
         const c=categ(t.categoriaId);
         return `<tr>
@@ -14432,6 +15106,7 @@ function vTreinamentos(){
         <td class="num"><b>${+t.validadeMeses===0?'—':t.validadeMeses+' m'}</b></td>
         <td class="num">${t.cargaHoraria?t.cargaHoraria+' h':'—'}</td>
         <td>${t.obrigatorio?'<span class="pill p-late">NR / Obrigatório</span>':'<span class="tag">Opcional</span>'}</td>
+        <td><button class="btn sm ${pendObrig.length?'dgr':''}" type="button" onclick="editarObrigatoriedadeTreinamento('${t.id}')">${pendObrig.length?`${pendObrig.length} pendente${pendObrig.length>1?'s':''}`:'0 pendentes'} · editar</button></td>
         <td class="num">${rs.length}</td>
         <td>${late?`<span class="pill p-late">${late}</span> `:''}${warn?`<span class="pill p-warn">${warn}</span> `:''}${ok?`<span class="pill p-ok">${ok}</span>`:''}${!rs.length?'<span class="muted">—</span>':''}</td>
         <td class="act"><button class="kb" data-dd="ddTrein" data-tid="${t.id}">⋯</button></td></tr>`}).join('')}
@@ -14444,6 +15119,7 @@ function vTreinamentos(){
       <button data-act="tEditar">✏️ Editar treinamento</button>
       <button data-act="tLote">🗂 Lançar para várias pessoas</button>
       <button data-act="tFiltrar">🔍 Ver registros deste treinamento</button>
+      <button data-act="tObrig">👥 Editar obrigatoriedade por colaborador</button>
       <div class="sep"></div>
       <button data-act="tDuplicar">⧉ Duplicar</button>
       <button data-act="tExcluir" class="dgr">🗑 Excluir treinamento</button>`;}));
@@ -14695,7 +15371,7 @@ function fichaPessoa(id){
   const p=pessoa(id);
   const rs=ultimos().filter(r=>r.pessoaId===id).map(r=>({r,t:trein(r.treinamentoId),st:statusDe(r),v:vencimentoDe(r)}))
     .sort((a,b)=>String(a.v||'9999').localeCompare(String(b.v||'9999')));
-  const faltando=S.treinamentos.filter(t=>t.obrigatorio&&!rs.some(x=>x.r.treinamentoId===t.id));
+  const faltando=obrigatoriosNaoRealizadosPessoa(p);
   const pendCargo=pendenciasPessoa(p);
   modal(p.nome,`
     <div class="grid g4">
@@ -14720,8 +15396,10 @@ function fichaPessoa(id){
         ${x.prazoDias?`<span class="muted mono" style="font-size:11px">Prazo: ${esc(String(x.prazoDias))} dias</span>`:''}
         ${x.observacoes?`<span class="muted" style="font-size:11px">${esc(x.observacoes)}</span>`:''}
       </div>`).join('')}</div></div>`:''}
-    ${faltando.length?`<div style="margin-top:12px"><label class="f">Obrigatórios não realizados (${faltando.length})</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${faltando.map(t=>`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${t.id}')">+ ${esc(t.nome)}</button>`).join('')}</div></div>`:''}`,
+    <div style="margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><label class="f" style="margin:0">Obrigatórios não realizados (${faltando.length})</label><button class="btn sm" type="button" onclick="fecharModal();editarObrigatoriosPessoa('${id}','ficha')">✏️ Editar obrigatórios</button></div>
+      ${faltando.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${faltando.map(t=>`<button class="btn sm dgr" onclick="fecharModal();editarRegistro(null,'${id}','${t.id}')">+ ${esc(t.nome)}</button>`).join('')}</div>`:`<div class="muted" style="font-size:11px;margin-top:7px">Nenhum treinamento obrigatório pendente para este colaborador.</div>`}
+    </div>`,
     `<button class="btn" onclick="fecharModal();editarPessoa('${id}')">✏️ Editar cadastro</button>
      <button class="btn" onclick="fecharModal();editarRegistro(null,'${id}')">+ Lançar treinamento</button>
      <div class="sp"></div><button class="btn pri" onclick="fecharModal()">Fechar</button>`,true);
@@ -14768,7 +15446,7 @@ function acao(a){
     case 'imprimir':return treImprimir();
     case 'sincronizar':return treForcarSync();
     case 'demo':return confirmar('Carregar dados de exemplo? Isso substitui os dados atuais.',()=>{demo();refresh();toast('Dados de exemplo carregados');},'Carregar');
-    case 'limpar':return confirmar('Apagar <b>todos</b> os dados desta ferramenta? A ação não pode ser desfeita.',()=>{S={categorias:[],treinamentos:[],pessoas:[],registros:[],cargosExigencias:{},listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},config:{alertaDias:60,validadePadrao:12,empresa:''}};UI.view='painel';refresh();toast('Dados apagados');});
+    case 'limpar':return confirmar('Apagar <b>todos</b> os dados desta ferramenta? A ação não pode ser desfeita.',()=>{S={categorias:[],treinamentos:[],pessoas:[],registros:[],cargosExigencias:{},pessoaObrigatorios:{},listas:{setores:[],cargos:[],turnos:['1º TURNO','2º TURNO','3º TURNO','ADM'],instrutores:[]},config:{alertaDias:60,validadePadrao:12,empresa:''}};UI.view='painel';refresh();toast('Dados apagados');});
     /* linha de registro */
     case 'rEditar':return editarRegistro(window._rid);
     case 'rRenovar':return renovarRegistro(window._rid);
@@ -14782,13 +15460,15 @@ function acao(a){
     case 'pEditar':return editarPessoa(window._pid);
     case 'pRegistro':return editarRegistro(null,window._pid);
     case 'pFiltrar':{UI.fReg.pessoa=window._pid;UI.fReg.somenteAtivos='';UI.view='registros';return render();}
+    case 'pObrig':return editarObrigatoriosPessoa(window._pid);
     /* treinamento */
     case 'tEditar':return editarTreinamento(window._tid);
     case 'tLote':return lote(window._tid);
     case 'tFiltrar':{UI.fReg.trein=window._tid;UI.view='registros';return render();}
+    case 'tObrig':return editarObrigatoriedadeTreinamento(window._tid);
     case 'tDuplicar':{const t=trein(window._tid);S.treinamentos.push({...t,id:uid(),nome:t.nome+' (CÓPIA)'});refresh();return toast('Treinamento duplicado');}
     case 'tExcluir':{const t=trein(window._tid);const n=S.registros.filter(r=>r.treinamentoId===window._tid).length;
-      return confirmar(`Excluir <b>${esc(t.nome)}</b>${n?` e seus <b>${n}</b> registros`:''}?`,()=>{S.treinamentos=S.treinamentos.filter(x=>x.id!==window._tid);S.registros=S.registros.filter(r=>r.treinamentoId!==window._tid);refresh();toast('Treinamento excluído');});}
+      return confirmar(`Excluir <b>${esc(t.nome)}</b>${n?` e seus <b>${n}</b> registros`:''}?`,()=>{const tid=window._tid;S.treinamentos=S.treinamentos.filter(x=>x.id!==tid);S.registros=S.registros.filter(r=>r.treinamentoId!==tid);Object.keys(S.pessoaObrigatorios||{}).forEach(pid=>{const aj=ajusteObrigatoriosPessoa(pid);aj.add=aj.add.filter(id=>id!==tid);aj.remove=aj.remove.filter(id=>id!==tid);if(aj.add.length||aj.remove.length)S.pessoaObrigatorios[pid]=aj;else delete S.pessoaObrigatorios[pid];});Object.keys(S.cargosExigencias||{}).forEach(cg=>{S.cargosExigencias[cg]=exigenciasDe(cg).filter(ex=>ex.treinamentoId!==tid);});refresh();toast('Treinamento excluído');});}
     /* categoria */
     case 'cEditar':return editarCategoria(window._cid);
     case 'cTrein':return editarTreinamento(null,window._cid);
@@ -14831,7 +15511,9 @@ function acao(a){
 }
 function histModal(pid,tid){
   const h=histDe(pid,tid);
+  const obr=treinamentoObrigatorioPessoa(pid,tid);
   modal('Histórico — '+trein(tid).nome,`<div style="margin-bottom:10px"><b>${esc(pessoa(pid).nome)}</b> <span class="muted mono">${esc(pessoa(pid).matricula||'')}</span></div>
+   <div class="note" style="margin-bottom:12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span>Obrigatório para este colaborador: <b>${obr?'SIM':'NÃO'}</b></span><button class="btn sm" type="button" onclick="fecharModal();editarObrigatoriosPessoa('${pid}','hist:${tid}')">✏️ Editar obrigatoriedade</button></div>
    <div class="hist">${h.map(x=>`<div class="hist-i"><b class="mono">${br(x.dataRealizado)}</b> → vence <b class="mono">${br(vencimentoDe(x))}</b>
      <span class="pill ${statusDe(x).cls}" style="margin-left:6px">${statusDe(x).t}</span>
      <div class="muted" style="font-size:11.5px">${validadeDe(x)}m${x.instrutor?' · '+esc(x.instrutor):''}${x.certificado?' · cert. '+esc(x.certificado):''}${x.obs?' · '+esc(x.obs):''}</div></div>`).join('')||'<div class="muted">Sem histórico.</div>'}</div>`,
@@ -15044,7 +15726,7 @@ function exportarXlsx(){
   const mx=[...S.pessoas].sort(byName).map(p=>{const o={'PESSOA':p.nome,'MATRICULA':p.matricula,'SETOR':p.setor,'STATUS':p.ativo===false?'INATIVO':'ATIVO'};
     ts.forEach(t=>{const r=mp.get(p.id+'|'+t.id);o[t.nome]=r?br(vencimentoDe(r)):'';});return o;});
   TRE_XLSX.utils.book_append_sheet(wb,TRE_XLSX.utils.json_to_sheet(mx),'Matriz vencimentos');
-  TRE_XLSX.utils.book_append_sheet(wb,TRE_XLSX.utils.json_to_sheet(S.pessoas.map(p=>({'NOME':p.nome,'MATRICULA':p.matricula,'SETOR':p.setor,'CARGO':p.cargo,'TURNO':p.turno,'ADMISSAO':br(p.admissao),'STATUS':p.ativo===false?'INATIVO':'ATIVO'}))),'Pessoas');
+  TRE_XLSX.utils.book_append_sheet(wb,TRE_XLSX.utils.json_to_sheet(S.pessoas.map(p=>({'NOME':p.nome,'MATRICULA':p.matricula,'SETOR':p.setor,'CARGO':p.cargo,'TURNO':p.turno,'ADMISSAO':br(p.admissao),'STATUS':p.ativo===false?'INATIVO':'ATIVO','OBRIGATORIOS APLICAVEIS':obrigatoriosPessoaIds(p).map(id=>trein(id).nome).join(' | '),'OBRIGATORIOS NAO REALIZADOS':obrigatoriosNaoRealizadosPessoa(p).map(t=>t.nome).join(' | ')}))),'Pessoas');
   TRE_XLSX.utils.book_append_sheet(wb,TRE_XLSX.utils.json_to_sheet(S.treinamentos.map(t=>({'TREINAMENTO':t.nome,'CATEGORIA':categ(t.categoriaId).nome,'VALIDADE (MESES)':t.validadeMeses,'CARGA HORARIA':t.cargaHoraria,'OBRIGATORIO':t.obrigatorio?'SIM':'NAO'}))),'Treinamentos');
   TRE_XLSX.utils.book_append_sheet(wb,TRE_XLSX.utils.json_to_sheet(S.registros.map(r=>({'PESSOA':pessoa(r.pessoaId).nome,'TREINAMENTO':trein(r.treinamentoId).nome,'DATA REALIZADA':br(r.dataRealizado),'VENCIMENTO':br(vencimentoDe(r)),'VALIDADE':validadeDe(r),'INSTRUTOR':r.instrutor||'','CERTIFICADO':r.certificado||''}))),'Historico completo');
   TRE_XLSX.writeFile(wb,`Controle_Treinamentos_${hoje8()}.xlsx`);
@@ -15101,7 +15783,7 @@ function demo(){
     'TÉCNICO':[ex(tre[3].id,45),ex(tre[4].id,15)],
     'ANALISTA':[ex(tre[4].id,15)]
   };
-  S={categorias:cats,treinamentos:tre,pessoas:pes,registros:regs,cargosExigencias,
+  S={categorias:cats,treinamentos:tre,pessoas:pes,registros:regs,cargosExigencias,pessoaObrigatorios:{},
      listas:{setores,cargos,turnos,instrutores:['SENAI','SESI','INTERNO','CONSULTORIA EXTERNA']},
      config:{alertaDias:60,validadePadrao:12,empresa:''}};
 }
@@ -15294,6 +15976,7 @@ window.addEventListener('beforeunload',save);
       function normalizeLoaded(loaded) {
         const base = {
           categorias: [], treinamentos: [], pessoas: [], registros: [],
+          cargosExigencias: {}, pessoaObrigatorios: {},
           listas: { setores: [], cargos: [], turnos: ["1º TURNO", "2º TURNO", "3º TURNO", "ADM"], instrutores: [] },
           config: { alertaDias: 60, validadePadrao: 12, empresa: "" }
         };
@@ -15301,6 +15984,8 @@ window.addEventListener('beforeunload',save);
         ["categorias", "treinamentos", "pessoas", "registros"].forEach(key => {
           base[key] = Array.isArray(loaded[key]) ? loaded[key] : [];
         });
+        base.cargosExigencias = (loaded.cargosExigencias && typeof loaded.cargosExigencias === "object") ? loaded.cargosExigencias : {};
+        base.pessoaObrigatorios = (loaded.pessoaObrigatorios && typeof loaded.pessoaObrigatorios === "object") ? loaded.pessoaObrigatorios : {};
         const listas = (loaded.listas && typeof loaded.listas === "object") ? loaded.listas : {};
         Object.keys(base.listas).forEach(key => {
           if (Array.isArray(listas[key])) base.listas[key] = listas[key];
