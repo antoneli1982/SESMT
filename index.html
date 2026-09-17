@@ -7017,6 +7017,9 @@ html.darkTheme .treApp .brand-mark{background:none}
     let localStateRevision = 0;
     let cloudSavedRevision = 0;
     let cloudDeferredMeta = null;
+    let cloudRetryTimer = null;
+    let cloudRetryAttempt = 0;
+    let cloudStarting = false;
     const hadLocalStateAtStartup = Boolean(localStorage.getItem(STORAGE_KEY));
 
     function createDemonstrationData() {
@@ -7907,27 +7910,113 @@ html.darkTheme .treApp .brand-mark{background:none}
       return `${code ? code + ": " : ""}${message}`;
     }
 
-    async function initializeCloudSync() {
-      if (cloudUnsubscribe) {
-        cloudUnsubscribe();
+    function scheduleCloudReconnect(error) {
+      clearTimeout(cloudRetryTimer);
+      if (!navigator.onLine) {
+        setCloudStatus("Sem internet", "error", "O navegador está offline. A sincronização será retomada automaticamente quando a conexão voltar.");
+        return;
+      }
+      const delay = Math.min(30000, 1500 * Math.pow(2, Math.min(cloudRetryAttempt, 4)));
+      cloudRetryAttempt += 1;
+      const detail = describeCloudError(error);
+      setCloudStatus("Firebase reconectando", "waiting", `${detail} Nova tentativa automática em ${Math.round(delay / 1000)} s.`);
+      cloudRetryTimer = setTimeout(() => initializeCloudSync(true), delay);
+    }
+
+    function loadCloudScript(src, id) {
+      return new Promise((resolve, reject) => {
+        const existing = document.getElementById(id);
+        if (existing) {
+          if (existing.dataset.loaded === "true") return resolve();
+          existing.addEventListener("load", resolve, { once: true });
+          existing.addEventListener("error", () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
+          return;
+        }
+        const script = document.createElement("script");
+        script.id = id;
+        script.src = src;
+        script.async = true;
+        script.crossOrigin = "anonymous";
+        script.addEventListener("load", () => {
+          script.dataset.loaded = "true";
+          resolve();
+        }, { once: true });
+        script.addEventListener("error", () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
+        document.head.appendChild(script);
+      });
+    }
+
+    async function ensureFirebaseSdk() {
+      if (window.firebase?.firestore) return true;
+      const sources = [
+        {
+          app: "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+          firestore: "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js",
+          key: "gstatic"
+        },
+        {
+          app: "https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js",
+          firestore: "https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js",
+          key: "jsdelivr"
+        }
+      ];
+      let lastError = null;
+      for (const source of sources) {
+        try {
+          if (!window.firebase) await loadCloudScript(source.app, `firebase-app-fallback-${source.key}`);
+          if (!window.firebase?.firestore) await loadCloudScript(source.firestore, `firebase-firestore-fallback-${source.key}`);
+          if (window.firebase?.firestore) return true;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error("Os scripts do Firebase não puderam ser carregados.");
+    }
+
+    async function initializeCloudSync(force = false) {
+      if (cloudStarting) return;
+      cloudStarting = true;
+      clearTimeout(cloudRetryTimer);
+      if (!navigator.onLine) {
+        cloudStarting = false;
+        scheduleCloudReconnect(new Error("Navegador offline"));
+        return;
+      }
+      if (force && cloudUnsubscribe) {
+        try { cloudUnsubscribe(); } catch (error) {}
         cloudUnsubscribe = null;
       }
       setCloudStatus("Conectando ao Firebase", "waiting");
-      if (!window.firebase?.firestore) {
-        setCloudStatus("Firebase indisponível", "error", "Os scripts do Firebase não carregaram. Verifique a conexão e se a rede do tablet libera gstatic.com e firestore.googleapis.com.");
-        return;
-      }
       try {
+        await ensureFirebaseSdk();
         if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
         cloudDatabase = firebase.firestore();
-        cloudDatabase.settings({ ignoreUndefinedProperties: true });
+        try {
+          cloudDatabase.settings({
+            ignoreUndefinedProperties: true,
+            experimentalAutoDetectLongPolling: true
+          });
+        } catch (settingsError) {
+          // A configuração só pode ser aplicada antes do primeiro uso da instância.
+          // Se a instância já foi iniciada, seguimos com a configuração existente.
+          if (!String(settingsError?.message || "").toLowerCase().includes("already been started")) {
+            console.warn("Configuração adicional do Firestore não aplicada", settingsError);
+          }
+        }
         if (!cloudPersistenceRequested) {
           cloudPersistenceRequested = true;
           cloudDatabase.enablePersistence({ synchronizeTabs: true }).catch(() => {});
         }
         const metaReference = cloudDatabase.collection(CLOUD_META_COLLECTION).doc(CLOUD_META_DOCUMENT);
-        const firstSnapshot = await metaReference.get();
+        const firstSnapshot = await metaReference.get({ source: "server" }).catch(async error => {
+          // Em redes corporativas alguns navegadores falham na primeira tentativa do canal em tempo real.
+          // A segunda leitura permite que o SDK use o transporte alternativo detectado.
+          console.warn("Primeira leitura do Firebase falhou; tentando novamente", error);
+          await new Promise(resolve => setTimeout(resolve, 650));
+          return metaReference.get({ source: "server" });
+        });
         cloudReady = true;
+        cloudRetryAttempt = 0;
         if (firstSnapshot.exists) {
           await applyCloudState(firstSnapshot.data());
           if (hasUnsavedLocalChanges()) await writeCloudState();
@@ -7935,22 +8024,56 @@ html.darkTheme .treApp .brand-mark{background:none}
           await writeCloudState();
           showToast("Base deste computador enviada ao Firebase com sucesso.");
         } else {
-          setCloudStatus("Aguardando base principal", "waiting");
+          setCloudStatus("Firebase conectado", "online", "Conexão estabelecida. Aguardando a base principal na nuvem.");
         }
-        cloudUnsubscribe = metaReference.onSnapshot(snapshot => {
-          if (!snapshot.exists) return;
+        if (cloudUnsubscribe) {
+          try { cloudUnsubscribe(); } catch (error) {}
+        }
+        cloudUnsubscribe = metaReference.onSnapshot({ includeMetadataChanges: true }, snapshot => {
+          if (snapshot.metadata.fromCache && !navigator.onLine) {
+            setCloudStatus("Firebase offline", "error", "Sem acesso à nuvem neste momento. Os dados continuam salvos neste aparelho e serão sincronizados quando a conexão voltar.");
+            return;
+          }
+          if (!snapshot.exists) {
+            setCloudStatus("Firebase conectado", "online", "Conexão estabelecida. Aguardando a base principal na nuvem.");
+            return;
+          }
+          if (!snapshot.metadata.fromCache) setCloudStatus("Dados sincronizados", "online");
           applyCloudState(snapshot.data()).catch(error => {
             console.error("Falha ao receber atualização", error);
             setCloudStatus("Falha ao atualizar", "error", describeCloudError(error));
           });
         }, error => {
           console.error("Falha na conexão em tempo real", error);
-          setCloudStatus("Sem conexão", "error", describeCloudError(error));
+          cloudReady = false;
+          scheduleCloudReconnect(error);
         });
       } catch (error) {
+        cloudReady = false;
         console.error("Falha ao iniciar o Firebase", error);
-        setCloudStatus("Firebase não conectado", "error", describeCloudError(error));
+        const code = String(error?.code || "");
+        if (code.includes("permission-denied")) {
+          setCloudStatus("Firebase sem permissão", "error", describeCloudError(error));
+        } else {
+          setCloudStatus("Firebase não conectado", "error", describeCloudError(error));
+          scheduleCloudReconnect(error);
+        }
+      } finally {
+        cloudStarting = false;
       }
+    }
+
+    if (!window.__seseFirebaseNetworkHooksInstalled) {
+      window.__seseFirebaseNetworkHooksInstalled = true;
+      window.addEventListener("online", () => {
+        cloudRetryAttempt = 0;
+        initializeCloudSync(true);
+      });
+      window.addEventListener("offline", () => {
+        cloudReady = false;
+        clearTimeout(cloudRetryTimer);
+        setCloudStatus("Sem internet", "error", "O navegador ficou offline. Os dados permanecem neste aparelho e a sincronização volta automaticamente quando a internet retornar.");
+      });
     }
 
     function applyTheme(theme) {
