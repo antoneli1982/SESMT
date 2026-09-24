@@ -2500,47 +2500,6 @@
       white-space: nowrap;
     }
 
-    .signatureBox {
-      position: relative;
-      overflow: hidden;
-      border: 1px dashed #aab5c2;
-      border-radius: 15px;
-      background:
-        linear-gradient(#fff, #fff) padding-box,
-        repeating-linear-gradient(45deg, #fafafa 0, #fafafa 8px, #f6f7f8 8px, #f6f7f8 16px);
-    }
-
-    .signatureBox canvas {
-      display: block;
-      width: 100%;
-      height: 190px;
-      touch-action: none;
-    }
-
-    .signatureHint {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      color: #97a3b2;
-      font-size: 11px;
-      pointer-events: none;
-    }
-
-    .signatureBox.signed .signatureHint {
-      display: none;
-    }
-
-    .signatureTools {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 9px;
-      color: var(--muted);
-      font-size: 9px;
-    }
-
     .lgpdNotice {
       margin-bottom: 14px;
       padding: 14px 15px;
@@ -3522,19 +3481,9 @@
       border-color: #286a55;
     }
 
-    html.darkTheme .signatureBox {
-      background:
-        linear-gradient(#f8fbff, #f8fbff) padding-box,
-        repeating-linear-gradient(45deg, #f8fbff 0, #f8fbff 8px, #eef3f8 8px, #eef3f8 16px);
-    }
-
     html.darkTheme .employeeHistoryControls {
       background: var(--surface);
       border-color: var(--line);
-    }
-
-    html.darkTheme .signatureHint {
-      color: #66768a;
     }
 
     @media (max-width: 1080px) {
@@ -5900,7 +5849,7 @@ html.darkTheme .treApp .brand-mark{background:none}
           <div>
             <p class="eyebrow" style="color:var(--blue)">Entrega rastreável</p>
             <h2>Nova retirada</h2>
-            <p>Registre o colaborador, os EPIs e a assinatura eletrônica.</p>
+            <p>Registre o colaborador e os EPIs entregues.</p>
           </div>
         </div>
         <div class="contentGrid">
@@ -6011,23 +5960,15 @@ html.darkTheme .treApp .brand-mark{background:none}
             </div>
 
             <div class="formSection">
-              <h3 class="sectionTitle"><span>3</span> Declaração e assinatura</h3>
+              <h3 class="sectionTitle"><span>3</span> Declarações do colaborador</h3>
               <div class="lgpdNotice">
                 <strong>Proteção de dados pessoais</strong>
-                <p>Nos termos da Lei nº 13.709 de 2018, os dados pessoais informados, incluindo identificação funcional e assinatura eletrônica, serão tratados exclusivamente para registrar e comprovar a entrega, o uso, a troca e a devolução de EPI, cumprir obrigações legais e regulatórias de segurança do trabalho, realizar auditorias e exercer direitos. O acesso será restrito a pessoas autorizadas, com armazenamento pelo período necessário às finalidades e aos prazos legais. O titular poderá solicitar confirmação, acesso, correção e os demais direitos aplicáveis pelo canal disponibilizado pelo controlador. A assinatura não autoriza o uso dos dados para finalidade incompatível.</p>
+                <p>Nos termos da Lei nº 13.709 de 2018, os dados pessoais informados, incluindo a identificação funcional, serão tratados exclusivamente para registrar e comprovar a entrega, o uso, a troca e a devolução de EPI, cumprir obrigações legais e regulatórias de segurança do trabalho, realizar auditorias e exercer direitos. O acesso será restrito a pessoas autorizadas, com armazenamento pelo período necessário às finalidades e aos prazos legais. O titular poderá solicitar confirmação, acesso, correção e os demais direitos aplicáveis pelo canal disponibilizado pelo controlador. A declaração de ciência não autoriza o uso dos dados para finalidade incompatível.</p>
               </div>
               <label class="checkRow">
                 <input type="checkbox" id="lgpdAcknowledgement" required>
                 <span>Declaro que li a informação sobre proteção de dados pessoais e estou ciente do tratamento descrito.</span>
               </label>
-              <div class="signatureBox" id="signatureBox">
-                <canvas id="signatureCanvas" width="900" height="260" aria-label="Campo para assinatura eletrônica"></canvas>
-                <div class="signatureHint">Assine neste espaço usando o mouse ou o dedo</div>
-              </div>
-              <div class="signatureTools">
-                <span>A assinatura será vinculada ao registro e ao termo de entrega.</span>
-                <button class="textButton" type="button" id="clearSignature">Limpar assinatura</button>
-              </div>
               <label class="checkRow">
                 <input type="checkbox" id="acknowledgement" required>
                 <span>Declaro que recebi os equipamentos em perfeitas condições, fui orientado sobre uso, guarda, conservação e substituição e assumo o compromisso de utilizá los durante a atividade.</span>
@@ -6044,7 +5985,7 @@ html.darkTheme .treApp .brand-mark{background:none}
             <div class="panelHeader">
               <div>
                 <h3>Resumo da entrega</h3>
-                <p>Conferência antes da assinatura</p>
+                <p>Conferência antes de finalizar</p>
               </div>
             </div>
             <div class="summaryList">
@@ -6061,7 +6002,7 @@ html.darkTheme .treApp .brand-mark{background:none}
               <strong id="summaryValidity">Sem item</strong>
               <small>Calculada pelo prazo cadastrado do EPI</small>
             </div>
-            <p style="color:var(--muted);font-size:10px;line-height:1.55">O termo final registra data, hora, materiais, lotes, CA, validade de uso, responsável e assinatura.</p>
+            <p style="color:var(--muted);font-size:10px;line-height:1.55">O termo final registra data, hora, materiais, lotes, CA, validade de uso e responsável.</p>
           </aside>
         </div>
       </section>
@@ -6989,6 +6930,11 @@ html.darkTheme .treApp .brand-mark{background:none}
     const PHOTO_DB_NAME = "sese_epi_collaborator_photos_v1";
     const PHOTO_STORE_NAME = "photos";
     const PHOTO_MAX_DIMENSION = 400;
+    const SIGNATURE_MAX_WIDTH = 260;
+    const SIGNATURE_MAX_HEIGHT = 86;
+    const SIGNATURE_SIZE_LIMIT = 6000;
+    const SIGNATURE_QUANTIZATION_LEVELS = 4;
+    const SIGNATURE_COMPACTION_MIGRATION = "compact_signatures_260x86_2026_09_24";
     const PHOTO_TARGET_BYTES = 60 * 1024;
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyA6BHrBqyXzYCqskK22b2n46qRupC7uPosk",
@@ -7722,9 +7668,29 @@ html.darkTheme .treApp .brand-mark{background:none}
       }
     }
 
+    let localStorageBlocked = false;
+    let lastStorageWarningAt = 0;
+
+    function persistLocalState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorageBlocked = false;
+        return true;
+      } catch (error) {
+        localStorageBlocked = true;
+        console.error("Falha ao gravar a base neste aparelho", error);
+        const now = Date.now();
+        if (now - lastStorageWarningAt > 15000) {
+          lastStorageWarningAt = now;
+          showToast("O armazenamento deste navegador está cheio. O registro foi mantido na sessão e enviado para a nuvem, mas libere espaço para voltar a salvar neste aparelho.", true);
+        }
+        return false;
+      }
+    }
+
     function saveState() {
       normalizeOperationalUppercase(state);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      persistLocalState();
       localStateRevision += 1;
       scheduleCloudSave();
     }
@@ -7829,7 +7795,7 @@ html.darkTheme .treApp .brand-mark{background:none}
       cloudApplyingState = true;
       cloudLastVersion = version;
       state = loaded;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      persistLocalState();
       renderAll();
       cloudApplyingState = false;
       if (manufacturerCleanupApplied) {
@@ -10213,7 +10179,6 @@ html.darkTheme .treApp .brand-mark{background:none}
     function resetWithdrawal() {
       withdrawalSelection = [];
       signatureStarted = false;
-      document.getElementById("signatureBox").classList.remove("signed");
       document.getElementById("withdrawalForm").reset();
       document.getElementById("clearWithdrawalMaterialSearch").hidden = true;
       closeWithdrawalMaterialSuggestions();
@@ -10552,7 +10517,7 @@ html.darkTheme .treApp .brand-mark{background:none}
           <td>${escapeHtml(resolveHistoryIdentity(item).companyId || "Não informada")}</td>
           <td>${escapeHtml(historyCategory(item) || "Não informada")}</td>
           <td>${escapeHtml(item.responsible)}</td>
-          <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Gerar PDF assinado</button>` : "Não aplicável"}</td>
+          <td>${item.signed ? `<button class="textButton" onclick="printHistoryTerm(${item.id})">Gerar PDF do termo</button>` : "Não aplicável"}</td>
         </tr>
       `).join("") : `<tr><td colspan="13"><div class="emptyState"><strong>Nenhum registro encontrado</strong>Ajuste os filtros de pesquisa.</div></td></tr>`;
 
@@ -10580,13 +10545,15 @@ html.darkTheme .treApp .brand-mark{background:none}
             <td><button class="pill clickableTag" type="button" data-page-target="history" data-filter-target="historyMaterial" data-filter-value="${escapeHtml(materialLabel(item))}">${escapeHtml(materialLabel(item))}</button></td>
             <td>${Number(item.qty || 0)}</td>
             <td>${escapeHtml(merLabel(item.reason))}</td>
-            <td><button class="miniButton" type="button" title="Abrir documento assinado" onclick="printHistoryTerm(${withdrawal.historyId})" style="width:auto;height:auto;padding:4px"><img class="signatureThumbnail" src="${withdrawal.signature}" alt="Assinatura eletrônica de ${escapeHtml(withdrawal.employee)}"></button></td>
+            <td>${withdrawal.signature
+              ? `<button class="miniButton" type="button" title="Abrir documento assinado" onclick="printHistoryTerm(${withdrawal.historyId})" style="width:auto;height:auto;padding:4px"><img class="signatureThumbnail" src="${withdrawal.signature}" alt="Assinatura eletrônica de ${escapeHtml(withdrawal.employee)}"></button>`
+              : `<span class="employeeHistoryNoSignature">Sem assinatura</span>`}</td>
             <td>${escapeHtml(withdrawal.responsible || "Não informado")}</td>
             <td>${expiry ? formatDate(expiry) : "Não aplicável"}</td>
             <td><button class="textButton" type="button" onclick="printHistoryTerm(${withdrawal.historyId})">Gerar PDF histórico</button></td>
           </tr>
         `;
-      }).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhuma assinatura encontrada</strong>As retiradas assinadas aparecerão nesta tabela.</div></td></tr>`;
+      }).join("") : `<tr><td colspan="9"><div class="emptyState"><strong>Nenhum registro encontrado</strong>As retiradas aparecerão nesta tabela, com ou sem assinatura eletrônica.</div></td></tr>`;
     }
 
     function employeeHistoryMatchesCollaborator(item, collaborator) {
@@ -13010,7 +12977,7 @@ html.darkTheme .treApp .brand-mark{background:none}
           identity.companyId,
           item.employeeCategory || "",
           item.responsible,
-          item.signed ? "Sim" : "Não"
+          (item.hasSignature === undefined ? item.signed : item.hasSignature) ? "Sim" : "Não"
         ]);
       });
       downloadFile("historico_epi_sese.csv", toCsv(rows), "text/csv;charset=utf-8");
@@ -13050,7 +13017,9 @@ html.darkTheme .treApp .brand-mark{background:none}
               <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(materialLabel(item))}</td>
               <td style="padding:5px;border:1px solid #9da8b4;text-align:center">${Number(item.qty || 0)}</td>
               <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(merLabel(item.reason))}</td>
-              <td style="padding:3px;border:1px solid #9da8b4;text-align:center"><img src="${entry.signature}" alt="Assinatura eletrônica" style="display:block;width:88px;height:34px;object-fit:contain;margin:auto"></td>
+              <td style="padding:3px;border:1px solid #9da8b4;text-align:center">${entry.signature
+                ? `<img src="${entry.signature}" alt="Assinatura eletrônica" style="display:block;width:88px;height:34px;object-fit:contain;margin:auto">`
+                : `<span style="display:block;font-size:8px;color:#526174">Entrega sem assinatura eletrônica</span>`}</td>
               <td style="padding:5px;border:1px solid #9da8b4">${escapeHtml(entry.responsible || "Não informado")}</td>
               <td style="padding:5px;border:1px solid #9da8b4">${expiry ? formatDate(expiry) : "Não aplicável"}</td>
             </tr>
@@ -13118,61 +13087,139 @@ html.darkTheme .treApp .brand-mark{background:none}
       window.print();
     };
 
-    const canvas = document.getElementById("signatureCanvas");
-    const context = canvas.getContext("2d");
-    let drawing = false;
+    /* A captura de assinatura foi removida do formulário de retirada.
+       As funções abaixo permanecem inertes para manter compatíveis os pontos
+       do sistema que ainda as chamam, e as assinaturas já arquivadas
+       continuam sendo exibidas nos termos e no histórico. */
+    function resizeCanvas() {}
+    function clearCanvas() { signatureStarted = false; }
 
-    function resizeCanvas() {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width) return;
-      const saved = signatureStarted ? canvas.toDataURL() : null;
-      canvas.width = rect.width * ratio;
-      canvas.height = 190 * ratio;
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.lineWidth = 2.2;
-      context.strokeStyle = document.documentElement.classList.contains("darkTheme") ? "#0874c9" : "#083b82";
-      if (saved) {
-        const image = new Image();
-        image.onload = () => context.drawImage(image, 0, 0, rect.width, 190);
-        image.src = saved;
+    function compactSignatureFromCanvas(sourceCanvas) {
+      const width = sourceCanvas.width;
+      const height = sourceCanvas.height;
+      if (!width || !height) return "";
+      const sourceContext = sourceCanvas.getContext("2d");
+      const pixels = sourceContext.getImageData(0, 0, width, height).data;
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const base = (y * width + x) * 4;
+          const opaque = pixels[base + 3] > 12;
+          const inked = opaque && (pixels[base] < 235 || pixels[base + 1] < 235 || pixels[base + 2] < 235);
+          if (!inked) continue;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+      if (maxX < 0) return "";
+      const padding = Math.round(Math.min(width, height) * 0.04) + 4;
+      minX = Math.max(0, minX - padding);
+      minY = Math.max(0, minY - padding);
+      maxX = Math.min(width - 1, maxX + padding);
+      maxY = Math.min(height - 1, maxY + padding);
+      const cropWidth = maxX - minX + 1;
+      const cropHeight = maxY - minY + 1;
+      const scale = Math.min(1, SIGNATURE_MAX_WIDTH / cropWidth, SIGNATURE_MAX_HEIGHT / cropHeight);
+      const target = document.createElement("canvas");
+      target.width = Math.max(1, Math.round(cropWidth * scale));
+      target.height = Math.max(1, Math.round(cropHeight * scale));
+      const targetContext = target.getContext("2d");
+      targetContext.fillStyle = "#ffffff";
+      targetContext.fillRect(0, 0, target.width, target.height);
+      targetContext.imageSmoothingEnabled = true;
+      targetContext.imageSmoothingQuality = "high";
+      targetContext.drawImage(sourceCanvas, minX, minY, cropWidth, cropHeight, 0, 0, target.width, target.height);
+      quantizeSignatureCanvas(target);
+      const compactPng = target.toDataURL("image/png");
+      if (compactPng.length <= SIGNATURE_SIZE_LIMIT) return compactPng;
+      const compactJpeg = target.toDataURL("image/jpeg", 0.62);
+      return compactJpeg.length < compactPng.length ? compactJpeg : compactPng;
+    }
+
+    function quantizeSignatureCanvas(targetCanvas) {
+      try {
+        const targetContext = targetCanvas.getContext("2d");
+        const image = targetContext.getImageData(0, 0, targetCanvas.width, targetCanvas.height);
+        const pixels = image.data;
+        const steps = Math.max(2, SIGNATURE_QUANTIZATION_LEVELS) - 1;
+        for (let index = 0; index < pixels.length; index += 4) {
+          const luminance = pixels[index] * 0.299 + pixels[index + 1] * 0.587 + pixels[index + 2] * 0.114;
+          const level = Math.round((luminance / 255) * steps) / steps;
+          const tone = Math.round(level * 255);
+          pixels[index] = tone;
+          pixels[index + 1] = tone;
+          pixels[index + 2] = tone;
+          pixels[index + 3] = 255;
+        }
+        targetContext.putImageData(image, 0, 0);
+      } catch (error) {
+        console.warn("Não foi possível reduzir as cores da assinatura", error);
       }
     }
 
-    function canvasPoint(event) {
-      const rect = canvas.getBoundingClientRect();
-      const source = event.touches ? event.touches[0] : event;
-      return { x: source.clientX - rect.left, y: source.clientY - rect.top };
+    function loadImageFromDataUrl(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("Assinatura ilegível"));
+        image.src = dataUrl;
+      });
     }
 
-    function beginSignature(event) {
-      drawing = true;
-      signatureStarted = true;
-      document.getElementById("signatureBox").classList.add("signed");
-      const point = canvasPoint(event);
-      context.beginPath();
-      context.moveTo(point.x, point.y);
-      event.preventDefault();
-    }
-
-    function drawSignature(event) {
-      if (!drawing) return;
-      const point = canvasPoint(event);
-      context.lineTo(point.x, point.y);
-      context.stroke();
-      event.preventDefault();
-    }
-
-    function endSignature() {
-      drawing = false;
-    }
-
-    function clearCanvas() {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      signatureStarted = false;
-      document.getElementById("signatureBox").classList.remove("signed");
+    async function compactStoredSignatures() {
+      if (!state.dataMigrations || typeof state.dataMigrations !== "object") state.dataMigrations = {};
+      const fullPass = !state.dataMigrations[SIGNATURE_COMPACTION_MIGRATION];
+      const pending = (state.withdrawals || []).filter(withdrawal => {
+        if (typeof withdrawal.signature !== "string") return false;
+        if (!withdrawal.signature.startsWith("data:image")) return false;
+        if (withdrawal.signature.startsWith("data:image/svg")) return false;
+        if (withdrawal.signature.length > SIGNATURE_SIZE_LIMIT) return true;
+        return fullPass && withdrawal.signature.length > 1500;
+      });
+      if (!pending.length) {
+        if (fullPass) {
+          state.dataMigrations[SIGNATURE_COMPACTION_MIGRATION] = { completedAt: new Date().toISOString(), optimized: 0 };
+        }
+        return;
+      }
+      let optimized = 0;
+      let savedBytes = 0;
+      for (const withdrawal of pending) {
+        try {
+          const image = await loadImageFromDataUrl(withdrawal.signature);
+          const buffer = document.createElement("canvas");
+          buffer.width = image.naturalWidth || image.width;
+          buffer.height = image.naturalHeight || image.height;
+          if (!buffer.width || !buffer.height) continue;
+          const bufferContext = buffer.getContext("2d");
+          bufferContext.fillStyle = "#ffffff";
+          bufferContext.fillRect(0, 0, buffer.width, buffer.height);
+          bufferContext.drawImage(image, 0, 0);
+          const compact = compactSignatureFromCanvas(buffer);
+          if (compact && compact.length < withdrawal.signature.length) {
+            savedBytes += withdrawal.signature.length - compact.length;
+            withdrawal.signature = compact;
+            optimized += 1;
+          }
+        } catch (error) {
+          console.warn("Assinatura não pôde ser compactada", error);
+        }
+      }
+      if (fullPass) {
+        state.dataMigrations[SIGNATURE_COMPACTION_MIGRATION] = { completedAt: new Date().toISOString(), optimized };
+      }
+      if (!optimized) {
+        if (fullPass) saveState();
+        return;
+      }
+      saveState();
+      renderAll();
+      showToast(`${optimized} ${optimized === 1 ? "assinatura foi compactada" : "assinaturas foram compactadas"} e cerca de ${Math.round(savedBytes / 1024)} KB de armazenamento foram liberados.`);
     }
 
     function openMobileMenu() {
@@ -13993,13 +14040,6 @@ html.darkTheme .treApp .brand-mark{background:none}
       addSelectedWithdrawalItem();
     });
 
-    canvas.addEventListener("mousedown", beginSignature);
-    canvas.addEventListener("mousemove", drawSignature);
-    window.addEventListener("mouseup", endSignature);
-    canvas.addEventListener("touchstart", beginSignature, { passive: false });
-    canvas.addEventListener("touchmove", drawSignature, { passive: false });
-    canvas.addEventListener("touchend", endSignature);
-    document.getElementById("clearSignature").addEventListener("click", clearCanvas);
     document.getElementById("cancelWithdrawal").addEventListener("click", () => setTimeout(resetWithdrawal));
 
     document.getElementById("withdrawalForm").addEventListener("submit", async event => {
@@ -14016,10 +14056,6 @@ html.darkTheme .treApp .brand-mark{background:none}
       }
       if (!withdrawalSelection.length) {
         showToast("Adicione pelo menos um EPI à retirada.", true);
-        return;
-      }
-      if (!signatureStarted) {
-        showToast("A assinatura eletrônica é obrigatória.", true);
         return;
       }
       if (!document.getElementById("acknowledgement").checked) {
@@ -14063,7 +14099,7 @@ html.darkTheme .treApp .brand-mark{background:none}
         shift: document.getElementById("employeeShift").value,
         responsible: state.settings.responsible,
         items: JSON.parse(JSON.stringify(withdrawalSelection)),
-        signature: canvas.toDataURL("image/png"),
+        signature: "",
         collaboratorPhotoKey: collaborator?.photoKey || "",
         lgpdAcknowledgedAt: now.toISOString()
       };
@@ -14103,7 +14139,8 @@ html.darkTheme .treApp .brand-mark{background:none}
         employeeCompanyId: withdrawal.employeeCompanyId,
         employeeCategory: withdrawal.employeeCategory,
         responsible: withdrawal.responsible,
-        signed: true
+        signed: true,
+        hasSignature: Boolean(withdrawal.signature)
       });
       saveState();
       const photoDataUrl = await getCollaboratorPhotoDataUrl(withdrawal.collaboratorPhotoKey);
@@ -14335,6 +14372,9 @@ html.darkTheme .treApp .brand-mark{background:none}
     renderAll();
     resizeCanvas();
     initializeCloudSync();
+    setTimeout(() => {
+      compactStoredSignatures().catch(error => console.warn("Compactação de assinaturas interrompida", error));
+    }, 1500);
   </script>
 
   <script>
